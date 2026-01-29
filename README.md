@@ -3,9 +3,13 @@ syt5-gek1051-mobile-application-codemonkeys created by GitHub Classroom
 
 ## Team
 PO: Vincent Weinzinger
+
 TA: Lukas Schrenk
+
 Ameise: Niklas Strobl
+
 Bmeise: Maged Negm
+
 Cmeise: Aran Yildirim
 
 ## Stories
