@@ -1,4 +1,4 @@
-# User Stories (User-Centric)
+# User Stories (Future-Ready & User-Centric)
 
 ## Legende
 
@@ -11,8 +11,8 @@
 
 | ID | Description (Feature aus Nutzersicht) | SP | HEAD | Prio | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| 1 | Als Entwickler benötige ich eine aufgesetzte Entwicklungsumgebung & Git, um überhaupt an der App arbeiten zu können. | 3 | AY | MH | [Status](#issue-1) |
-| 2 | Als Team benötigen wir eine klare Architektur-Dokumentation, um die App stabil und wartbar zu halten. | 5 | AY | MH | [Status](#issue-2) |
+| 1 | Als Benutzer möchte ich, dass die App auf einer **sauberen, erweiterbaren Code-Basis** entwickelt wird, damit zukünftige Features (wie Sprachsteuerung oder Rezepte) schnell und fehlerfrei integriert werden können. | 3 | AY | MH | [Status](#issue-1) |
+| 2 | Als Benutzer erwarte ich eine **dokumentierte und durchdachte Systemarchitektur**, damit die App langfristig wartbar bleibt und Entwickler Fehler auch Jahre später noch schnell beheben können. | 5 | AY | MH | [Status](#issue-2) |
 | 3 | Als Benutzer möchte ich, dass meine Daten dauerhaft auf dem Server gespeichert werden, damit nichts verloren geht (DB-Setup). | 5 | LS | MH | [Status](#issue-3) |
 | 4 | Als Benutzer möchte ich mich registrieren und einloggen, damit nur ich Zugriff auf meine privaten Listen habe. | 5 | NS | MH | [Status](#issue-4) |
 | 5 | Als Benutzer möchte ich neue Einkaufslisten erstellen und benennen, um für verschiedene Anlässe (Wochenmarkt, Baumarkt) zu planen. | 5 | VW | MH | [Status](#issue-5) |
@@ -31,7 +31,7 @@
 | 18 | Als Benutzer möchte ich verständliche Fehlermeldungen sehen, wenn etwas schiefgeht (z.B. "Kein Internet"), statt die App abstürzen zu sehen. | 3 | MN | SH | [Status](#issue-18) |
 | 19 | Als reisender Benutzer möchte ich von überall auf der Welt auf meine Listen zugreifen können (Global Deployment). | 5 | AY | N2H | [Status](#issue-19) |
 | 20 | Als vorsichtiger Benutzer möchte ich meine Listen als Datei exportieren (Backup), um meine Daten lokal zu sichern. | 5 | LS | N2H | [Status](#issue-20) |
-| 21 | Als Entwickler benötige ich eine saubere Dokumentation (Deployment Guide), um die App später warten zu können. | 3 | LS | MH | [Status](#issue-21) |
+| 21 | Als Entwickler (und späterer Maintainer) benötige ich eine saubere Dokumentation, um Fehler schnell beheben zu können und die App langfristig am Leben zu halten. | 3 | LS | MH | [Status](#issue-21) |
 | 22 | Als Benutzer möchte ich einen Dark Mode nutzen, um die App auch abends augenschonend bedienen zu können. | 3 | NS | N2H | [Status](#issue-22) |
 | 23 | Als Benutzer möchte ich durch kleine Animationen Feedback erhalten (z.B. beim Löschen), damit sich die App hochwertig anfühlt. | 3 | NS | N2H | [Status](#issue-23) |
 | 24 | Als Benutzer mit Einschränkungen möchte ich die App mittels Screenreader bedienen können (Barrierefreiheit). | 3 | AY | N2H | [Status](#issue-24) |
@@ -40,24 +40,10 @@
 
 ## Zusammenfassung der Verantwortlichkeiten
 
-Jeder Teilnehmer trägt **genau 24 Story Points**.
+Jeder Teilnehmer trägt **genau 24 Story Points** (Gesamt 120 SP).
 
-* **VW (Product Owner) - 24 SP**
-    * *Fokus:* **Kern-Features & UX.** Erstellt die Listen (#5), verwaltet die Items (#6) und sorgt für Komfortfunktionen wie Einstellungen (#17), Labels (#15), Notizen (#16), Suche & Filter.
-    * *Key User Story:* "Als Benutzer will ich Listen erstellen..." (Must Have)
-
-* **LS (Technical Architect) - 24 SP**
-    * *Fokus:* **Datenintegrität & Offline-Fähigkeit.** Sorgt dafür, dass die App auch im Funkloch funktioniert (#7), die Datenbank läuft (#3) und Backups möglich sind (#20).
-    * *Key User Story:* "Als Benutzer will ich die App offline nutzen..." (Must Have)
-
-* **NS (Developer) - 24 SP**
-    * *Fokus:* **Zugang & Datenupload.** Kümmert sich um Login/Schutz (#4), das Senden der Daten an den Server (#8) und das visuelle Erlebnis (Dark Mode #22, Animationen #23).
-    * *Key User Story:* "Als Benutzer will ich mich einloggen..." (Must Have)
-
-* **MN (Developer) - 24 SP**
-    * *Fokus:* **Kollaboration & Synchronität.** Sorgt dafür, dass Daten empfangen werden (#9), Listen geteilt werden können (#10) und Konflikte gelöst werden (#11).
-    * *Key User Story:* "Als Benutzer will ich Listen teilen..." (Must Have)
-
-* **AY (Developer) - 24 SP**
-    * *Fokus:* **Qualität & Reichweite.** Legt das Fundament (#1, #2), prüft die App auf Herz und Nieren (E2E #12, A11y #24) und bringt sie ins Web (#19).
-    * *Key User Story:* "Als Entwickler/Team will ich eine stabile Basis..." (Must Have)
+* **VW (Product Owner):** Features, Listen-Logik, UI-Komfort.
+* **LS (Technical Architect):** Infrastruktur, Offline-Fähigkeit, Datenbank, CI/CD.
+* **NS (Developer):** Authentifizierung, Upstream-Sync, UI-Design/UX.
+* **MN (Developer):** Downstream-Sync, Sharing, Datenkonsistenz/Konflikte.
+* **AY (Developer):** **Zukunftsfähigkeit (Basis & Doku)**, Qualitätssicherung (Testing), Deployment, A11y.
