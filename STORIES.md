@@ -19,9 +19,9 @@
 | 6 | Als Benutzer möchte ich Artikel auf die Liste setzen und "abhaken", damit ich im Laden weiß, was noch fehlt. | 5 | VW | MH | [Status](#issue-6) |
 | 7 | Als Benutzer möchte ich die App auch im Supermarkt ohne Internetempfang (Offline) voll nutzen können. | 8 | LS | MH | [Status](#issue-7) |
 | 8 | Als Benutzer möchte ich, dass meine lokal eingetragenen Artikel automatisch in die Cloud hochgeladen werden, sobald ich Internet habe. | 8 | NS | MH | [Status](#issue-8) |
-| 9 | Als Benutzer möchte ich, dass Änderungen meines Partners (z.B. neue Artikel) automatisch auf meinem Handy erscheinen. | 8 | MN | MH | [Status](#issue-9) |
-| 10 | Als Benutzer möchte ich eine Liste per Link teilen, damit mein Partner oder WG-Mitglied Zugriff darauf hat. | 5 | MN | MH | [Status](#issue-10) |
-| 11 | Als Benutzer möchte ich, dass nichts verloren geht, wenn ich und mein Partner gleichzeitig denselben Artikel bearbeiten (Konfliktlösung). | 8 | MN | SH | [Status](#issue-11) |
+| 9 | Als Benutzer möchte ich, dass Änderungen eines befreundeten Benutzers (Partner:in) (z.B. neue Artikel) automatisch auf meinem Handy erscheinen. | 8 | MN | MH | [Status](#issue-9) |
+| 10 | Als Benutzer möchte ich eine Liste per Link teilen, damit ein anderer Benutzer Zugriff darauf hat. | 5 | MN | MH | [Status](#issue-10) |
+| 11 | Als Benutzer möchte ich, dass nichts verloren geht, wenn ich und mein befreundeter Benutzer (Partner:in) gleichzeitig denselben Artikel bearbeiten (Konfliktlösung). | 8 | MN | SH | [Status](#issue-11) |
 | 12 | Als Benutzer erwarte ich eine fehlerfreie App, die vor Veröffentlichung durch simulierte Benutzer-Tests (E2E) geprüft wurde. | 8 | AY | SH | [Status](#issue-12) |
 | 13 | Als Benutzer erwarte ich, dass der Datenaustausch im Hintergrund stabil läuft und technisch abgesichert ist (Unit Tests). | 5 | NS | SH | [Status](#issue-13) |
 | 14 | Als Benutzer möchte ich regelmäßige Updates ohne Abstürze erhalten, gesichert durch automatische Prüfprozesse (CI/CD). | 3 | LS | SH | [Status](#issue-14) |
