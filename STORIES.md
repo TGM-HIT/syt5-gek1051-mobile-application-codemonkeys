@@ -14,8 +14,8 @@
 | 3 | Als Entwickler-Team benötigen wir eine CI/CD Pipeline, um die Qualitätssicherung zu automatisieren und Fehler vor dem Release zu blockieren. | 5 | LS | MH | [Status](#issue-3) |
 | 4 | Als Benutzer möchte ich, dass meine Daten dauerhaft in einer Datenbank gespeichert werden, damit sie auch nach einem Neustart erhalten bleiben. | 5 | LS | MH | [Status](#issue-4) |
 | 5 | Als Benutzer möchte ich mich registrieren und sicher einloggen, um unbefugten Zugriff auf meine privaten Listen zu verhindern. | 8 | NS | MH | [Status](#issue-5) |
-| 6 | Als Benutzer möchte ich Einkaufslisten erstellen, umbenennen und verwalten, um meinen Einkauf strukturiert zu planen. | 8 | VW | MH | [Status](#issue-6) |
-| 7 | Als Benutzer möchte ich Artikel zu einer Liste hinzufügen und als "erledigt" markieren, um den Überblick im Supermarkt zu behalten. | 8 | VW | MH | [Status](#issue-7) |
+| 6 | Als Benutzer möchte ich Einkaufslisten erstellen, umbenennen und verwalten, um meinen Einkauf strukturiert zu planen. Sollen als gelöscht makriert werden und wiederhergestellt | 8 | VW | MH | [Status](#issue-6) |
+| 7 | Als Benutzer möchte ich Artikel zu einer Liste hinzufügen und als "erledigt" markieren, um den Überblick im Supermarkt zu behalten. Artikel sollen als gelöscht markiert werden können und wiederhergestellt werden | 8 | VW | MH | [Status](#issue-7) |
 | 8 | Als Benutzer möchte ich die App auch ohne Internetverbindung (Offline) voll nutzen können, ohne dass Daten verloren gehen. | 8 | LS | MH | [Status](#issue-8) |
 | 9 | Als Benutzer möchte ich, dass meine lokal erstellten Daten automatisch an den Server gesendet werden, sobald ich online bin (Upstream Sync). | 9 | NS | MH | [Status](#issue-9) |
 | 10 | Als Benutzer möchte ich, dass Änderungen von anderen Geräten automatisch auf meinem Smartphone erscheinen (Downstream Sync). | 8 | MN | MH | [Status](#issue-10) |
