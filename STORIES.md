@@ -25,8 +25,8 @@
 | 14 | Als Benutzer möchte ich Artikeln farbige Labels oder Kategorien zuweisen, um die Liste visuell besser zu erfassen. | 3 | VW | N2H | [Status](#issue-14) |
 | 15 | Als Benutzer möchte ich Notizen zu Artikeln hinzufügen, um Details wie Marken oder Mengenangaben festzuhalten. | 2 | VW | SH | [Status](#issue-15) |
 | 16 | Als Benutzer möchte ich meine Listen filtern und sortieren, um erledigte Einträge auszublenden oder wichtige Dinge oben zu sehen. | 3 | VW | N2H | [Status](#issue-16) |
-| 17 | Als Benutzer möchte ich verständliche Fehlermeldungen erhalten, statt kryptischer Codes oder Abstürze, wenn eine Aktion fehlschlägt. | 3 | NS | SH | [Status](#issue-17) |
-| 18 | Als Benutzer möchte ich einen Dark Mode aktivieren können, um die App auch bei schlechten Lichtverhältnissen angenehm zu nutzen. | 5 | NS | N2H | [Status](#issue-18) |
+| 17 | Als Benutzer möchte ich verständliche Fehlermeldungen erhalten, statt kryptischer Codes oder Abstürze, wenn eine Aktion fehlschlägt. | 5 | NS | SH | [Status](#issue-17) |
+| 18 | Als Benutzer möchte ich einen Dark Mode aktivieren können, um die App auch bei schlechten Lichtverhältnissen angenehm zu nutzen. | 3 | NS | N2H | [Status](#issue-18) |
 | 19 | Als reisender Benutzer möchte ich von überall auf der Welt schnell und sicher auf meine Daten zugreifen können (Global Deployment). | 5 | AY | N2H | [Status](#issue-19) |
 | 20 | Als vorsichtiger Benutzer möchte ich meine Listen als Datei exportieren (Backup), um eine lokale Kopie meiner Daten zu besitzen. | 5 | LS | N2H | [Status](#issue-20) |
 | 21 | Als Entwickler benötige ich eine vollständige Deployment-Dokumentation, um den Betrieb der App langfristig sicherzustellen. | 1 | LS | MH | [Status](#issue-21) |
