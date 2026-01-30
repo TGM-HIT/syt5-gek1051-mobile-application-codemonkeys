@@ -6,6 +6,17 @@
 - **Prio:** Must Have (MH), Should Have (SH), Nice to Have (N2H).
 
 ## Auflistung
+### ToDo
+- 2 Tabellen, Entwickler und Benutzer Aufgeteilt. Sortiert nach MH -> SH -> N2H
+- Markiert gelöscht besser beschreiben (Aus Ansicht entfernen)
+- Neue Story für endgültig Löschen
+- Weniger Storypoints für CI/CD
+- Login als SH (Kein MH)
+- Upstream, Downstream sync als eine User Storie mit 13 SP
+- Ersten Beiden sind Entwickler Userstories
+- Datenkonfliktlösung genauer beschreiben
+- Fehlermeldungen zum UI kombinieren
+- Storypoints mindestens 3 max 13
 
 | ID | Description (User Value) | SP | HEAD | Prio | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -26,7 +37,7 @@
 | 15 | Als Benutzer möchte ich Notizen zu Artikeln hinzufügen, um Details wie Marken oder Mengenangaben festzuhalten. | 2 | VW | SH | [Status](#issue-15) |
 | 16 | Als Benutzer möchte ich meine Listen filtern und sortieren, um erledigte Einträge auszublenden oder wichtige Dinge oben zu sehen. | 3 | VW | N2H | [Status](#issue-16) |
 | 17 | Als Benutzer möchte ich verständliche Fehlermeldungen erhalten, statt kryptischer Codes oder Abstürze, wenn eine Aktion fehlschlägt. | 5 | NS | SH | [Status](#issue-17) |
-| 18 | Als Benutzer möchte ich einen Dark Mode aktivieren können, um die App auch bei schlechten Lichtverhältnissen angenehm zu nutzen. | 2 | NS | N2H | [Status](#issue-18) |
+| 18 | Als Benutzer möchte ich ansehliches UI mit Bildern und Auswahl zwischen Dark und Light Mode. | 2 | NS | N2H | [Status](#issue-18) |
 | 19 | Als reisender Benutzer möchte ich von überall auf der Welt schnell und sicher auf meine Daten zugreifen können (Global Deployment). | 5 | AY | N2H | [Status](#issue-19) |
 | 20 | Als vorsichtiger Benutzer möchte ich meine Listen als Datei exportieren (Backup), um eine lokale Kopie meiner Daten zu besitzen. | 5 | LS | N2H | [Status](#issue-20) |
 | 21 | Als Entwickler benötige ich eine vollständige Deployment-Dokumentation, um den Betrieb der App langfristig sicherzustellen. | 1 | LS | MH | [Status](#issue-21) |
