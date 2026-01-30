@@ -17,7 +17,7 @@
 | 6 | Als Benutzer möchte ich Einkaufslisten erstellen, umbenennen und verwalten, um meinen Einkauf strukturiert zu planen. | 8 | VW | MH | [Status](#issue-6) |
 | 7 | Als Benutzer möchte ich Artikel zu einer Liste hinzufügen und als "erledigt" markieren, um den Überblick im Supermarkt zu behalten. | 8 | VW | MH | [Status](#issue-7) |
 | 8 | Als Benutzer möchte ich die App auch ohne Internetverbindung (Offline) voll nutzen können, ohne dass Daten verloren gehen. | 8 | LS | MH | [Status](#issue-8) |
-| 9 | Als Benutzer möchte ich, dass meine lokal erstellten Daten automatisch an den Server gesendet werden, sobald ich online bin (Upstream Sync). | 8 | NS | MH | [Status](#issue-9) |
+| 9 | Als Benutzer möchte ich, dass meine lokal erstellten Daten automatisch an den Server gesendet werden, sobald ich online bin (Upstream Sync). | 9 | NS | MH | [Status](#issue-9) |
 | 10 | Als Benutzer möchte ich, dass Änderungen von anderen Geräten automatisch auf meinem Smartphone erscheinen (Downstream Sync). | 8 | MN | MH | [Status](#issue-10) |
 | 11 | Als Benutzer möchte ich eine Liste per Link mit anderen Personen teilen, um den Einkauf gemeinsam zu erledigen. | 8 | MN | MH | [Status](#issue-11) |
 | 12 | Als Benutzer möchte ich, dass bei gleichzeitiger Bearbeitung keine Daten überschrieben werden oder verloren gehen (Konfliktlösung). | 8 | MN | SH | [Status](#issue-12) |
@@ -26,7 +26,7 @@
 | 15 | Als Benutzer möchte ich Notizen zu Artikeln hinzufügen, um Details wie Marken oder Mengenangaben festzuhalten. | 2 | VW | SH | [Status](#issue-15) |
 | 16 | Als Benutzer möchte ich meine Listen filtern und sortieren, um erledigte Einträge auszublenden oder wichtige Dinge oben zu sehen. | 3 | VW | N2H | [Status](#issue-16) |
 | 17 | Als Benutzer möchte ich verständliche Fehlermeldungen erhalten, statt kryptischer Codes oder Abstürze, wenn eine Aktion fehlschlägt. | 5 | NS | SH | [Status](#issue-17) |
-| 18 | Als Benutzer möchte ich einen Dark Mode aktivieren können, um die App auch bei schlechten Lichtverhältnissen angenehm zu nutzen. | 3 | NS | N2H | [Status](#issue-18) |
+| 18 | Als Benutzer möchte ich einen Dark Mode aktivieren können, um die App auch bei schlechten Lichtverhältnissen angenehm zu nutzen. | 2 | NS | N2H | [Status](#issue-18) |
 | 19 | Als reisender Benutzer möchte ich von überall auf der Welt schnell und sicher auf meine Daten zugreifen können (Global Deployment). | 5 | AY | N2H | [Status](#issue-19) |
 | 20 | Als vorsichtiger Benutzer möchte ich meine Listen als Datei exportieren (Backup), um eine lokale Kopie meiner Daten zu besitzen. | 5 | LS | N2H | [Status](#issue-20) |
 | 21 | Als Entwickler benötige ich eine vollständige Deployment-Dokumentation, um den Betrieb der App langfristig sicherzustellen. | 1 | LS | MH | [Status](#issue-21) |
