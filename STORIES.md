@@ -29,13 +29,13 @@
 | **U6** | **Login & Registrierung:** Als Benutzer möchte ich mich registrieren und anmelden, um meine privaten Listen vor Fremdzugriff zu schützen. | 8 | NS | SH | [Status](#issue-u6) |
 | **U7** | **Endgültiges Löschen (Papierkorb):** Als Benutzer möchte ich als gelöscht markierte Listen und Artikel endgültig entfernen, um Speicherplatz freizugeben und die Übersicht zu bereinigen. | 5 | NS | SH | [Status](#issue-u7) |
 | **U8** | **Konfliktlösung:** Als Benutzer möchte ich, dass bei gleichzeitiger Bearbeitung (z.B. User A ändert Menge, User B hakt ab) Konflikte automatisch gelöst werden (z.B. "Last-Write-Wins" oder intelligenter Merge), damit keine Daten inkonsistent werden. | 3 | MN | SH | [Status](#issue-u8) |
-| **U9** | **User Profil & Einstellungen:** Als Benutzer möchte ich mein Passwort ändern und mich ausloggen können. | 8 | AY | SH | [Status](#issue-u9) |
+| **U9** | **User Profil & Einstellungen:** Als Benutzer möchte ich mein Passwort ändern und mich ausloggen können. | 5 | AY | SH | [Status](#issue-u9) |
 | **U10** | **Details & Labels:** Als Benutzer möchte ich Notizen hinzufügen und Artikel mittels Labels/Farben kategorisieren. | 5 | VW | SH | [Status](#issue-u10) |
 | **U11** | **Modernes UI & Fehler-Feedback:** Als Benutzer möchte ich ein ansprechendes Design (Dark/Light Mode) nutzen und verständliche Fehlermeldungen erhalten, wenn etwas schiefgeht. | 8 | NS | N2H | [Status](#issue-u11) |
 | **U12** | **Backup & Export:** Als Benutzer möchte ich meine Listen als JSON-Datei exportieren, um eine lokale Sicherung zu haben. | 5 | LS | N2H | [Status](#issue-u12) |
 | **U13** | **Suche:** Als Benutzer möchte ich in meinen Listen nach spezifischen Artikeln suchen, um Zeit zu sparen. | 3 | NS | N2H | [Status](#issue-u13) |
 | **U14** | **Filter & Sortierung:** Als Benutzer möchte ich Listen nach Status (offen/erledigt) filtern oder sortieren. | 3 | VW | N2H | [Status](#issue-u14) |
-| **U15** | **Barrierefreiheit (A11y):** Als Benutzer mit Einschränkungen möchte ich die App via Screenreader bedienen können. | 3 | AY | N2H | [Status](#issue-u15) |
+| **U15** | **Barrierefreiheit (A11y):** Als Benutzer mit Einschränkungen möchte ich die App via Screenreader bedienen können. | 6 | AY | N2H | [Status](#issue-u15) |
 
 ## Zusammenfassung der Verantwortlichkeiten
 
