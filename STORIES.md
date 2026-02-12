@@ -1,66 +1,57 @@
-# User Stories
+# User Stories & Developer Stories
 
 ## Legende
-- **SP (Story Points):** Aufwandsschätzung inkl. Implementierung, Tests und Dokumentation (1 SP ≈ 40 Min).
+- **SP (Story Points):** Aufwandsschätzung (Min 3, Max 13).
 - **Definition of Done:** Eine Story ist erst fertig, wenn der Code funktionstüchtig ist **und** die entsprechenden Tests (Unit/E2E) in der CI-Pipeline bestanden haben.
-- **Prio:** Must Have (MH), Should Have (SH), Nice to Have (N2H).
+- **Prio:** Must Have (MH) -> Should Have (SH) -> Nice to Have (N2H).
+- **HEAD:** Verantwortliche Person.
 
-## Auflistung
-### ToDo
-- 2 Tabellen, Entwickler und Benutzer Aufgeteilt. Sortiert nach MH -> SH -> N2H
-- Markiert gelöscht besser beschreiben (Aus Ansicht entfernen)
-- Neue Story für endgültig Löschen
-- Weniger Storypoints für CI/CD
-- Login als SH (Kein MH)
-- Upstream, Downstream sync als eine User Storie mit 13 SP
-- Ersten Beiden sind Entwickler Userstories
-- Datenkonfliktlösung genauer beschreiben
-- Fehlermeldungen zum UI kombinieren
-- Storypoints mindestens 3 max 13
+## 1. Developer Stories (Technische Basis)
+
+| ID | Description | SP | HEAD | Prio | Status |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **D1** | **Projekt-Setup & Git:** Als Entwickler will ich eine saubere Code-Basis inkl. Linter und Git-Workflow aufsetzen, um kollisionsfrei arbeiten zu können. | 3 | AY | MH | [Status](#issue-d1) |
+| **D2** | **Architektur-Dokumentation:** Als Architekt will ich die Systemarchitektur (Datenmodell, Sync-Logik) dokumentieren, um eine wartbare Basis für zukünftige Features zu haben. | 5 | AY | MH | [Status](#issue-d2) |
+| **D3** | **Datenbank-Setup:** Als Entwickler will ich die Datenbank (z.B. CouchDB/PouchDB) inkl. Docker-Container bereitstellen, um Daten persistent zu speichern. | 5 | LS | MH | [Status](#issue-d3) |
+| **D4** | **Deployment-Dokumentation:** Als Entwickler benötige ich eine vollständige Anleitung zum Deployen und Betreiben des Backends, um die Wartbarkeit zu sichern. | 3 | LS | MH | [Status](#issue-d4) |
+| **D5** | **CI/CD Pipeline:** Als Team wollen wir eine schlanke Pipeline haben, die bei Pushes automatisch baut und testet, um die Qualität zu sichern. | 3 | LS | MH | [Status](#issue-d5) |
+| **D6** | **Global Deployment:** Als Entwickler will ich das Backend auf einem Cloud-Service hosten, um weltweiten Zugriff zu gewährleisten. | 5 | AY | N2H | [Status](#issue-d6) |
+
+## 2. User Stories (Features)
 
 | ID | Description (User Value) | SP | HEAD | Prio | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| 1 | Als Benutzer möchte ich, dass die App auf einer sauberen, erweiterbaren Code-Basis entwickelt wird, damit zukünftige Features schnell und fehlerfrei integriert werden können. | 3 | AY | MH | [Status](#issue-1) |
-| 2 | Als Benutzer erwarte ich eine dokumentierte Systemarchitektur, damit die App langfristig wartbar bleibt und Fehler auch in Zukunft schnell behoben werden können. | 5 | AY | MH | [Status](#issue-2) |
-| 3 | Als Entwickler-Team benötigen wir eine CI/CD Pipeline, um die Qualitätssicherung zu automatisieren und Fehler vor dem Release zu blockieren. | 5 | LS | MH | [Status](#issue-3) |
-| 4 | Als Benutzer möchte ich, dass meine Daten dauerhaft in einer Datenbank gespeichert werden, damit sie auch nach einem Neustart erhalten bleiben. | 5 | LS | MH | [Status](#issue-4) |
-| 5 | Als Benutzer möchte ich mich registrieren und sicher einloggen, um unbefugten Zugriff auf meine privaten Listen zu verhindern. | 8 | NS | MH | [Status](#issue-5) |
-| 6 | Als Benutzer möchte ich Einkaufslisten erstellen, umbenennen und verwalten, um meinen Einkauf strukturiert zu planen. Sollen als gelöscht makriert werden und wiederhergestellt | 8 | VW | MH | [Status](#issue-6) |
-| 7 | Als Benutzer möchte ich Artikel zu einer Liste hinzufügen und als "erledigt" markieren, um den Überblick im Supermarkt zu behalten. Artikel sollen als gelöscht markiert werden können und wiederhergestellt werden | 8 | VW | MH | [Status](#issue-7) |
-| 8 | Als Benutzer möchte ich die App auch ohne Internetverbindung (Offline) voll nutzen können, ohne dass Daten verloren gehen. | 8 | LS | MH | [Status](#issue-8) |
-| 9 | Als Benutzer möchte ich, dass meine lokal erstellten Daten automatisch an den Server gesendet werden, sobald ich online bin (Upstream Sync). | 9 | NS | MH | [Status](#issue-9) |
-| 10 | Als Benutzer möchte ich, dass Änderungen von anderen Geräten automatisch auf meinem Smartphone erscheinen (Downstream Sync). | 8 | MN | MH | [Status](#issue-10) |
-| 11 | Als Benutzer möchte ich eine Liste per Link mit anderen Personen teilen, um den Einkauf gemeinsam zu erledigen. | 8 | MN | MH | [Status](#issue-11) |
-| 12 | Als Benutzer möchte ich, dass bei gleichzeitiger Bearbeitung keine Daten überschrieben werden oder verloren gehen (Konfliktlösung). | 8 | MN | SH | [Status](#issue-12) |
-| 13 | Als Benutzer möchte ich mein Profil verwalten und persönliche Einstellungen (z.B. Passwort ändern, Logout) vornehmen können. | 8 | AY | SH | [Status](#issue-13) |
-| 14 | Als Benutzer möchte ich Artikeln farbige Labels oder Kategorien zuweisen, um die Liste visuell besser zu erfassen. | 3 | VW | N2H | [Status](#issue-14) |
-| 15 | Als Benutzer möchte ich Notizen zu Artikeln hinzufügen, um Details wie Marken oder Mengenangaben festzuhalten. | 2 | VW | SH | [Status](#issue-15) |
-| 16 | Als Benutzer möchte ich meine Listen filtern und sortieren, um erledigte Einträge auszublenden oder wichtige Dinge oben zu sehen. | 3 | VW | N2H | [Status](#issue-16) |
-| 17 | Als Benutzer möchte ich verständliche Fehlermeldungen erhalten, statt kryptischer Codes oder Abstürze, wenn eine Aktion fehlschlägt. | 5 | NS | SH | [Status](#issue-17) |
-| 18 | Als Benutzer möchte ich ansehliches UI mit Bildern und Auswahl zwischen Dark und Light Mode. | 2 | NS | N2H | [Status](#issue-18) |
-| 19 | Als reisender Benutzer möchte ich von überall auf der Welt schnell und sicher auf meine Daten zugreifen können (Global Deployment). | 5 | AY | N2H | [Status](#issue-19) |
-| 20 | Als vorsichtiger Benutzer möchte ich meine Listen als Datei exportieren (Backup), um eine lokale Kopie meiner Daten zu besitzen. | 5 | LS | N2H | [Status](#issue-20) |
-| 21 | Als Entwickler benötige ich eine vollständige Deployment-Dokumentation, um den Betrieb der App langfristig sicherzustellen. | 1 | LS | MH | [Status](#issue-21) |
-| 22 | Als Benutzer mit Einschränkungen möchte ich die App barrierefrei (z.B. via Screenreader) bedienen können. | 3 | AY | N2H | [Status](#issue-22) |
+| **U1** | **Listen verwalten (Soft Delete):** Als Benutzer möchte ich Listen erstellen, umbenennen und so löschen, dass sie nur aus der Ansicht entfernt (markiert als gelöscht) werden, damit ich sie bei Bedarf wiederherstellen kann. | 8 | VW | MH | [Status](#issue-u1) |
+| **U2** | **Artikel verwalten (Soft Delete):** Als Benutzer möchte ich Artikel hinzufügen, abhaken und aus der Liste entfernen (als gelöscht markieren), um sie bei versehentlichem Löschen wiederherstellen zu können. | 8 | VW | MH | [Status](#issue-u2) |
+| **U3** | **Offline-Nutzung:** Als Benutzer möchte ich die App vollumfänglich ohne Internet nutzen können (lokale DB), ohne dass Fehlermeldungen den Flow stören. | 8 | LS | MH | [Status](#issue-u3) |
+| **U4** | **Bidirektionale Synchronisation (Up/Down):** Als Benutzer möchte ich, dass meine Daten automatisch im Hintergrund gesendet und empfangen werden, sobald eine Verbindung besteht. | 13 | MN | MH | [Status](#issue-u4) |
+| **U5** | **Listen Teilen (Sharing):** Als Benutzer möchte ich eine Einkaufsliste per Link/Code mit anderen teilen, um gemeinsam darauf zuzugreifen. | 8 | MN | MH | [Status](#issue-u5) |
+| **U6** | **Login & Registrierung:** Als Benutzer möchte ich mich registrieren und anmelden, um meine privaten Listen vor Fremdzugriff zu schützen. | 8 | NS | SH | [Status](#issue-u6) |
+| **U7** | **Endgültiges Löschen (Papierkorb):** Als Benutzer möchte ich als gelöscht markierte Listen und Artikel endgültig entfernen, um Speicherplatz freizugeben und die Übersicht zu bereinigen. | 5 | NS | SH | [Status](#issue-u7) |
+| **U8** | **Konfliktlösung:** Als Benutzer möchte ich, dass bei gleichzeitiger Bearbeitung (z.B. User A ändert Menge, User B hakt ab) Konflikte automatisch gelöst werden (z.B. "Last-Write-Wins" oder intelligenter Merge), damit keine Daten inkonsistent werden. | 3 | MN | SH | [Status](#issue-u8) |
+| **U9** | **User Profil & Einstellungen:** Als Benutzer möchte ich mein Passwort ändern und mich ausloggen können. | 8 | AY | SH | [Status](#issue-u9) |
+| **U10** | **Details & Labels:** Als Benutzer möchte ich Notizen hinzufügen und Artikel mittels Labels/Farben kategorisieren. | 5 | VW | SH | [Status](#issue-u10) |
+| **U11** | **Modernes UI & Fehler-Feedback:** Als Benutzer möchte ich ein ansprechendes Design (Dark/Light Mode) nutzen und verständliche Fehlermeldungen erhalten, wenn etwas schiefgeht. | 8 | NS | N2H | [Status](#issue-u11) |
+| **U12** | **Backup & Export:** Als Benutzer möchte ich meine Listen als JSON-Datei exportieren, um eine lokale Sicherung zu haben. | 5 | LS | N2H | [Status](#issue-u12) |
+| **U13** | **Suche:** Als Benutzer möchte ich in meinen Listen nach spezifischen Artikeln suchen, um Zeit zu sparen. | 3 | NS | N2H | [Status](#issue-u13) |
+| **U14** | **Filter & Sortierung:** Als Benutzer möchte ich Listen nach Status (offen/erledigt) filtern oder sortieren. | 3 | VW | N2H | [Status](#issue-u14) |
+| **U15** | **Barrierefreiheit (A11y):** Als Benutzer mit Einschränkungen möchte ich die App via Screenreader bedienen können. | 3 | AY | N2H | [Status](#issue-u15) |
 
 ## Zusammenfassung der Verantwortlichkeiten
 
-Jeder Teilnehmer trägt **genau 24 Story Points**. Die Test-Erstellung ist implizit in den Story Points enthalten.
+Jeder Teilnehmer hat exakt **24 Story Points**.
 
-* **VW (Product Owner) - 24 SP**
-    * *Kern-Features:* Listenverwaltung (#6), Artikelverwaltung (#7).
-    * *UX-Erweiterungen:* Labels (#14), Notizen (#15), Sortierung/Filter (#16).
-* **LS (Technical Architect) - 24 SP**
-    * *Infrastruktur:* CI/CD (#3), DB Setup (#4), Doku (#21).
-    * *Robustheit:* Offline-Modus (#8), Backup (#20).
-* **NS (Developer) - 24 SP**
-    * *Zugang & Sync:* Login/Auth (#5), Upstream Sync (#9).
-    * *User Interface:* Fehlermeldungen/Feedback (#17), Dark Mode (#18).
-* **MN (Developer) - 24 SP**
-    * *Kollaboration:* Downstream Sync (#10), Sharing (#11), Konfliktlösung (#12).
-    * *Hinweis:* Hohe SP-Werte hier, da Synchronisation und Konfliktmanagement sehr testintensive Bereiche sind.
 * **AY (Developer) - 24 SP**
-    * *Fundament:* Setup/Git (#1), Architektur (#2).
-    * *Qualität & Reichweite:* User Profile (#13), Global Deployment (#19), Barrierefreiheit (#22).
+    * *Dev:* Setup (3), Architektur (5), Global Deploy (5).
+    * *User:* Profil (8), A11y (3).
+* **LS (Technical Architect) - 24 SP**
+    * *Dev:* DB Setup (5), Doku (3), CI/CD (3).
+    * *User:* Offline Mode (8), Backup (5).
+* **VW (Product Owner) - 24 SP**
+    * *User:* Listen Mgmt (8), Items Mgmt (8), Details/Labels (5), Filter (3).
+* **MN (Developer) - 24 SP**
+    * *User:* Full Sync (13), Sharing (8), Konfliktlösung (3).
+* **NS (Developer) - 24 SP**
+    * *User:* Login/Auth (8), Endgültiges Löschen (5), UI/Error/Darkmode (8), Suche (3).
 
 **Gesamt:** 120 SP
