@@ -20,6 +20,14 @@ until curl -s http://${COUCHDB_HOST}:${COUCHDB_PORT}/_up > /dev/null 2>&1; do
   sleep 2
 done
 
+# CORS aktivieren
+echo "${YELLOW}Aktiviere CORS...${NC}"
+curl -s -u ${AUTH} -X PUT "${BASE_URL}/_node/_local/_config/httpd/enable_cors" -d '"true"' > /dev/null
+curl -s -u ${AUTH} -X PUT "${BASE_URL}/_node/_local/_config/cors/origins" -d '"*"' > /dev/null
+curl -s -u ${AUTH} -X PUT "${BASE_URL}/_node/_local/_config/cors/credentials" -d '"true"' > /dev/null
+curl -s -u ${AUTH} -X PUT "${BASE_URL}/_node/_local/_config/cors/methods" -d '"GET, PUT, POST, HEAD, DELETE"' > /dev/null
+curl -s -u ${AUTH} -X PUT "${BASE_URL}/_node/_local/_config/cors/headers" -d '"accept, authorization, content-type, origin, referer"' > /dev/null
+
 # 2. Datenbank erstellen
 echo "${YELLOW}Checke DB '${DB_NAME}'...${NC}"
 STATUS=$($CURL_CMD -X PUT "${BASE_URL}/${DB_NAME}")
