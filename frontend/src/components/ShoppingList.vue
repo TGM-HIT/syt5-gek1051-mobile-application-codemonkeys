@@ -42,6 +42,41 @@ async function loadData() {
   }
 }
 
+async function toggleItem(item) {
+  try {
+    // Item lokal sofort updaten für besseres UX
+    item.checked = !item.checked
+    
+    // Update in CouchDB
+    const response = await fetch(`${COUCHDB_URL}/${item._id}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Basic ${AUTH}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        ...item,
+        checked: item.checked
+      })
+    })
+    
+    if (!response.ok) {
+      // Bei Fehler zurücksetzen
+      item.checked = !item.checked
+      throw new Error('Update fehlgeschlagen')
+    }
+    
+    const result = await response.json()
+    // Rev aktualisieren für nächstes Update
+    item._rev = result.rev
+    
+  } catch (err) {
+    console.error('Fehler beim Updaten:', err)
+    error.value = 'Item konnte nicht aktualisiert werden'
+    setTimeout(() => error.value = null, 3000)
+  }
+}
+
 function getItemsForList(listId) {
   return items.value.filter(i => i.list_id === listId)
 }
@@ -101,8 +136,12 @@ onMounted(() => {
             <ul class="items">
               <li v-for="item in getItemsForList(list._id)" :key="item._id" 
                   :class="{ checked: item.checked }"
-                  class="item">
-                <input type="checkbox" :checked="item.checked" disabled class="checkbox">
+                  class="item"
+                  @click="toggleItem(item)">
+                <input type="checkbox" 
+                       :checked="item.checked" 
+                       @click.stop="toggleItem(item)"
+                       class="checkbox">
                 <span class="item-name">{{ item.name }}</span>
               </li>
             </ul>
@@ -290,6 +329,8 @@ h1 {
   padding: 1rem 1.75rem;
   border-bottom: 1px solid #f0f0f0;
   transition: background 0.15s;
+  cursor: pointer;
+  user-select: none;
 }
 
 .item:last-child {
@@ -298,6 +339,10 @@ h1 {
 
 .item:hover {
   background: #fafafa;
+}
+
+.item:active {
+  background: #f0f0f0;
 }
 
 .checkbox {

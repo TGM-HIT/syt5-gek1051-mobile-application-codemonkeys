@@ -4,7 +4,7 @@ Vue.js Frontend mit PouchDB für Offline-First Synchronisation.
 
 ## Voraussetzungen
 
-- Node.js >= 20.19.0
+- Node.js >= 24.11.0
 - npm
 - CouchDB läuft auf `http://localhost:5984`
 
