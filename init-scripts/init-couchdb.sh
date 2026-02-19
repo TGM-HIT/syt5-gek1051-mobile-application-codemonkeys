@@ -28,6 +28,14 @@ curl -s -u ${AUTH} -X PUT "${BASE_URL}/_node/_local/_config/cors/credentials" -d
 curl -s -u ${AUTH} -X PUT "${BASE_URL}/_node/_local/_config/cors/methods" -d '"GET, PUT, POST, HEAD, DELETE"' > /dev/null
 curl -s -u ${AUTH} -X PUT "${BASE_URL}/_node/_local/_config/cors/headers" -d '"accept, authorization, content-type, origin, referer"' > /dev/null
 
+# 1b. System Datenbanken erstellen (WICHTIG gegen Errors)
+for sysdb in "_users" "_replicator" "_global_changes"; do
+  echo "${YELLOW}Checke System-DB '${sysdb}'...${NC}"
+  STATUS=$($CURL_CMD -X PUT "${BASE_URL}/${sysdb}")
+  if [ "$STATUS" = "201" ]; then echo "  -> Erstellt"; else echo "  -> Existiert bereits"; fi
+done
+
+
 # 2. Datenbank erstellen
 echo "${YELLOW}Checke DB '${DB_NAME}'...${NC}"
 STATUS=$($CURL_CMD -X PUT "${BASE_URL}/${DB_NAME}")
