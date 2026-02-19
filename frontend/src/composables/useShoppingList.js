@@ -1,5 +1,5 @@
 import { ref, onMounted, onUnmounted } from 'vue'
-import { startSync, stopSync, getAllDocs, updateDoc } from './database'
+import { startSync, stopSync, getAllDocs, updateDoc, restoreLocalVersion, clearRemoteChangedFlag } from './database'
 
 /**
  * Composable für die Einkaufslisten-Logik mit PouchDB Offline-First
@@ -12,6 +12,7 @@ export function useShoppingList() {
   const error = ref(null)
   const isOnline = ref(false) // Initial false, wird durch ersten Sync gesetzt
   const syncActive = ref(false)
+  const conflicts = ref([]) // Liste von Konflikten zur Anzeige
 
   let syncHandler = null
 
@@ -68,13 +69,72 @@ export function useShoppingList() {
    */
   function initSync() {
     try {
-      syncHandler = startSync((status) => {
-        isOnline.value = status.online
-        syncActive.value = status.syncing
-      })
+      syncHandler = startSync(
+        // Status-Callback
+        (status) => {
+          isOnline.value = status.online
+          syncActive.value = status.syncing
+        },
+        // Conflict-Callback
+        (conflict) => {
+          handleConflict(conflict)
+        },
+        // Data-Change-Callback
+        (changedDocIds) => {
+          loadData() // UI neu laden bei Remote-Änderungen
+        }
+      )
       syncActive.value = true
     } catch (err) {
       console.error('Sync initialization failed:', err)
+    }
+  }
+
+  /**
+   * Behandelt einen Konflikt und zeigt Notification
+   */
+  function handleConflict(conflict) {
+    const item = items.value.find(i => i._id === conflict.docId) || 
+                 lists.value.find(l => l._id === conflict.docId)
+    
+    const conflictInfo = {
+      id: conflict.docId,
+      timestamp: Date.now(),
+      localVersion: conflict.localVersion,
+      resolvedVersion: conflict.resolvedVersion,
+      itemName: item?.name || item?.title || 'Unbekanntes Item'
+    }
+    
+    conflicts.value.push(conflictInfo)
+    
+    // Auto-remove nach 10 Sekunden
+    setTimeout(() => {
+      dismissConflict(conflictInfo.id)
+    }, 10000)
+  }
+
+  /**
+   * User akzeptiert die Konfliktlösung
+   */
+  function dismissConflict(conflictId) {
+    conflicts.value = conflicts.value.filter(c => c.id !== conflictId)
+  }
+
+  /**
+   * User will eigene Version wiederherstellen
+   */
+  async function restoreMyVersion(conflictId) {
+    const conflict = conflicts.value.find(c => c.id === conflictId)
+    if (!conflict) return
+    
+    try {
+      await restoreLocalVersion(conflictId, conflict.localVersion)
+      dismissConflict(conflictId)
+      await loadData() // UI aktualisieren
+    } catch (err) {
+      console.error('Failed to restore version:', err)
+      error.value = 'Konnte Version nicht wiederherstellen'
+      setTimeout(() => error.value = null, 3000)
     }
   }
 
@@ -99,6 +159,30 @@ export function useShoppingList() {
    */
   function getItemsForList(listId) {
     return items.value.filter(i => i.list_id === listId)
+  }
+
+  /**
+   * Prüft ob eine Liste geänderte Items hat
+   * @param {string} listId - Die ID der Liste
+   * @returns {boolean} True wenn es geänderte Items gibt
+   */
+  function hasChangedItems(listId) {
+    return getItemsForList(listId).some(item => item._remoteChanged)
+  }
+
+  /**
+   * Entfernt alle Änderungs-Hinweise für eine Liste
+   * @param {string} listId - Die ID der Liste
+   */
+  async function clearListChanges(listId) {
+    const listItems = getItemsForList(listId)
+    const changedItems = listItems.filter(item => item._remoteChanged)
+    
+    for (const item of changedItems) {
+      await clearRemoteChangedFlag(item._id)
+    }
+    
+    await loadData() // UI aktualisieren
   }
 
   /**
@@ -137,11 +221,16 @@ export function useShoppingList() {
     error,
     isOnline,
     syncActive,
+    conflicts,
 
     // Actions
     toggleItem,
     getItemsForList,
-    getProgress
+    getProgress,
+    dismissConflict,
+    restoreMyVersion,
+    hasChangedItems,
+    clearListChanges
   }
 }
 
