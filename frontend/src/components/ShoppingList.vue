@@ -7,7 +7,8 @@ const {
   items,
   loading,
   error,
-  loadData,
+  isOnline,
+  syncActive,
   toggleItem,
   getItemsForList,
   getProgress
@@ -19,9 +20,13 @@ const {
     <header class="header">
       <div class="container">
         <h1>Einkaufslisten</h1>
-        <button @click="loadData" class="refresh-btn" :disabled="loading">
-          {{ loading ? 'Lädt...' : 'Aktualisieren' }}
-        </button>
+        <div class="header-actions">
+          <div class="status-indicator" :class="{ online: isOnline, offline: !isOnline }">
+            <span class="status-dot"></span>
+            <span class="status-text">{{ isOnline ? 'Online' : 'Offline' }}</span>
+            <span v-if="syncActive && isOnline" class="sync-text">• Sync aktiv</span>
+          </div>
+        </div>
       </div>
     </header>
 
