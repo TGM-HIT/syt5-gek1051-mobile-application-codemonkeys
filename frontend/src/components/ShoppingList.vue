@@ -1,5 +1,6 @@
 <script setup>
 import { useShoppingList } from '@/composables/useShoppingList'
+import ConflictNotification from './ConflictNotification.vue'
 
 // Alle Logik ist jetzt im Composable ausgelagert
 const {
@@ -9,9 +10,14 @@ const {
   error,
   isOnline,
   syncActive,
+  conflicts,
   toggleItem,
   getItemsForList,
-  getProgress
+  getProgress,
+  dismissConflict,
+  restoreMyVersion,
+  hasChangedItems,
+  clearListChanges
 } = useShoppingList()
 </script>
 
@@ -51,6 +57,13 @@ const {
                 <span class="list-meta">{{ list.owner }} • {{ new Date(list.createdAt).toLocaleDateString('de-DE') }}</span>
               </div>
               <div class="list-stats">
+                <button 
+                  v-if="hasChangedItems(list._id)"
+                  @click="clearListChanges(list._id)"
+                  class="clear-changes-btn"
+                  title="Änderungshinweise entfernen">
+                  ✓ Gesehen
+                </button>
                 <span class="progress-text">{{ getProgress(list._id) }}%</span>
               </div>
             </div>
@@ -68,7 +81,12 @@ const {
                        :checked="item.checked" 
                        @click.stop="toggleItem(item)"
                        class="checkbox">
-                <span class="item-name">{{ item.name }}</span>
+                <div class="item-content">
+                  <span class="item-name">{{ item.name }}</span>
+                  <span v-if="item._remoteChanged" class="item-changed-hint">
+                    Änderung wurde vorgenommen
+                  </span>
+                </div>
               </li>
             </ul>
 
@@ -83,6 +101,18 @@ const {
         </div>
       </div>
     </main>
+
+    <!-- Conflict Notifications -->
+    <TransitionGroup name="conflict-list">
+      <ConflictNotification
+        v-for="conflict in conflicts"
+        :key="conflict.id"
+        :conflict="conflict"
+        :style="{ bottom: (20 + conflicts.indexOf(conflict) * 100) + 'px' }"
+        @dismiss="dismissConflict"
+        @restore="restoreMyVersion"
+      />
+    </TransitionGroup>
   </div>
 </template>
 
