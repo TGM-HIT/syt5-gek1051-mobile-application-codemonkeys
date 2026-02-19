@@ -1,8 +1,8 @@
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
+import { startSync, stopSync, getAllDocs, updateDoc } from './database'
 
 /**
- * Composable für die Einkaufslisten-Logik
- * Hier wird später PouchDB für Offline-Sync integriert
+ * Composable für die Einkaufslisten-Logik mit PouchDB Offline-First
  */
 export function useShoppingList() {
   // State
@@ -10,84 +10,86 @@ export function useShoppingList() {
   const items = ref([])
   const loading = ref(true)
   const error = ref(null)
+  const isOnline = ref(false) // Initial false, wird durch ersten Sync gesetzt
+  const syncActive = ref(false)
 
-  // Konfiguration - später in separates Config-File auslagern
-  const COUCHDB_URL = 'http://localhost:5984/einkaufsliste'
-  const AUTH = btoa('admin:passwort')
+  let syncHandler = null
 
   /**
-   * Lädt alle Listen und Items aus der Datenbank
+   * Lädt alle Listen und Items aus der lokalen Datenbank
    */
   async function loadData() {
     try {
       loading.value = true
 
-      const response = await fetch(`${COUCHDB_URL}/_all_docs?include_docs=true`, {
-        headers: {
-          'Authorization': `Basic ${AUTH}`
-        }
-      })
+      const docs = await getAllDocs()
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-      }
-
-      const data = await response.json()
-
-      lists.value = data.rows
-        .map(row => row.doc)
-        .filter(doc => doc.type === 'list' && !doc.deleted)
-
-      items.value = data.rows
-        .map(row => row.doc)
-        .filter(doc => doc.type === 'item' && !doc.deleted)
+      lists.value = docs.filter(doc => doc.type === 'list' && !doc.deleted)
+      items.value = docs.filter(doc => doc.type === 'item' && !doc.deleted)
 
       error.value = null
     } catch (err) {
       console.error('Fehler beim Laden:', err)
-      error.value = 'Verbindung zur Datenbank fehlgeschlagen'
+      error.value = 'Fehler beim Laden der lokalen Daten'
     } finally {
       loading.value = false
     }
   }
 
   /**
-   * Toggelt den Checked-Status eines Items
+   * Toggelt den Checked-Status eines Items (nur lokal)
    * @param {Object} item - Das zu aktualisierende Item
    */
   async function toggleItem(item) {
     try {
-      // Item lokal sofort updaten für besseres UX
-      item.checked = !item.checked
+      const newCheckedState = !item.checked
+      item.checked = newCheckedState
 
-      // Update in CouchDB
-      const response = await fetch(`${COUCHDB_URL}/${item._id}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Basic ${AUTH}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          ...item,
-          checked: item.checked
-        })
+      const result = await updateDoc(item._id, (doc) => {
+        return {
+          ...doc,
+          checked: newCheckedState,
+          updatedAt: new Date().toISOString()
+        }
       })
 
-      if (!response.ok) {
-        // Bei Fehler zurücksetzen
-        item.checked = !item.checked
-        throw new Error('Update fehlgeschlagen')
-      }
-
-      const result = await response.json()
-      // Rev aktualisieren für nächstes Update
       item._rev = result.rev
 
     } catch (err) {
       console.error('Fehler beim Updaten:', err)
+      item.checked = !item.checked
       error.value = 'Item konnte nicht aktualisiert werden'
       setTimeout(() => error.value = null, 3000)
     }
+  }
+
+  /**
+   * Initialisiert die Synchronisation (läuft im Hintergrund)
+   */
+  function initSync() {
+    try {
+      syncHandler = startSync((status) => {
+        isOnline.value = status.online
+        syncActive.value = status.syncing
+      })
+      syncActive.value = true
+    } catch (err) {
+      console.error('Sync initialization failed:', err)
+    }
+  }
+
+  /**
+   * Online/Offline Event-Handler
+   */
+  function handleOnline() {
+    console.log('Network is online')
+    // Status wird durch Sync-Callback aktualisiert
+  }
+
+  function handleOffline() {
+    console.log('Network is offline')
+    isOnline.value = false
+    syncActive.value = false
   }
 
   /**
@@ -114,6 +116,16 @@ export function useShoppingList() {
   // Daten beim Mount laden
   onMounted(() => {
     loadData()
+    initSync()
+    
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+  })
+
+  onUnmounted(() => {
+    stopSync()
+    window.removeEventListener('online', handleOnline)
+    window.removeEventListener('offline', handleOffline)
   })
 
   // Public API
@@ -123,9 +135,10 @@ export function useShoppingList() {
     items,
     loading,
     error,
+    isOnline,
+    syncActive,
 
     // Actions
-    loadData,
     toggleItem,
     getItemsForList,
     getProgress
