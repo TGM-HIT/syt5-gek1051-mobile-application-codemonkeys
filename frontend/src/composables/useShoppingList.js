@@ -162,6 +162,82 @@ export function useShoppingList() {
   }
 
   /**
+   * Gibt aktive (nicht gelöscht markierte) Items für eine Liste zurück
+   */
+  function getActiveItemsForList(listId) {
+    return items.value.filter(i => i.list_id === listId && !i.markedDeleted)
+  }
+
+  /**
+   * Gibt als gelöscht markierte Items für eine Liste zurück
+   */
+  function getDeletedItemsForList(listId) {
+    return items.value.filter(i => i.list_id === listId && i.markedDeleted)
+  }
+
+  /**
+   * Stellt ein als gelöscht markiertes Item wieder her
+   * @param {Object} item - Das wiederherzustellende Item
+   */
+  async function restoreItem(item) {
+    try {
+      const result = await updateDoc(item._id, (doc) => {
+        return {
+          ...doc,
+          markedDeleted: false,
+          updatedAt: new Date().toISOString()
+        }
+      })
+      item._rev = result.rev
+      item.markedDeleted = false
+    } catch (err) {
+      console.error('Fehler beim Wiederherstellen:', err)
+      error.value = 'Item konnte nicht wiederhergestellt werden'
+      setTimeout(() => error.value = null, 3000)
+    }
+  }
+
+  /**
+   * Löscht alle als gelöscht markierten Items einer Liste endgültig
+   * @param {string} listId - Die ID der Liste
+   */
+  async function permanentlyDeleteAllMarked(listId) {
+    const deletedItems = getDeletedItemsForList(listId)
+    for (const item of deletedItems) {
+      try {
+        await updateDoc(item._id, (doc) => {
+          return { ...doc, deleted: true, updatedAt: new Date().toISOString() }
+        })
+      } catch (err) {
+        console.error('Fehler beim endgültigen Löschen:', err)
+      }
+    }
+    await loadData()
+  }
+
+  /**
+   * Markiert ein Item als gelöscht (Soft-Delete)
+   * @param {Object} item - Das zu markierende Item
+   */
+  async function markItemDeleted(item) {
+    try {
+      const result = await updateDoc(item._id, (doc) => {
+        return {
+          ...doc,
+          markedDeleted: true,
+          updatedAt: new Date().toISOString()
+        }
+      })
+      item._rev = result.rev
+      item.markedDeleted = true
+    } catch (err) {
+      console.error('Fehler beim Markieren als gelöscht:', err)
+      error.value = 'Item konnte nicht gelöscht werden'
+      setTimeout(() => error.value = null, 3000)
+    }
+  }
+
+  /**
    * Prüft ob eine Liste geänderte Items hat
    * @param {string} listId - Die ID der Liste
    * @returns {boolean} True wenn es geänderte Items gibt
@@ -186,12 +262,12 @@ export function useShoppingList() {
   }
 
   /**
-   * Berechnet den Fortschritt einer Liste in Prozent
+   * Berechnet den Fortschritt einer Liste in Prozent (nur aktive Items)
    * @param {string} listId - Die ID der Liste
    * @returns {number} Fortschritt in Prozent (0-100)
    */
   function getProgress(listId) {
-    const listItems = getItemsForList(listId)
+    const listItems = getActiveItemsForList(listId)
     if (listItems.length === 0) return 0
     const checked = listItems.filter(i => i.checked).length
     return Math.round((checked / listItems.length) * 100)
@@ -226,6 +302,11 @@ export function useShoppingList() {
     // Actions
     toggleItem,
     getItemsForList,
+    getActiveItemsForList,
+    getDeletedItemsForList,
+    markItemDeleted,
+    restoreItem,
+    permanentlyDeleteAllMarked,
     getProgress,
     dismissConflict,
     restoreMyVersion,
