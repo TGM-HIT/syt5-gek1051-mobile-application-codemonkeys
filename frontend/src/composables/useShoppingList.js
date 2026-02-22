@@ -1,5 +1,5 @@
 import { ref, onMounted, onUnmounted } from 'vue'
-import { startSync, stopSync, getAllDocs, updateDoc, restoreLocalVersion, clearRemoteChangedFlag, applyConflictResolution, clearPendingDeleteFlag } from './database'
+import { startSync, stopSync, getAllDocs, updateDoc, createDoc, hardDeleteDoc, restoreLocalVersion, clearRemoteChangedFlag, applyConflictResolution, clearPendingDeleteFlag } from './database'
 import { useSession } from './useSession'
 
 /**
@@ -38,6 +38,40 @@ export function useShoppingList() {
     } finally {
       loading.value = false
     }
+  }
+
+  async function deleteList(list) {
+    // Zuerst alle Items der Liste löschen
+    const listItems = getItemsForList(list._id)
+    for (const item of listItems) {
+      await hardDeleteDoc(item._id)
+    }
+    await hardDeleteDoc(list._id)
+    await loadData()
+  }
+
+  async function addItem(listId, name) {
+    if (!name || !name.trim()) return
+    await createDoc({
+      type: 'item',
+      list_id: listId,
+      name: name.trim(),
+      checked: false,
+      markedDeleted: false,
+      lastModifiedBy: sessionName.value || 'Unbekannt',
+    })
+    await loadData()
+  }
+
+  async function addList(name) {
+    if (!name || !name.trim()) return
+    await createDoc({
+      type: 'list',
+      name: name.trim(),
+      owner: sessionName.value || 'Unbekannt',
+      deleted: false,
+    })
+    await loadData()
   }
 
   /**
@@ -165,13 +199,7 @@ export function useShoppingList() {
   async function permanentlyDeleteAllMarked(listId) {
     const deletedItems = getDeletedItemsForList(listId)
     for (const item of deletedItems) {
-      try {
-        await updateDoc(item._id, (doc) => {
-          return { ...doc, deleted: true, updatedAt: new Date().toISOString() }
-        })
-      } catch (err) {
-        console.error('Fehler beim endgültigen Löschen:', err)
-      }
+      await hardDeleteDoc(item._id)
     }
     await loadData()
   }
@@ -297,6 +325,9 @@ export function useShoppingList() {
 
     // Actions
     toggleItem,
+    addItem,
+    addList,
+    deleteList,
     getItemsForList,
     getActiveItemsForList,
     getDeletedItemsForList,
