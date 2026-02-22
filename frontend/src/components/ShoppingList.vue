@@ -17,6 +17,7 @@ const {
   addItem,
   addList,
   deleteList,
+  getItemsForList,
   getActiveItemsForList,
   getDeletedItemsForList,
   markItemDeleted,
@@ -100,6 +101,11 @@ function confirmPermanentDelete(listId) {
 }
 
 function confirmDeleteList(list) {
+  const listItems = getItemsForList(list._id)
+  if (listItems.length > 0) {
+    showConfirm('Liste nicht leer', `Die Liste "${list.name}" hat noch ${listItems.length} Artikel. Bitte zuerst alle Artikel endgültig löschen.`, null)
+    return
+  }
   showConfirm('Liste löschen?', `Willst du die Liste "${list.name}" wirklich löschen?`, () => deleteList(list))
 }
 </script>
@@ -281,9 +287,9 @@ function confirmDeleteList(list) {
         <div class="modal-title">{{ confirmModal.title }}</div>
         <div class="modal-message">{{ confirmModal.message }}</div>
         <div class="modal-btns">
-          <button class="modal-btn-cancel" @click="closeConfirm">Abbrechen</button>
-          <button v-if="confirmModal.step === 1" class="modal-btn-confirm" @click="confirmStep1">Weiter</button>
-          <button v-else class="modal-btn-confirm modal-btn-danger" @click="confirmStep2">Ja, löschen</button>
+          <button class="modal-btn-cancel" @click="closeConfirm">{{ confirmModal.action ? 'Abbrechen' : 'OK' }}</button>
+          <button v-if="confirmModal.action && confirmModal.step === 1" class="modal-btn-confirm" @click="confirmStep1">Weiter</button>
+          <button v-else-if="confirmModal.action && confirmModal.step === 2" class="modal-btn-confirm modal-btn-danger" @click="confirmStep2">Ja, löschen</button>
         </div>
       </div>
     </div>

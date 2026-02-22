@@ -41,11 +41,6 @@ export function useShoppingList() {
   }
 
   async function deleteList(list) {
-    // Zuerst alle Items der Liste löschen
-    const listItems = getItemsForList(list._id)
-    for (const item of listItems) {
-      await hardDeleteDoc(item._id)
-    }
     await hardDeleteDoc(list._id)
     await loadData()
   }
