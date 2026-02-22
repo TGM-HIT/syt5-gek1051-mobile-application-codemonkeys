@@ -14,6 +14,9 @@ const {
   syncActive,
   conflicts,
   toggleItem,
+  addItem,
+  addList,
+  deleteList,
   getActiveItemsForList,
   getDeletedItemsForList,
   markItemDeleted,
@@ -29,6 +32,20 @@ const {
 } = useShoppingList()
 
 const { sessionName, clearSession } = useSession()
+
+// Neue Liste
+const newListName = ref('')
+function submitNewList() {
+  addList(newListName.value)
+  newListName.value = ''
+}
+
+// Neuer Artikel pro Liste
+const newItemNames = ref({})
+function submitNewItem(listId) {
+  addItem(listId, newItemNames.value[listId] || '')
+  newItemNames.value[listId] = ''
+}
 
 // Aktiver Tab pro Liste: 'active' oder 'deleted'
 const activeTabs = ref({})
@@ -56,12 +73,34 @@ function conflictBannerText(conflict) {
   return `👤 ${f.remoteUser} hat etwas geändert.`
 }
 
+// Custom confirm modal
+const confirmModal = ref({ show: false, title: '', message: '', step: 1, listId: null, action: null })
+
+function showConfirm(title, message, action) {
+  confirmModal.value = { show: true, title, message, step: 1, action }
+}
+
+function confirmStep1() {
+  confirmModal.value.step = 2
+  confirmModal.value.message = 'Bist du wirklich sicher? Diese Aktion kann nicht rückgängig gemacht werden!'
+}
+
+function confirmStep2() {
+  const action = confirmModal.value.action
+  confirmModal.value = { show: false }
+  if (action) action()
+}
+
+function closeConfirm() {
+  confirmModal.value = { show: false }
+}
+
 function confirmPermanentDelete(listId) {
-  const first = confirm('Willst du wirklich alle gelöschten Artikel endgültig löschen?')
-  if (!first) return
-  const second = confirm('Bist du sicher? Diese Aktion kann nicht rückgängig gemacht werden!')
-  if (!second) return
-  permanentlyDeleteAllMarked(listId)
+  showConfirm('Alle löschen?', 'Willst du wirklich alle gelöschten Artikel endgültig löschen?', () => permanentlyDeleteAllMarked(listId))
+}
+
+function confirmDeleteList(list) {
+  showConfirm('Liste löschen?', `Willst du die Liste "${list.name}" wirklich löschen?`, () => deleteList(list))
 }
 </script>
 
@@ -98,6 +137,16 @@ function confirmPermanentDelete(listId) {
           {{ error }}
         </div>
 
+        <!-- Neue Liste hinzufügen -->
+        <div class="add-list-form">
+          <input
+            v-model="newListName"
+            class="add-input"
+            placeholder="Neue Liste..."
+            @keyup.enter="submitNewList" />
+          <button class="add-btn" @click="submitNewList">+ Liste</button>
+        </div>
+
         <!-- Listen -->
         <div v-if="!loading && !error" class="lists">
           <div v-for="list in lists" :key="list._id" class="list">
@@ -115,6 +164,7 @@ function confirmPermanentDelete(listId) {
                   ✓ Gesehen
                 </button>
                 <span class="progress-text">{{ getProgress(list._id) }}%</span>
+                <button class="delete-list-btn" title="Liste löschen" @click="confirmDeleteList(list)">🗑️</button>
               </div>
             </div>
 
@@ -201,6 +251,16 @@ function confirmPermanentDelete(listId) {
             <div v-if="getTab(list._id) === 'active' && getActiveItemsForList(list._id).length === 0" class="empty-list">
               Keine aktiven Artikel in dieser Liste
             </div>
+
+            <!-- Artikel hinzufügen -->
+            <div v-if="getTab(list._id) === 'active'" class="add-item-form">
+              <input
+                v-model="newItemNames[list._id]"
+                class="add-input"
+                placeholder="Neuer Artikel..."
+                @keyup.enter="submitNewItem(list._id)" />
+              <button class="add-btn" @click="submitNewItem(list._id)">+</button>
+            </div>
             <div v-if="getTab(list._id) === 'deleted' && getDeletedItemsForList(list._id).length === 0" class="empty-list">
               Keine gelöschten Artikel
             </div>
@@ -214,6 +274,19 @@ function confirmPermanentDelete(listId) {
     </main>
 
     <!-- Conflict Notifications entfernt: Konflikte werden inline beim Artikel angezeigt -->
+
+    <!-- Custom Confirm Modal -->
+    <div v-if="confirmModal.show" class="modal-overlay" @click.self="closeConfirm">
+      <div class="modal">
+        <div class="modal-title">{{ confirmModal.title }}</div>
+        <div class="modal-message">{{ confirmModal.message }}</div>
+        <div class="modal-btns">
+          <button class="modal-btn-cancel" @click="closeConfirm">Abbrechen</button>
+          <button v-if="confirmModal.step === 1" class="modal-btn-confirm" @click="confirmStep1">Weiter</button>
+          <button v-else class="modal-btn-confirm modal-btn-danger" @click="confirmStep2">Ja, löschen</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 

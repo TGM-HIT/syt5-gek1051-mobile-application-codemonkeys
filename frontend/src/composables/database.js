@@ -565,6 +565,54 @@ export async function clearRemoteChangedFlag(docId) {
   }
 }
 
+export async function createDoc(doc) {
+  const newDoc = {
+    ...doc,
+    _id: doc._id || `${doc.type}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  }
+  return await putDoc(newDoc)
+}
+
+export async function hardDeleteDoc(id) {
+  try {
+    const db = await openDB()
+    // Aktuelle _rev holen (brauchen wir für CouchDB DELETE)
+    const doc = await getDoc(id)
+    
+    // 1. Aus IndexedDB löschen
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, 'readwrite')
+      tx.objectStore(STORE_NAME).delete(id)
+      tx.oncomplete = () => resolve()
+      tx.onerror = () => reject(tx.error)
+    })
+
+    // 2. Aus CouchDB löschen (braucht aktuelle _rev vom Server)
+    try {
+      const getResp = await fetch(`${COUCHDB_URL}/${id}`, {
+        headers: { 'Authorization': `Basic ${btoa(`${COUCHDB_USER}:${COUCHDB_PASSWORD}`)}` }
+      })
+      if (getResp.ok) {
+        const remoteDoc = await getResp.json()
+        await fetch(`${COUCHDB_URL}/${id}?rev=${remoteDoc._rev}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Basic ${btoa(`${COUCHDB_USER}:${COUCHDB_PASSWORD}`)}` }
+        })
+      }
+    } catch (err) {
+      // Offline - wird beim nächsten Sync nicht mehr hochgeladen da lokal gelöscht
+      console.log('Could not delete from remote (offline):', err.message)
+    }
+
+    return { ok: true, id }
+  } catch (err) {
+    console.error('Error hard deleting doc:', err)
+    throw err
+  }
+}
+
 export async function deleteDoc(id) {
   try {
     const db = await openDB()
