@@ -1,7 +1,8 @@
 <script setup>
 import { ref } from 'vue'
 import { useShoppingList } from '@/composables/useShoppingList'
-import ConflictNotification from './ConflictNotification.vue'
+import { useSession } from '@/composables/useSession'
+import SessionSetup from './SessionSetup.vue'
 
 // Alle Logik ist jetzt im Composable ausgelagert
 const {
@@ -19,11 +20,15 @@ const {
   restoreItem,
   permanentlyDeleteAllMarked,
   getProgress,
-  dismissConflict,
-  restoreMyVersion,
+  getConflictForItem,
+  resolveConflict,
+  acceptDelete,
+  rejectDelete,
   hasChangedItems,
   clearListChanges
 } = useShoppingList()
+
+const { sessionName, clearSession } = useSession()
 
 // Aktiver Tab pro Liste: 'active' oder 'deleted'
 const activeTabs = ref({})
@@ -34,6 +39,21 @@ function getTab(listId) {
 
 function setTab(listId, tab) {
   activeTabs.value[listId] = tab
+}
+
+function conflictBannerText(conflict) {
+  const f = conflict.conflictingFields[0]
+  if (!f) return 'Konflikt erkannt.'
+  if (f.crossField) {
+    const deleter = f.remoteValue ? f.remoteUser : f.localUser
+    const other   = f.remoteValue ? f.localUser  : f.remoteUser
+    return `👤 ${other} hat diesen Artikel geändert. 👤 ${deleter} hat ihn als gelöscht markiert.`
+  }
+  if (f.field === 'checked') {
+    const remoteState = f.remoteValue ? 'abgehakt ✅' : 'nicht abgehakt ☐'
+    return `👤 ${f.remoteUser} hat diesen Artikel ${remoteState}.`
+  }
+  return `👤 ${f.remoteUser} hat etwas geändert.`
 }
 
 function confirmPermanentDelete(listId) {
@@ -47,10 +67,16 @@ function confirmPermanentDelete(listId) {
 
 <template>
   <div class="app">
+    <!-- Session Setup Modal -->
+    <SessionSetup v-if="!sessionName" />
+
     <header class="header">
       <div class="container">
         <h1>Einkaufslisten</h1>
         <div class="header-actions">
+          <div class="session-badge" v-if="sessionName" @click="clearSession" title="Session beenden">
+            👤 {{ sessionName }}
+          </div>
           <div class="status-indicator" :class="{ online: isOnline, offline: !isOnline }">
             <span class="status-dot"></span>
             <span class="status-text">{{ isOnline ? 'Online' : 'Offline' }}</span>
@@ -116,26 +142,36 @@ function confirmPermanentDelete(listId) {
 
             <!-- Tab: Aktive Artikel -->
             <ul v-if="getTab(list._id) === 'active'" class="items">
-              <li v-for="item in getActiveItemsForList(list._id)" :key="item._id"
-                  :class="{ checked: item.checked }"
-                  class="item">
-                <input type="checkbox"
-                       :checked="item.checked"
-                       @click.stop="toggleItem(item)"
-                       class="checkbox">
-                <div class="item-content" @click="toggleItem(item)">
-                  <span class="item-name">{{ item.name }}</span>
-                  <span v-if="item._remoteChanged" class="item-changed-hint">
-                    Änderung wurde vorgenommen
-                  </span>
-                </div>
-                <button
-                  class="delete-item-btn"
-                  title="Als gelöscht markieren"
-                  @click.stop="markItemDeleted(item)">
-                  🗑️
-                </button>
-              </li>
+              <template v-for="item in getActiveItemsForList(list._id)" :key="item._id">
+                <li :class="{ checked: item.checked }" class="item">
+                  <input type="checkbox"
+                         :checked="item.checked"
+                         @click.stop="toggleItem(item)"
+                         class="checkbox">
+                  <div class="item-content" @click="toggleItem(item)">
+                    <span class="item-name">{{ item.name }}</span>
+                    <span v-if="item._remoteChanged && !item._pendingDelete" class="item-changed-hint">
+                      ✏️ Geändert von {{ item.lastModifiedBy || 'Unbekannt' }}
+                    </span>
+                  </div>
+                  <button
+                    class="delete-item-btn"
+                    title="Als gelöscht markieren"
+                    @click.stop="markItemDeleted(item)">
+                    🗑️
+                  </button>
+                </li>
+                <!-- Inline Lösch-Banner (jemand anderes hat gelöscht) -->
+                <li v-if="item._pendingDelete" class="conflict-banner">
+                  <div class="conflict-banner-text">
+                    🗑️ <strong>{{ item._pendingDelete }}</strong> hat diesen Artikel gelöscht.
+                  </div>
+                  <div class="conflict-banner-btns">
+                    <button class="cbtn-keep-remote" @click="acceptDelete(item)">Ja</button>
+                    <button class="cbtn-keep-local" @click="rejectDelete(item)">Nein</button>
+                  </div>
+                </li>
+              </template>
             </ul>
 
             <!-- Tab: Gelöschte Artikel -->
@@ -146,18 +182,19 @@ function confirmPermanentDelete(listId) {
                 </button>
               </div>
               <ul class="items">
-                <li v-for="item in getDeletedItemsForList(list._id)" :key="item._id"
-                    class="item item-deleted">
-                  <div class="item-content">
-                    <span class="item-name">{{ item.name }}</span>
-                  </div>
-                  <button
-                    class="restore-item-btn"
-                    title="Wiederherstellen"
-                    @click.stop="restoreItem(item)">
-                    ↩️
-                  </button>
-                </li>
+                <template v-for="item in getDeletedItemsForList(list._id)" :key="item._id">
+                  <li class="item item-deleted">
+                    <div class="item-content">
+                      <span class="item-name">{{ item.name }}</span>
+                    </div>
+                    <button
+                      class="restore-item-btn"
+                      title="Wiederherstellen"
+                      @click.stop="restoreItem(item)">
+                      ↩️
+                    </button>
+                  </li>
+                </template>
               </ul>
             </template>
 
@@ -176,17 +213,7 @@ function confirmPermanentDelete(listId) {
       </div>
     </main>
 
-    <!-- Conflict Notifications -->
-    <TransitionGroup name="conflict-list">
-      <ConflictNotification
-        v-for="conflict in conflicts"
-        :key="conflict.id"
-        :conflict="conflict"
-        :style="{ bottom: (20 + conflicts.indexOf(conflict) * 100) + 'px' }"
-        @dismiss="dismissConflict"
-        @restore="restoreMyVersion"
-      />
-    </TransitionGroup>
+    <!-- Conflict Notifications entfernt: Konflikte werden inline beim Artikel angezeigt -->
   </div>
 </template>
 

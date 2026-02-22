@@ -1,10 +1,13 @@
 import { ref, onMounted, onUnmounted } from 'vue'
-import { startSync, stopSync, getAllDocs, updateDoc, restoreLocalVersion, clearRemoteChangedFlag } from './database'
+import { startSync, stopSync, getAllDocs, updateDoc, restoreLocalVersion, clearRemoteChangedFlag, applyConflictResolution, clearPendingDeleteFlag } from './database'
+import { useSession } from './useSession'
 
 /**
  * Composable für die Einkaufslisten-Logik mit PouchDB Offline-First
  */
 export function useShoppingList() {
+  const { sessionName } = useSession()
+
   // State
   const lists = ref([])
   const items = ref([])
@@ -12,7 +15,7 @@ export function useShoppingList() {
   const error = ref(null)
   const isOnline = ref(false) // Initial false, wird durch ersten Sync gesetzt
   const syncActive = ref(false)
-  const conflicts = ref([]) // Liste von Konflikten zur Anzeige
+  const conflicts = ref({}) // nicht mehr aktiv genutzt, für Kompatibilität behalten
 
   let syncHandler = null
 
@@ -50,6 +53,7 @@ export function useShoppingList() {
         return {
           ...doc,
           checked: newCheckedState,
+          lastModifiedBy: sessionName.value || 'Unbekannt',
           updatedAt: new Date().toISOString()
         }
       })
@@ -75,10 +79,8 @@ export function useShoppingList() {
           isOnline.value = status.online
           syncActive.value = status.syncing
         },
-        // Conflict-Callback
-        (conflict) => {
-          handleConflict(conflict)
-        },
+        // Conflict-Callback – nicht mehr für markedDeleted nötig
+        () => {},
         // Data-Change-Callback
         (changedDocIds) => {
           loadData() // UI neu laden bei Remote-Änderungen
@@ -90,53 +92,11 @@ export function useShoppingList() {
     }
   }
 
-  /**
-   * Behandelt einen Konflikt und zeigt Notification
-   */
-  function handleConflict(conflict) {
-    const item = items.value.find(i => i._id === conflict.docId) || 
-                 lists.value.find(l => l._id === conflict.docId)
-    
-    const conflictInfo = {
-      id: conflict.docId,
-      timestamp: Date.now(),
-      localVersion: conflict.localVersion,
-      resolvedVersion: conflict.resolvedVersion,
-      itemName: item?.name || item?.title || 'Unbekanntes Item'
-    }
-    
-    conflicts.value.push(conflictInfo)
-    
-    // Auto-remove nach 10 Sekunden
-    setTimeout(() => {
-      dismissConflict(conflictInfo.id)
-    }, 10000)
-  }
-
-  /**
-   * User akzeptiert die Konfliktlösung
-   */
-  function dismissConflict(conflictId) {
-    conflicts.value = conflicts.value.filter(c => c.id !== conflictId)
-  }
-
-  /**
-   * User will eigene Version wiederherstellen
-   */
-  async function restoreMyVersion(conflictId) {
-    const conflict = conflicts.value.find(c => c.id === conflictId)
-    if (!conflict) return
-    
-    try {
-      await restoreLocalVersion(conflictId, conflict.localVersion)
-      dismissConflict(conflictId)
-      await loadData() // UI aktualisieren
-    } catch (err) {
-      console.error('Failed to restore version:', err)
-      error.value = 'Konnte Version nicht wiederherstellen'
-      setTimeout(() => error.value = null, 3000)
-    }
-  }
+  // Nicht mehr benötigt - _pendingDelete wird direkt auf items gesetzt
+  function handleConflict() {}
+  function dismissConflict() {}
+  function getConflictForItem() { return null }
+  async function resolveConflict() {}
 
   /**
    * Online/Offline Event-Handler
@@ -185,6 +145,7 @@ export function useShoppingList() {
         return {
           ...doc,
           markedDeleted: false,
+          lastModifiedBy: sessionName.value || 'Unbekannt',
           updatedAt: new Date().toISOString()
         }
       })
@@ -225,6 +186,7 @@ export function useShoppingList() {
         return {
           ...doc,
           markedDeleted: true,
+          lastModifiedBy: sessionName.value || 'Unbekannt',
           updatedAt: new Date().toISOString()
         }
       })
@@ -262,7 +224,41 @@ export function useShoppingList() {
   }
 
   /**
-   * Berechnet den Fortschritt einer Liste in Prozent (nur aktive Items)
+   * User akzeptiert die Löschung (Ja → markedDeleted anwenden)
+   */
+  async function acceptDelete(item) {
+    try {
+      item._pendingDelete = undefined
+      const result = await updateDoc(item._id, (doc) => {
+        const clean = { ...doc }
+        delete clean._pendingDelete
+        return { ...clean, markedDeleted: true, lastModifiedBy: sessionName.value || 'Unbekannt', updatedAt: new Date().toISOString() }
+      })
+      await loadData()
+    } catch (err) {
+      console.error('Fehler beim Akzeptieren der Löschung:', err)
+    }
+  }
+
+  /**
+   * User lehnt die Löschung ab (Nein → lokalen Zustand zurückpushen)
+   */
+  async function rejectDelete(item) {
+    try {
+      item._pendingDelete = undefined
+      const result = await updateDoc(item._id, (doc) => {
+        const clean = { ...doc }
+        delete clean._pendingDelete
+        return { ...clean, markedDeleted: false, lastModifiedBy: sessionName.value || 'Unbekannt', updatedAt: new Date().toISOString() }
+      })
+      await loadData()
+    } catch (err) {
+      console.error('Fehler beim Ablehnen der Löschung:', err)
+    }
+  }
+
+  /**
+   * Berechnet den Fortschritt einer Listein Prozent (nur aktive Items)
    * @param {string} listId - Die ID der Liste
    * @returns {number} Fortschritt in Prozent (0-100)
    */
@@ -308,8 +304,10 @@ export function useShoppingList() {
     restoreItem,
     permanentlyDeleteAllMarked,
     getProgress,
-    dismissConflict,
-    restoreMyVersion,
+    getConflictForItem,
+    resolveConflict,
+    acceptDelete,
+    rejectDelete,
     hasChangedItems,
     clearListChanges
   }
