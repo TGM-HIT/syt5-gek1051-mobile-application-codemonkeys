@@ -2,7 +2,7 @@
 // Verwendet natives Browser IndexedDB statt PouchDB wegen Vite-Kompatibilitätsproblemen
 
 const DB_NAME = 'einkaufsliste_db'
-const DB_VERSION = 5  // Bump: vereinfachte Konfliktlogik - nur _pendingDelete
+const DB_VERSION = 6  // Bump: _changes feed, hardDelete
 const STORE_NAME = 'documents'
 const COUCHDB_URL = 'http://localhost:5984/einkaufsliste'
 const COUCHDB_USER = 'admin'
@@ -125,7 +125,7 @@ export function stopSync() {
 }
 
 async function syncFromRemote() {
-  const response = await fetch(`${COUCHDB_URL}/_all_docs?include_docs=true`, {
+  const response = await fetch(`${COUCHDB_URL}/_changes?include_docs=true&since=0`, {
     headers: { 'Authorization': `Basic ${btoa(`${COUCHDB_USER}:${COUCHDB_PASSWORD}`)}` }
   })
   if (!response.ok) throw new Error('Remote not reachable')
@@ -135,9 +135,30 @@ async function syncFromRemote() {
   let updatedCount = 0
   const changedDocIds = []
 
-  for (const row of data.rows) {
+  for (const row of data.results) {
     const remoteDoc = row.doc
     if (!remoteDoc) continue
+
+    // Tombstone: Dokument wurde auf Remote gelöscht → lokal auch löschen
+    if (row.deleted || remoteDoc._deleted) {
+      const localDoc = await new Promise((resolve) => {
+        const tx = db.transaction(STORE_NAME, 'readonly')
+        const req = tx.objectStore(STORE_NAME).get(remoteDoc._id)
+        req.onsuccess = () => resolve(req.result)
+        req.onerror = () => resolve(null)
+      })
+      if (localDoc) {
+        await new Promise((resolve) => {
+          const tx = db.transaction(STORE_NAME, 'readwrite')
+          tx.objectStore(STORE_NAME).delete(remoteDoc._id)
+          tx.oncomplete = () => resolve()
+          tx.onerror = () => resolve()
+        })
+        updatedCount++
+        changedDocIds.push(remoteDoc._id)
+      }
+      continue
+    }
 
     // Lokales Dokument holen
     const localDoc = await new Promise((resolve) => {
@@ -148,7 +169,6 @@ async function syncFromRemote() {
     })
 
     if (!localDoc) {
-      // Neues Dokument vom Server
       await idbPut(db, remoteDoc)
       updatedCount++
     } else if (localDoc._dirty) {
@@ -157,14 +177,12 @@ async function syncFromRemote() {
       // User muss noch entscheiden - nicht überschreiben
     } else if (localDoc._rev !== remoteDoc._rev) {
       if (remoteDoc.markedDeleted === true && !localDoc.markedDeleted) {
-        // Remote hat als gelöscht markiert, lokal nicht → _pendingDelete Banner
         await idbPut(db, {
           ...localDoc,
           _rev: remoteDoc._rev,
           _pendingDelete: remoteDoc.lastModifiedBy || 'Unbekannt'
         })
       } else {
-        // Normale Änderung übernehmen
         await idbPut(db, {
           ...remoteDoc,
           _remoteChanged: true,
