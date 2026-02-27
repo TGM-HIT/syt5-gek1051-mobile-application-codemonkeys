@@ -15,4 +15,20 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./src/composables/__tests__/setup.js'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html'],
+      include: ['src/composables/**/*.js'],
+      thresholds: {
+        lines: 80,
+        functions: 77,
+        branches: 70,
+        statements: 80,
+      },
+    },
+  },
 })
