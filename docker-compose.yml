@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  couchdb:
+    image: couchdb:3.3
+    container_name: shopping-list-couchdb
+    restart: unless-stopped
+    ports:
+      - "5984:5984"
+    environment:
+      COUCHDB_USER: ${COUCHDB_USER}
+      COUCHDB_PASSWORD: ${COUCHDB_PASSWORD}
+      COUCHDB_CORS_ENABLE: "true"
+      COUCHDB_CORS_ORIGINS: "*"
+      COUCHDB_NODE_COUNT: 1
+    volumes:
+      - couchdb_data:/opt/couchdb/data
+      - couchdb_config:/opt/couchdb/etc/local.d
+    networks:
+      - shopping-list-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5984/_up"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Init Container - erstellt DB automatisch
+  couchdb-init:
+    image: curlimages/curl:latest
+    container_name: shopping-list-init
+    depends_on:
+      couchdb:
+        condition: service_healthy
+    volumes:
+      - ./init-scripts:/scripts:ro
+    environment:
+      COUCHDB_USER: ${COUCHDB_USER}
+      COUCHDB_PASSWORD: ${COUCHDB_PASSWORD}
+      COUCHDB_HOST: couchdb
+      COUCHDB_PORT: 5984
+    networks:
+      - shopping-list-network
+    entrypoint: ["/bin/sh", "/scripts/init-couchdb.sh"]
+    restart: "no"
+
+volumes:
+  couchdb_data:
+    driver: local
+  couchdb_config:
+    driver: local
+
+networks:
+  shopping-list-network:
+    driver: bridge
