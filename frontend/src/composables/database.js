@@ -4,9 +4,9 @@
 const DB_NAME = 'einkaufsliste_db'
 const DB_VERSION = 6  // Bump: _changes feed, hardDelete
 const STORE_NAME = 'documents'
-const COUCHDB_URL = 'http://localhost:5984/einkaufsliste'
-const COUCHDB_USER = 'admin'
-const COUCHDB_PASSWORD = 'passwort'
+const COUCHDB_URL = import.meta.env.VITE_COUCHDB_URL || 'http://localhost:5984/einkaufsliste'
+const COUCHDB_USER = import.meta.env.VITE_COUCHDB_USER || 'admin'
+const COUCHDB_PASSWORD = import.meta.env.VITE_COUCHDB_PASSWORD || 'password'
 
 let db = null
 
