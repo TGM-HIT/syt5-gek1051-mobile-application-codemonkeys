@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useShoppingList } from '@/composables/useShoppingList'
 import { useSession } from '@/composables/useSession'
 import SessionSetup from './SessionSetup.vue'
@@ -33,6 +33,16 @@ const {
 } = useShoppingList()
 
 const { sessionName, clearSession } = useSession()
+
+// ── Suche ──
+const searchQuery = ref('')
+function clearSearch() {
+  searchQuery.value = ''
+}
+function isSearchMatch(item) {
+  if (!searchQuery.value) return true
+  return item.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+}
 
 // Neue Liste
 const newListName = ref('')
@@ -153,6 +163,22 @@ function confirmDeleteList(list) {
           <button class="add-btn" @click="submitNewList">+ Liste</button>
         </div>
 
+        <!-- Suchfeld -->
+        <div class="search-bar">
+          <input
+            v-model="searchQuery"
+            class="search-input"
+            type="text"
+            placeholder="Artikel suchen…"
+          />
+          <button
+            v-if="searchQuery"
+            class="search-clear-btn"
+            @click="clearSearch"
+            title="Suche zurücksetzen"
+          >✕</button>
+        </div>
+
         <!-- Listen -->
         <div v-if="!loading && !error" class="lists">
           <div v-for="list in lists" :key="list._id" class="list">
@@ -199,7 +225,7 @@ function confirmDeleteList(list) {
             <!-- Tab: Aktive Artikel -->
             <ul v-if="getTab(list._id) === 'active'" class="items">
               <template v-for="item in getActiveItemsForList(list._id)" :key="item._id">
-                <li :class="{ checked: item.checked }" class="item">
+                <li :class="{ checked: item.checked, 'search-dimmed': searchQuery && !isSearchMatch(item) }" class="item">
                   <input type="checkbox"
                          :checked="item.checked"
                          @click.stop="toggleItem(item)"
@@ -239,7 +265,7 @@ function confirmDeleteList(list) {
               </div>
               <ul class="items">
                 <template v-for="item in getDeletedItemsForList(list._id)" :key="item._id">
-                  <li class="item item-deleted">
+                  <li :class="{ 'search-dimmed': searchQuery && !isSearchMatch(item) }" class="item item-deleted">
                     <div class="item-content">
                       <span class="item-name">{{ item.name }}</span>
                     </div>
