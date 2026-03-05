@@ -9,7 +9,26 @@
 | [Docker Desktop](https://www.docker.com/products/docker-desktop/) | aktuell | CouchDB-Datenbankserver lokal betreiben |
 | [Git](https://git-scm.com/) | aktuell | Versionskontrolle |
 
-Empfohlene IDE: **IntelliJ IDEA** .
+Empfohlene IDE: **IntelliJ IDEA**.
+
+### Empfohlene Plugins für IntelliJ IDEA
+
+Folgende Plugins erleichtern die Entwicklung an diesem Projekt erheblich:
+
+- **Vue.js** – Syntax-Highlighting, Code-Completion und Navigation für `.vue`-Dateien.
+- **Prettier** – Automatische Code-Formatierung passend zu den Projektvorgaben.
+- **ESLint** – Statische Code-Analyse zur Erkennung von Fehlern und Style-Problemen in JavaScript/TypeScript.
+- **Docker** – Verwaltung und Monitoring von Docker-Containern direkt aus der IDE heraus; praktisch für den CouchDB-Container.
+- **EnvFile** – Unterstützung für `.env`-Dateien mit Syntax-Highlighting und einfachem Laden von Umgebungsvariablen.
+
+### KI-Unterstützung
+
+Zur Steigerung der Produktivität wird der Einsatz eines KI-Assistenten empfohlen. Zwei bewährte Optionen für IntelliJ IDEA:
+
+- **[GitHub Copilot](https://github.com/features/copilot)** – KI-gestützte Code-Vervollständigung und Chat-Funktion direkt in der IDE; unterstützt Vue, JavaScript und TypeScript sehr gut.
+- **[Antigravity](https://antigravity.google/)** – Leichtgewichtiger KI-Assistent als IntelliJ-Plugin, der ohne GitHub-Account auskommt und ebenfalls Inline-Vorschläge liefert.
+
+Beide Tools integrieren sich nahtlos in den Entwicklungsworkflow und helfen besonders bei repetitivem Code sowie beim Verstehen unbekannter APIs.
 
 ---
 
