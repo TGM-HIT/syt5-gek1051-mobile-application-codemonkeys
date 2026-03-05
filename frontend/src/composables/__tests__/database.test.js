@@ -36,7 +36,7 @@ function createIDBMock() {
           return req
         },
         getAll: () => makeRequest(Object.values(store)),
-        createIndex: () => {},
+        createIndex: () => { },
       }),
     }
     return tx
@@ -47,7 +47,7 @@ function createIDBMock() {
     transaction: makeTransaction,
     createObjectStore: (name) => {
       stores[name] = {}
-      return { createIndex: () => {} }
+      return { createIndex: () => { } }
     },
   }
 
@@ -388,7 +388,7 @@ describe('restoreLocalVersion', () => {
 describe('startSync / stopSync', () => {
   it('startSync gibt ein Objekt mit cancel() zurück', async () => {
     const { startSync, stopSync } = await loadDB()
-    const handler = startSync(() => {}, () => {}, () => {})
+    const handler = startSync(() => { }, () => { }, () => { })
     expect(handler).toHaveProperty('cancel')
     expect(typeof handler.cancel).toBe('function')
     handler.cancel()
@@ -403,7 +403,7 @@ describe('startSync / stopSync', () => {
 
   it('cancel() räumt den Interval auf', async () => {
     const { startSync } = await loadDB()
-    const handler = startSync(() => {}, () => {}, () => {})
+    const handler = startSync(() => { }, () => { }, () => { })
     handler.cancel()
     await new Promise(r => setTimeout(r, 50))
   })
@@ -417,8 +417,8 @@ describe('startSync / stopSync', () => {
     const statusCalls = []
     const handler = startSync(
       (status) => statusCalls.push(status),
-      () => {},
-      () => {}
+      () => { },
+      () => { }
     )
 
     await new Promise(r => setTimeout(r, 100))
@@ -435,8 +435,8 @@ describe('startSync / stopSync', () => {
     const statusCalls = []
     const handler = startSync(
       (status) => statusCalls.push(status),
-      () => {},
-      () => {}
+      () => { },
+      () => { }
     )
 
     await new Promise(r => setTimeout(r, 100))
@@ -459,7 +459,7 @@ describe('syncFromRemote (via startSync)', () => {
     }))
 
     const { startSync, getDoc } = await loadDB()
-    const handler = startSync(() => {}, () => {}, () => {})
+    const handler = startSync(() => { }, () => { }, () => { })
     await new Promise(r => setTimeout(r, 100))
     handler.cancel()
 
@@ -480,7 +480,7 @@ describe('syncFromRemote (via startSync)', () => {
     }))
 
     const { startSync: startSync2, getDoc: getDoc2 } = await loadDB()
-    const handler = startSync2(() => {}, () => {}, () => {})
+    const handler = startSync2(() => { }, () => { }, () => { })
     await new Promise(r => setTimeout(r, 100))
     handler.cancel()
   })
@@ -511,7 +511,7 @@ describe('syncFromRemote (via startSync)', () => {
       ]
     }))
 
-    const handler = db2.startSync(() => {}, () => {}, () => {})
+    const handler = db2.startSync(() => { }, () => { }, () => { })
     await new Promise(r => setTimeout(r, 150))
     handler.cancel()
 
@@ -542,7 +542,7 @@ describe('syncFromRemote (via startSync)', () => {
         ]
       }))
 
-    const handler = db2.startSync(() => {}, () => {}, () => {})
+    const handler = db2.startSync(() => { }, () => { }, () => { })
     await new Promise(r => setTimeout(r, 150))
     handler.cancel()
   })
@@ -556,7 +556,7 @@ describe('syncFromRemote (via startSync)', () => {
 
     const { startSync } = await loadDB()
     const changeCalls = []
-    const handler = startSync(() => {}, () => {}, (ids) => changeCalls.push(ids))
+    const handler = startSync(() => { }, () => { }, (ids) => changeCalls.push(ids))
 
     await new Promise(r => setTimeout(r, 100))
     handler.cancel()
@@ -587,7 +587,7 @@ describe('pushDirtyDocs (via startSync)', () => {
       return Promise.resolve(jsonOk({ _id: 'dirty_1', _rev: '1-a', type: 'item', name: 'Dirty Item' }))
     })
 
-    const handler = db2.startSync(() => {}, () => {}, () => {})
+    const handler = db2.startSync(() => { }, () => { }, () => { })
     await new Promise(r => setTimeout(r, 200))
     handler.cancel()
 
@@ -738,7 +738,7 @@ describe('deleteDoc – Fehlerpfad', () => {
             Promise.resolve().then(() => req.onsuccess?.({ target: req }))
             return req
           },
-          createIndex: () => {},
+          createIndex: () => { },
         }),
       }),
     }
@@ -781,7 +781,7 @@ describe('hardDeleteDoc – Fehlerpfad', () => {
               Promise.resolve().then(() => req.onsuccess?.({ target: req }))
               return req
             },
-            createIndex: () => {},
+            createIndex: () => { },
           }),
         }
       },
@@ -838,3 +838,78 @@ describe('applyConflictResolution', () => {
   })
 })
 
+// ─────────────────────────────────────────────
+// findListByShareCode
+// ─────────────────────────────────────────────
+describe('findListByShareCode', () => {
+  it('findet eine Liste anhand des Share-Codes', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValueOnce(jsonOk({
+      docs: [{ _id: 'list_shared', _rev: '1-a', type: 'list', name: 'Geteilte Liste', shareCode: 'ABC123' }]
+    }))
+
+    const { findListByShareCode } = await loadDB()
+    const result = await findListByShareCode('ABC123')
+    expect(result).toBeTruthy()
+    expect(result.name).toBe('Geteilte Liste')
+    expect(result.shareCode).toBe('ABC123')
+  })
+
+  it('gibt null zurück wenn kein Dokument gefunden wird', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValueOnce(jsonOk({ docs: [] }))
+
+    const { findListByShareCode } = await loadDB()
+    const result = await findListByShareCode('XXXXXX')
+    expect(result).toBeNull()
+  })
+
+  it('gibt null zurück wenn Server nicht erreichbar', async () => {
+    globalThis.fetch = vi.fn().mockRejectedValueOnce(new Error('offline'))
+
+    const { findListByShareCode } = await loadDB()
+    const result = await findListByShareCode('ABC123')
+    expect(result).toBeNull()
+  })
+
+  it('gibt null zurück wenn Server 500 antwortet', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValueOnce(jsonFail(500))
+
+    const { findListByShareCode } = await loadDB()
+    const result = await findListByShareCode('ABC123')
+    expect(result).toBeNull()
+  })
+})
+
+// ─────────────────────────────────────────────
+// fetchItemsForListFromRemote
+// ─────────────────────────────────────────────
+describe('fetchItemsForListFromRemote', () => {
+  it('holt alle Items einer Liste vom Server', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValueOnce(jsonOk({
+      docs: [
+        { _id: 'item_1', type: 'item', list_id: 'list_1', name: 'Milch' },
+        { _id: 'item_2', type: 'item', list_id: 'list_1', name: 'Brot' }
+      ]
+    }))
+
+    const { fetchItemsForListFromRemote } = await loadDB()
+    const items = await fetchItemsForListFromRemote('list_1')
+    expect(items).toHaveLength(2)
+    expect(items[0].name).toBe('Milch')
+  })
+
+  it('gibt leeres Array zurück wenn offline', async () => {
+    globalThis.fetch = vi.fn().mockRejectedValueOnce(new Error('offline'))
+
+    const { fetchItemsForListFromRemote } = await loadDB()
+    const items = await fetchItemsForListFromRemote('list_1')
+    expect(items).toEqual([])
+  })
+
+  it('gibt leeres Array zurück wenn Server 500 antwortet', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValueOnce(jsonFail(500))
+
+    const { fetchItemsForListFromRemote } = await loadDB()
+    const items = await fetchItemsForListFromRemote('list_1')
+    expect(items).toEqual([])
+  })
+})
