@@ -8,8 +8,35 @@ on:
       - dev
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: frontend
+        env:
+          VITE_COUCHDB_URL: http://localhost:5984/einkaufsliste
+          VITE_COUCHDB_USER: admin
+          VITE_COUCHDB_PASSWORD: admin
+        run: npm run build
+
   test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
 
     steps:
       - uses: actions/checkout@v4
@@ -27,6 +54,25 @@ jobs:
         working-directory: frontend
         run: npm run test:coverage
 
+      - name: Generate coverage badge JSON
+        run: |
+          PCT=$(node -e "const s=require('./frontend/coverage/coverage-summary.json');console.log(Math.round(s.total.lines.pct))")
+          if [ "$PCT" -ge 90 ]; then COLOR="brightgreen"
+          elif [ "$PCT" -ge 75 ]; then COLOR="green"
+          elif [ "$PCT" -ge 60 ]; then COLOR="yellow"
+          else COLOR="red"
+          fi
+          echo "{\"schemaVersion\":1,\"label\":\"coverage\",\"message\":\"${PCT}%\",\"color\":\"${COLOR}\"}" > coverage-badge.json
+
+      - name: Commit coverage badge
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add coverage-badge.json
+          git diff --cached --quiet || git commit -m "chore: update coverage badge [skip ci]"
+          git push
+
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         if: always()
@@ -40,3 +86,4 @@ jobs:
         if: always()
         with:
           working-directory: frontend
+

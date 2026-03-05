@@ -1,6 +1,7 @@
 # syt5-gek1051-mobile-application-codemonkeys
 
 ![CI](https://github.com/TGM-HIT/syt5-gek1051-mobile-application-codemonkeys/actions/workflows/ci.yml/badge.svg)
+![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/TGM-HIT/syt5-gek1051-mobile-application-codemonkeys/main/coverage-badge.json)
 
 syt5-gek1051-mobile-application-codemonkeys created by GitHub Classroom
 
