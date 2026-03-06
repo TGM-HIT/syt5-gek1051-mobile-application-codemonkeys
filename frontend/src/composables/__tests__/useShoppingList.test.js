@@ -525,3 +525,151 @@ describe('useShoppingList – joinListByCode', () => {
     expect(result.message).toContain('Geteilte Liste')
   })
 })
+
+// ─────────────────────────────────────────────
+// Additional edge case tests
+// ─────────────────────────────────────────────
+describe('useShoppingList – Edge Cases', () => {
+  it('handles adding item with empty list ID', async () => {
+    const db = await getMockDatabaseModule()
+    db.createDoc.mockClear()
+
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { addItem } = useShoppingList()
+
+    await addItem('', 'Test Item')
+    
+    // Should still attempt to create (database will handle validation)
+    expect(db.createDoc).toHaveBeenCalled()
+  })
+
+  it('handles multiple rapid toggles on same item', async () => {
+    const db = await getMockDatabaseModule()
+    let checkedState = false
+    db.updateDoc.mockImplementation(async (id, fn) => {
+      checkedState = !checkedState
+      const result = fn({ _id: id, checked: !checkedState })
+      return { ok: true, id, rev: '2-new' }
+    })
+
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { toggleItem } = useShoppingList()
+
+    const item = { _id: 'item_toggle', checked: false }
+    
+    await toggleItem(item)
+    await toggleItem(item)
+    await toggleItem(item)
+    
+    expect(db.updateDoc).toHaveBeenCalledTimes(3)
+  })
+
+  it('getProgress handles list with no items gracefully', async () => {
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { getProgress, items } = useShoppingList()
+
+    items.value = []
+    expect(getProgress('nonexistent_list')).toBe(0)
+  })
+
+  it('addList with very long name', async () => {
+    const db = await getMockDatabaseModule()
+    db.createDoc.mockClear()
+
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { addList } = useShoppingList()
+
+    const longName = 'A'.repeat(1000)
+    await addList(longName)
+    
+    expect(db.createDoc).toHaveBeenCalledWith(expect.objectContaining({
+      name: longName
+    }))
+  })
+
+  it('handles special characters in item names', async () => {
+    const db = await getMockDatabaseModule()
+    db.getAllDocs.mockResolvedValue([])
+
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { addItem } = useShoppingList()
+
+    await addItem('list_1', 'Äpfel & Birnen 🍎')
+    
+    expect(db.createDoc).toHaveBeenCalledWith(expect.objectContaining({
+      name: 'Äpfel & Birnen 🍎'
+    }))
+  })
+
+  it('permanentlyDeleteAllMarked with empty list', async () => {
+    const db = await getMockDatabaseModule()
+    db.hardDeleteDoc.mockClear()
+
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { permanentlyDeleteAllMarked, items } = useShoppingList()
+
+    items.value = []
+    await permanentlyDeleteAllMarked('empty_list')
+    
+    expect(db.hardDeleteDoc).not.toHaveBeenCalled()
+  })
+
+  it('clearListChanges with no changed items', async () => {
+    const db = await getMockDatabaseModule()
+    db.clearRemoteChangedFlag.mockClear()
+
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { clearListChanges, items } = useShoppingList()
+
+    items.value = [
+      { _id: 'i1', list_id: 'l1' },
+      { _id: 'i2', list_id: 'l1' }
+    ]
+
+    await clearListChanges('l1')
+    expect(db.clearRemoteChangedFlag).not.toHaveBeenCalled()
+  })
+})
+
+// ─────────────────────────────────────────────
+// Error handling tests
+// ─────────────────────────────────────────────
+describe('useShoppingList – Error Handling', () => {
+  it('handles database errors gracefully when adding items', async () => {
+    const db = await getMockDatabaseModule()
+    db.createDoc.mockRejectedValueOnce(new Error('Database error'))
+    db.getAllDocs.mockResolvedValue([])
+
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { addItem, error } = useShoppingList()
+
+    await addItem('list_1', 'Test')
+    
+    expect(error.value).toBeTruthy()
+  })
+
+  it('handles database errors when deleting lists', async () => {
+    const db = await getMockDatabaseModule()
+    db.hardDeleteDoc.mockRejectedValueOnce(new Error('Delete failed'))
+
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { deleteList, error } = useShoppingList()
+
+    await deleteList({ _id: 'list_1' })
+    
+    expect(error.value).toBeTruthy()
+  })
+
+  it('sets error when generateShareCode fails', async () => {
+    const db = await getMockDatabaseModule()
+    db.updateDoc.mockRejectedValueOnce(new Error('Update failed'))
+
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { generateShareCode, error } = useShoppingList()
+
+    const code = await generateShareCode('list_1')
+    
+    expect(code).toBeNull()
+    expect(error.value).toBeTruthy()
+  })
+})
