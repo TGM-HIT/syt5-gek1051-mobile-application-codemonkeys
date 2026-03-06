@@ -1,8 +1,38 @@
 # syt5-gek1051-mobile-application-codemonkeys
 
 ![CI](https://github.com/TGM-HIT/syt5-gek1051-mobile-application-codemonkeys/actions/workflows/ci.yml/badge.svg)
+![Coverage](https://img.shields.io/badge/coverage-80%25+-brightgreen)
+![Tests](https://img.shields.io/badge/tests-143%2B-blue)
+![E2E](https://img.shields.io/badge/E2E-Playwright-45ba4b)
 
 syt5-gek1051-mobile-application-codemonkeys created by GitHub Classroom
+
+## 🧪 Testing
+
+This project includes comprehensive test coverage:
+- **Unit Tests**: Vitest with 80%+ coverage
+- **E2E Tests**: Playwright with 40+ scenarios
+- **Database Tests**: Complete IndexedDB and sync testing
+- **Component Tests**: Vue component testing
+
+### Quick Start Testing
+
+```bash
+# Setup tests (one-time)
+setup-all-tests.bat
+
+# Run all tests
+cd frontend
+npm test              # Unit tests
+npm run test:e2e      # E2E tests
+npm run test:all      # All tests
+
+# Coverage
+npm run test:coverage # Generate coverage report
+```
+
+📖 **Full testing documentation**: See [TESTING.md](TESTING.md)  
+⚡ **Quick start guide**: See [QUICK-START-TESTS.md](QUICK-START-TESTS.md)
 
 ## Team
 PO: Vincent Weinzinger
