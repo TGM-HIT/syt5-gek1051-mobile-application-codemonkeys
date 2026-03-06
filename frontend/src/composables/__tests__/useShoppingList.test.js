@@ -111,6 +111,169 @@ describe('useShoppingList – getProgress', () => {
   })
 })
 
+// ─────────────────────────────────────────────
+// Rename: renameList
+// ─────────────────────────────────────────────
+describe('useShoppingList – renameList', () => {
+  it('ruft updateDoc auf und ändert den Listennamen', async () => {
+    const db = await getMockDatabaseModule()
+    db.updateDoc.mockImplementation(async (id, fn) => {
+      const doc = fn({ _id: id, type: 'list', name: 'Alter Name' })
+      expect(doc.name).toBe('Neuer Name')
+      return { ok: true, id, rev: '2-new' }
+    })
+    db.getAllDocs.mockResolvedValue([])
+
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { renameList } = useShoppingList()
+
+    await renameList('list_1', 'Neuer Name')
+    expect(db.updateDoc).toHaveBeenCalledWith('list_1', expect.any(Function))
+  })
+
+  it('trimmt den Namen', async () => {
+    const db = await getMockDatabaseModule()
+    db.updateDoc.mockImplementation(async (id, fn) => {
+      const doc = fn({ _id: id, type: 'list', name: 'Alt' })
+      expect(doc.name).toBe('Name mit Spaces')
+      return { ok: true, id, rev: '2-new' }
+    })
+    db.getAllDocs.mockResolvedValue([])
+
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { renameList } = useShoppingList()
+
+    await renameList('list_1', '  Name mit Spaces  ')
+    expect(db.updateDoc).toHaveBeenCalled()
+  })
+
+  it('tut nichts wenn Name leer ist', async () => {
+    const db = await getMockDatabaseModule()
+    db.updateDoc.mockClear()
+
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { renameList } = useShoppingList()
+
+    await renameList('list_1', '')
+    expect(db.updateDoc).not.toHaveBeenCalled()
+  })
+
+  it('tut nichts wenn Name nur Whitespace ist', async () => {
+    const db = await getMockDatabaseModule()
+    db.updateDoc.mockClear()
+
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { renameList } = useShoppingList()
+
+    await renameList('list_1', '   ')
+    expect(db.updateDoc).not.toHaveBeenCalled()
+  })
+})
+
+// ─────────────────────────────────────────────
+// Rename: renameItem
+// ─────────────────────────────────────────────
+describe('useShoppingList – renameItem', () => {
+  it('ruft updateDoc auf und ändert den Artikelnamen', async () => {
+    const db = await getMockDatabaseModule()
+    db.updateDoc.mockImplementation(async (id, fn) => {
+      const doc = fn({ _id: id, type: 'item', name: 'Alter Name', list_id: 'list_1' })
+      expect(doc.name).toBe('Neuer Artikel')
+      expect(doc.lastModifiedBy).toBe('TestUser')
+      return { ok: true, id, rev: '2-new' }
+    })
+
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { renameItem } = useShoppingList()
+
+    const item = { _id: 'item_1', name: 'Alter Name', _rev: '1-a' }
+    await renameItem(item, 'Neuer Artikel')
+
+    expect(db.updateDoc).toHaveBeenCalledWith('item_1', expect.any(Function))
+    expect(item.name).toBe('Neuer Artikel')
+    expect(item._rev).toBe('2-new')
+  })
+
+  it('trimmt den Namen', async () => {
+    const db = await getMockDatabaseModule()
+    db.updateDoc.mockImplementation(async (id, fn) => {
+      const doc = fn({ _id: id, type: 'item', name: 'Alt' })
+      expect(doc.name).toBe('Artikel mit Spaces')
+      return { ok: true, id, rev: '2-new' }
+    })
+
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { renameItem } = useShoppingList()
+
+    const item = { _id: 'item_1', name: 'Alt', _rev: '1-a' }
+    await renameItem(item, '  Artikel mit Spaces  ')
+
+    expect(db.updateDoc).toHaveBeenCalled()
+    expect(item.name).toBe('Artikel mit Spaces')
+  })
+
+  it('tut nichts wenn Name leer ist', async () => {
+    const db = await getMockDatabaseModule()
+    db.updateDoc.mockClear()
+
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { renameItem } = useShoppingList()
+
+    const item = { _id: 'item_1', name: 'Alter Name', _rev: '1-a' }
+    await renameItem(item, '')
+
+    expect(db.updateDoc).not.toHaveBeenCalled()
+  })
+
+  it('tut nichts wenn Name nur Whitespace ist', async () => {
+    const db = await getMockDatabaseModule()
+    db.updateDoc.mockClear()
+
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { renameItem } = useShoppingList()
+
+    const item = { _id: 'item_1', name: 'Alter Name', _rev: '1-a' }
+    await renameItem(item, '   ')
+
+    expect(db.updateDoc).not.toHaveBeenCalled()
+  })
+
+  it('setzt lastModifiedBy auf den aktuellen Benutzer', async () => {
+    const db = await getMockDatabaseModule()
+    db.updateDoc.mockImplementation(async (id, fn) => {
+      const doc = fn({ _id: id, type: 'item', name: 'Alt' })
+      expect(doc.lastModifiedBy).toBe('TestUser')
+      return { ok: true, id, rev: '2-new' }
+    })
+
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { renameItem } = useShoppingList()
+
+    const item = { _id: 'item_1', name: 'Alt', _rev: '1-a' }
+    await renameItem(item, 'Neu')
+
+    expect(db.updateDoc).toHaveBeenCalled()
+  })
+
+  it('aktualisiert updatedAt Timestamp', async () => {
+    const db = await getMockDatabaseModule()
+    let capturedDoc
+    db.updateDoc.mockImplementation(async (id, fn) => {
+      capturedDoc = fn({ _id: id, type: 'item', name: 'Alt' })
+      return { ok: true, id, rev: '2-new' }
+    })
+
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { renameItem } = useShoppingList()
+
+    const item = { _id: 'item_1', name: 'Alt', _rev: '1-a' }
+    await renameItem(item, 'Neu')
+
+    expect(capturedDoc.updatedAt).toBeDefined()
+    expect(new Date(capturedDoc.updatedAt).getTime()).toBeGreaterThan(Date.now() - 5000)
+  })
+})
+
 describe('useShoppingList – getItemsForList / getActiveItemsForList / getDeletedItemsForList', () => {
   it('filtert Items nach listId', async () => {
     const { useShoppingList } = await import('../useShoppingList.js')
@@ -525,3 +688,4 @@ describe('useShoppingList – joinListByCode', () => {
     expect(result.message).toContain('Geteilte Liste')
   })
 })
+
