@@ -17,6 +17,8 @@ const {
   addItem,
   addList,
   deleteList,
+  renameList,
+  renameItem,
   getItemsForList,
   getActiveItemsForList,
   getDeletedItemsForList,
@@ -35,6 +37,48 @@ const {
 } = useShoppingList()
 
 const { sessionName, clearSession } = useSession()
+
+// ── Inline Editing ──
+const editingListId = ref(null)
+const editingListName = ref('')
+const editingItemId = ref(null)
+const editingItemName = ref('')
+
+function startEditList(list) {
+  editingListId.value = list._id
+  editingListName.value = list.name
+}
+
+function cancelEditList() {
+  editingListId.value = null
+  editingListName.value = ''
+}
+
+async function saveEditList(listId) {
+  if (editingListName.value.trim()) {
+    await renameList(listId, editingListName.value)
+  }
+  editingListId.value = null
+  editingListName.value = ''
+}
+
+function startEditItem(item) {
+  editingItemId.value = item._id
+  editingItemName.value = item.name
+}
+
+function cancelEditItem() {
+  editingItemId.value = null
+  editingItemName.value = ''
+}
+
+async function saveEditItem(item) {
+  if (editingItemName.value.trim()) {
+    await renameItem(item, editingItemName.value)
+  }
+  editingItemId.value = null
+  editingItemName.value = ''
+}
 
 // ── Suche ──
 const searchQuery = ref('')
@@ -237,7 +281,22 @@ function confirmDeleteList(list) {
           <div v-for="list in lists" :key="list._id" class="list">
             <div class="list-header">
               <div class="list-title">
-                <h2>{{ list.name }}</h2>
+                <div v-if="editingListId !== list._id" class="list-name-display">
+                  <h2>{{ list.name }}</h2>
+                  <button class="edit-list-btn" @click="startEditList(list)" title="Liste umbenennen">✏️</button>
+                </div>
+                <div v-else class="edit-list-form">
+                  <input
+                    v-model="editingListName"
+                    class="edit-input"
+                    @keyup.enter="saveEditList(list._id)"
+                    @keyup.esc="cancelEditList"
+                    ref="editListInput"
+                    autofocus
+                  />
+                  <button class="edit-save-btn" @click="saveEditList(list._id)" title="Speichern">✓</button>
+                  <button class="edit-cancel-btn" @click="cancelEditList" title="Abbrechen">✕</button>
+                </div>
                 <span class="list-meta">{{ list.owner }} • {{ new Date(list.createdAt).toLocaleDateString('de-DE') }}</span>
               </div>
               <div class="list-stats">
@@ -285,12 +344,28 @@ function confirmDeleteList(list) {
                          @click.stop="toggleItem(item)"
                          class="checkbox">
                   <div class="item-content" @click="toggleItem(item)">
-                    <span class="item-name">{{ item.name }}</span>
-                    <span v-if="item._remoteChanged && !item._pendingDelete" class="item-changed-hint">
+                    <div v-if="editingItemId !== item._id" class="item-name-display">
+                      <span class="item-name">{{ item.name }}</span>
+                      <button class="edit-item-btn" @click.stop="startEditItem(item)" title="Artikel umbenennen">✏️</button>
+                    </div>
+                    <div v-else class="edit-item-form" @click.stop>
+                      <input
+                        v-model="editingItemName"
+                        class="edit-input"
+                        @keyup.enter="saveEditItem(item)"
+                        @keyup.esc="cancelEditItem"
+                        @click.stop
+                        autofocus
+                      />
+                      <button class="edit-save-btn" @click.stop="saveEditItem(item)" title="Speichern">✓</button>
+                      <button class="edit-cancel-btn" @click.stop="cancelEditItem" title="Abbrechen">✕</button>
+                    </div>
+                    <span v-if="item._remoteChanged && !item._pendingDelete && editingItemId !== item._id" class="item-changed-hint">
                       ✏️ Geändert von {{ item.lastModifiedBy || 'Unbekannt' }}
                     </span>
                   </div>
                   <button
+                    v-if="editingItemId !== item._id"
                     class="delete-item-btn"
                     title="Als gelöscht markieren"
                     @click.stop="markItemDeleted(item)">
