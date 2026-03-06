@@ -201,6 +201,51 @@ function confirmDeleteList(list) {
   }
   showConfirm('Liste löschen?', `Willst du die Liste "${list.name}" wirklich löschen?`, () => deleteList(list))
 }
+
+// ── Export ──
+function exportListAsJson(list) {
+  const listItems = getItemsForList(list._id)
+
+  const exportData = {
+    list: {
+      id: list._id,
+      name: list.name,
+      owner: list.owner,
+      createdAt: list.createdAt,
+      shareCode: list.shareCode || null
+    },
+    items: listItems.map(item => ({
+      id: item._id,
+      name: item.name,
+      checked: item.checked,
+      markedDeleted: item.markedDeleted,
+      lastModifiedBy: item.lastModifiedBy,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt
+    })),
+    statistics: {
+      totalItems: listItems.length,
+      activeItems: getActiveItemsForList(list._id).length,
+      deletedItems: getDeletedItemsForList(list._id).length,
+      checkedItems: listItems.filter(i => i.checked && !i.markedDeleted).length,
+      progress: getProgress(list._id)
+    },
+    exportedAt: new Date().toISOString(),
+    exportedBy: sessionName.value
+  }
+
+  const jsonString = JSON.stringify(exportData, null, 2)
+  const blob = new Blob([jsonString], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `${list.name.replace(/[^a-z0-9]/gi, '_')}_${new Date().toISOString().split('T')[0]}.json`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
 </script>
 
 <template>
@@ -308,6 +353,7 @@ function confirmDeleteList(list) {
                   ✓ Gesehen
                 </button>
                 <span class="progress-text">{{ getProgress(list._id) }}%</span>
+                <button class="export-list-btn" title="Als JSON exportieren" @click="exportListAsJson(list)">📥</button>
                 <button class="share-list-btn" title="Liste teilen" @click="openShareDialog(list)">🔗</button>
                 <button class="delete-list-btn" title="Liste löschen" @click="confirmDeleteList(list)">🗑️</button>
               </div>

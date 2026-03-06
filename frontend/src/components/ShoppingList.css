@@ -825,7 +825,8 @@ h1 {
 }
 
 /* Share button on list header */
-.share-list-btn {
+.share-list-btn,
+.export-list-btn {
   background: none;
   border: none;
   cursor: pointer;
@@ -836,7 +837,8 @@ h1 {
   transition: opacity 0.15s, background 0.15s;
 }
 
-.share-list-btn:hover {
+.share-list-btn:hover,
+.export-list-btn:hover {
   opacity: 1;
   background: rgba(255, 255, 255, 0.3);
 }
