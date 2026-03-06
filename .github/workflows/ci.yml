@@ -72,6 +72,9 @@ jobs:
         working-directory: frontend
         run: npm install
 
+      - name: Create E2E test files
+        run: node create-e2e-dir.js
+
       - name: Install Playwright browsers
         working-directory: frontend
         run: npx playwright install --with-deps chromium
