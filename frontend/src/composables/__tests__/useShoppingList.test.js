@@ -546,6 +546,7 @@ describe('useShoppingList – Edge Cases', () => {
   it('handles multiple rapid toggles on same item', async () => {
     const db = await getMockDatabaseModule()
     let checkedState = false
+    db.updateDoc.mockClear()
     db.updateDoc.mockImplementation(async (id, fn) => {
       checkedState = !checkedState
       const result = fn({ _id: id, checked: !checkedState })
