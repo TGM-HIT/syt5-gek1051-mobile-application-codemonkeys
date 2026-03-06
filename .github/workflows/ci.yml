@@ -41,6 +41,33 @@ jobs:
         with:
           working-directory: frontend
 
+      - name: Update coverage badge in README
+        if: github.event_name == 'push'
+        run: |
+          python3 -c "
+import json, re
+with open('frontend/coverage/coverage-summary.json') as f:
+    j = json.load(f)
+t = j['total']
+avg = round((t['lines']['pct'] + t['branches']['pct'] + t['functions']['pct'] + t['statements']['pct']) / 4)
+color = 'brightgreen' if avg >= 80 else 'green' if avg >= 70 else 'yellow' if avg >= 60 else 'red'
+with open('README.md', 'r') as f:
+    content = f.read()
+content = re.sub(
+    r'!\[Coverage\]\(https://img\.shields\.io/badge/coverage-[^)]+\)',
+    f'![Coverage](https://img.shields.io/badge/coverage-{avg}%25-{color})',
+    content
+)
+with open('README.md', 'w') as f:
+    f.write(content)
+print(f'Coverage: {avg}% ({color})')
+"
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add README.md
+          git diff --staged --quiet || git commit -m "chore: update coverage badge [skip ci]"
+          git push
+
   e2e:
     runs-on: ubuntu-latest
     needs: test
