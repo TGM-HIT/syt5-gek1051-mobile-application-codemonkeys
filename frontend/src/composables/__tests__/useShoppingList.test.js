@@ -28,9 +28,28 @@ vi.mock('../database.js', () => ({
   createDoc: vi.fn(async () => ({ ok: true })),
   hardDeleteDoc: vi.fn(async () => ({ ok: true })),
   restoreLocalVersion: vi.fn(async () => true),
-  clearRemoteChangedFlag: vi.fn(async () => {}),
+  clearRemoteChangedFlag: vi.fn(async () => { }),
   applyConflictResolution: vi.fn(async () => true),
-  clearPendingDeleteFlag: vi.fn(async () => {}),
+  clearPendingDeleteFlag: vi.fn(async () => { }),
+  findListByShareCode: vi.fn(async () => null),
+  fetchItemsForListFromRemote: vi.fn(async () => []),
+  initPouchDB: vi.fn(async () => ({
+    localDB: {
+      transaction: () => {
+        const tx = {
+          oncomplete: null,
+          objectStore: () => ({
+            put: () => {
+              const req = { onsuccess: null, onerror: null }
+              Promise.resolve().then(() => { tx.oncomplete?.() })
+              return req
+            }
+          })
+        }
+        return tx
+      }
+    }
+  })),
 }))
 
 // useSession mocken
@@ -430,3 +449,79 @@ describe('useShoppingList – loadData', () => {
   })
 })
 
+// ─────────────────────────────────────────────
+// Sharing: generateShareCode
+// ─────────────────────────────────────────────
+describe('useShoppingList – generateShareCode', () => {
+  it('generiert einen 6-stelligen Code und ruft updateDoc auf', async () => {
+    const db = await getMockDatabaseModule()
+    db.updateDoc.mockImplementation(async (id, fn) => {
+      const doc = fn({ _id: id, type: 'list', name: 'Test' })
+      return { ok: true, id, rev: '2-new' }
+    })
+    db.getAllDocs.mockResolvedValue([])
+
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { generateShareCode } = useShoppingList()
+
+    const code = await generateShareCode('list_1')
+    expect(code).toHaveLength(6)
+    expect(code).toMatch(/^[A-Z2-9]+$/)
+    expect(db.updateDoc).toHaveBeenCalledWith('list_1', expect.any(Function))
+  })
+})
+
+// ─────────────────────────────────────────────
+// Sharing: joinListByCode
+// ─────────────────────────────────────────────
+describe('useShoppingList – joinListByCode', () => {
+  it('gibt Fehler zurück wenn Code leer ist', async () => {
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { joinListByCode } = useShoppingList()
+
+    const result = await joinListByCode('')
+    expect(result.success).toBe(false)
+    expect(result.message).toContain('Code')
+  })
+
+  it('gibt Fehler zurück wenn Liste bereits lokal vorhanden', async () => {
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { joinListByCode, lists } = useShoppingList()
+
+    lists.value = [{ _id: 'list_1', shareCode: 'ABC123' }]
+
+    const result = await joinListByCode('ABC123')
+    expect(result.success).toBe(false)
+    expect(result.message).toContain('bereits')
+  })
+
+  it('gibt Fehler zurück wenn kein Dokument gefunden', async () => {
+    const db = await getMockDatabaseModule()
+    db.findListByShareCode.mockResolvedValueOnce(null)
+
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { joinListByCode } = useShoppingList()
+
+    const result = await joinListByCode('XXXXXX')
+    expect(result.success).toBe(false)
+    expect(result.message).toContain('Keine Liste')
+  })
+
+  it('tritt einer Liste bei wenn Code gültig ist', async () => {
+    const db = await getMockDatabaseModule()
+    db.findListByShareCode.mockResolvedValueOnce({
+      _id: 'list_shared', _rev: '1-a', type: 'list', name: 'Geteilte Liste', shareCode: 'XYZ789'
+    })
+    db.fetchItemsForListFromRemote.mockResolvedValueOnce([
+      { _id: 'item_1', type: 'item', list_id: 'list_shared', name: 'Milch' }
+    ])
+    db.getAllDocs.mockResolvedValue([])
+
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { joinListByCode } = useShoppingList()
+
+    const result = await joinListByCode('XYZ789')
+    expect(result.success).toBe(true)
+    expect(result.message).toContain('Geteilte Liste')
+  })
+})
