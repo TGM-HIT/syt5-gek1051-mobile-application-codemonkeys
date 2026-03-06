@@ -392,6 +392,54 @@ export function useShoppingList() {
   }
 
   /**
+   * Ändert den Namen einer Liste
+   * @param {string} listId - Die ID der Liste
+   * @param {string} newName - Der neue Name
+   */
+  async function renameList(listId, newName) {
+    if (!newName || !newName.trim()) return
+    try {
+      await updateDoc(listId, (doc) => {
+        return {
+          ...doc,
+          name: newName.trim(),
+          updatedAt: new Date().toISOString()
+        }
+      })
+      await loadData()
+    } catch (err) {
+      console.error('Fehler beim Umbenennen der Liste:', err)
+      error.value = 'Liste konnte nicht umbenannt werden'
+      setTimeout(() => error.value = null, 3000)
+    }
+  }
+
+  /**
+   * Ändert den Namen eines Artikels
+   * @param {Object} item - Das zu ändernde Item
+   * @param {string} newName - Der neue Name
+   */
+  async function renameItem(item, newName) {
+    if (!newName || !newName.trim()) return
+    try {
+      const result = await updateDoc(item._id, (doc) => {
+        return {
+          ...doc,
+          name: newName.trim(),
+          lastModifiedBy: sessionName.value || 'Unbekannt',
+          updatedAt: new Date().toISOString()
+        }
+      })
+      item._rev = result.rev
+      item.name = newName.trim()
+    } catch (err) {
+      console.error('Fehler beim Umbenennen des Artikels:', err)
+      error.value = 'Artikel konnte nicht umbenannt werden'
+      setTimeout(() => error.value = null, 3000)
+    }
+  }
+
+  /**
    * Berechnet den Fortschritt einer Listein Prozent (nur aktive Items)
    * @param {string} listId - Die ID der Liste
    * @returns {number} Fortschritt in Prozent (0-100)
@@ -434,6 +482,8 @@ export function useShoppingList() {
     addItem,
     addList,
     deleteList,
+    renameList,
+    renameItem,
     getItemsForList,
     getActiveItemsForList,
     getDeletedItemsForList,
