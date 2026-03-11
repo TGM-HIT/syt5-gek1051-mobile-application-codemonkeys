@@ -28,9 +28,28 @@ vi.mock('../database.js', () => ({
   createDoc: vi.fn(async () => ({ ok: true })),
   hardDeleteDoc: vi.fn(async () => ({ ok: true })),
   restoreLocalVersion: vi.fn(async () => true),
-  clearRemoteChangedFlag: vi.fn(async () => {}),
+  clearRemoteChangedFlag: vi.fn(async () => { }),
   applyConflictResolution: vi.fn(async () => true),
-  clearPendingDeleteFlag: vi.fn(async () => {}),
+  clearPendingDeleteFlag: vi.fn(async () => { }),
+  findListByShareCode: vi.fn(async () => null),
+  fetchItemsForListFromRemote: vi.fn(async () => []),
+  initPouchDB: vi.fn(async () => ({
+    localDB: {
+      transaction: () => {
+        const tx = {
+          oncomplete: null,
+          objectStore: () => ({
+            put: () => {
+              const req = { onsuccess: null, onerror: null }
+              Promise.resolve().then(() => { tx.oncomplete?.() })
+              return req
+            }
+          })
+        }
+        return tx
+      }
+    }
+  })),
 }))
 
 // useSession mocken
@@ -89,6 +108,169 @@ describe('useShoppingList – getProgress', () => {
     ]
 
     expect(getProgress('list_a')).toBe(100)
+  })
+})
+
+// ─────────────────────────────────────────────
+// Rename: renameList
+// ─────────────────────────────────────────────
+describe('useShoppingList – renameList', () => {
+  it('ruft updateDoc auf und ändert den Listennamen', async () => {
+    const db = await getMockDatabaseModule()
+    db.updateDoc.mockImplementation(async (id, fn) => {
+      const doc = fn({ _id: id, type: 'list', name: 'Alter Name' })
+      expect(doc.name).toBe('Neuer Name')
+      return { ok: true, id, rev: '2-new' }
+    })
+    db.getAllDocs.mockResolvedValue([])
+
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { renameList } = useShoppingList()
+
+    await renameList('list_1', 'Neuer Name')
+    expect(db.updateDoc).toHaveBeenCalledWith('list_1', expect.any(Function))
+  })
+
+  it('trimmt den Namen', async () => {
+    const db = await getMockDatabaseModule()
+    db.updateDoc.mockImplementation(async (id, fn) => {
+      const doc = fn({ _id: id, type: 'list', name: 'Alt' })
+      expect(doc.name).toBe('Name mit Spaces')
+      return { ok: true, id, rev: '2-new' }
+    })
+    db.getAllDocs.mockResolvedValue([])
+
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { renameList } = useShoppingList()
+
+    await renameList('list_1', '  Name mit Spaces  ')
+    expect(db.updateDoc).toHaveBeenCalled()
+  })
+
+  it('tut nichts wenn Name leer ist', async () => {
+    const db = await getMockDatabaseModule()
+    db.updateDoc.mockClear()
+
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { renameList } = useShoppingList()
+
+    await renameList('list_1', '')
+    expect(db.updateDoc).not.toHaveBeenCalled()
+  })
+
+  it('tut nichts wenn Name nur Whitespace ist', async () => {
+    const db = await getMockDatabaseModule()
+    db.updateDoc.mockClear()
+
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { renameList } = useShoppingList()
+
+    await renameList('list_1', '   ')
+    expect(db.updateDoc).not.toHaveBeenCalled()
+  })
+})
+
+// ─────────────────────────────────────────────
+// Rename: renameItem
+// ─────────────────────────────────────────────
+describe('useShoppingList – renameItem', () => {
+  it('ruft updateDoc auf und ändert den Artikelnamen', async () => {
+    const db = await getMockDatabaseModule()
+    db.updateDoc.mockImplementation(async (id, fn) => {
+      const doc = fn({ _id: id, type: 'item', name: 'Alter Name', list_id: 'list_1' })
+      expect(doc.name).toBe('Neuer Artikel')
+      expect(doc.lastModifiedBy).toBe('TestUser')
+      return { ok: true, id, rev: '2-new' }
+    })
+
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { renameItem } = useShoppingList()
+
+    const item = { _id: 'item_1', name: 'Alter Name', _rev: '1-a' }
+    await renameItem(item, 'Neuer Artikel')
+
+    expect(db.updateDoc).toHaveBeenCalledWith('item_1', expect.any(Function))
+    expect(item.name).toBe('Neuer Artikel')
+    expect(item._rev).toBe('2-new')
+  })
+
+  it('trimmt den Namen', async () => {
+    const db = await getMockDatabaseModule()
+    db.updateDoc.mockImplementation(async (id, fn) => {
+      const doc = fn({ _id: id, type: 'item', name: 'Alt' })
+      expect(doc.name).toBe('Artikel mit Spaces')
+      return { ok: true, id, rev: '2-new' }
+    })
+
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { renameItem } = useShoppingList()
+
+    const item = { _id: 'item_1', name: 'Alt', _rev: '1-a' }
+    await renameItem(item, '  Artikel mit Spaces  ')
+
+    expect(db.updateDoc).toHaveBeenCalled()
+    expect(item.name).toBe('Artikel mit Spaces')
+  })
+
+  it('tut nichts wenn Name leer ist', async () => {
+    const db = await getMockDatabaseModule()
+    db.updateDoc.mockClear()
+
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { renameItem } = useShoppingList()
+
+    const item = { _id: 'item_1', name: 'Alter Name', _rev: '1-a' }
+    await renameItem(item, '')
+
+    expect(db.updateDoc).not.toHaveBeenCalled()
+  })
+
+  it('tut nichts wenn Name nur Whitespace ist', async () => {
+    const db = await getMockDatabaseModule()
+    db.updateDoc.mockClear()
+
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { renameItem } = useShoppingList()
+
+    const item = { _id: 'item_1', name: 'Alter Name', _rev: '1-a' }
+    await renameItem(item, '   ')
+
+    expect(db.updateDoc).not.toHaveBeenCalled()
+  })
+
+  it('setzt lastModifiedBy auf den aktuellen Benutzer', async () => {
+    const db = await getMockDatabaseModule()
+    db.updateDoc.mockImplementation(async (id, fn) => {
+      const doc = fn({ _id: id, type: 'item', name: 'Alt' })
+      expect(doc.lastModifiedBy).toBe('TestUser')
+      return { ok: true, id, rev: '2-new' }
+    })
+
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { renameItem } = useShoppingList()
+
+    const item = { _id: 'item_1', name: 'Alt', _rev: '1-a' }
+    await renameItem(item, 'Neu')
+
+    expect(db.updateDoc).toHaveBeenCalled()
+  })
+
+  it('aktualisiert updatedAt Timestamp', async () => {
+    const db = await getMockDatabaseModule()
+    let capturedDoc
+    db.updateDoc.mockImplementation(async (id, fn) => {
+      capturedDoc = fn({ _id: id, type: 'item', name: 'Alt' })
+      return { ok: true, id, rev: '2-new' }
+    })
+
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { renameItem } = useShoppingList()
+
+    const item = { _id: 'item_1', name: 'Alt', _rev: '1-a' }
+    await renameItem(item, 'Neu')
+
+    expect(capturedDoc.updatedAt).toBeDefined()
+    expect(new Date(capturedDoc.updatedAt).getTime()).toBeGreaterThan(Date.now() - 5000)
   })
 })
 
@@ -427,6 +609,83 @@ describe('useShoppingList – loadData', () => {
 
     await new Promise((r) => setTimeout(r, 50))
     expect(error.value).toBeTruthy()
+  })
+})
+
+// ─────────────────────────────────────────────
+// Sharing: generateShareCode
+// ─────────────────────────────────────────────
+describe('useShoppingList – generateShareCode', () => {
+  it('generiert einen 6-stelligen Code und ruft updateDoc auf', async () => {
+    const db = await getMockDatabaseModule()
+    db.updateDoc.mockImplementation(async (id, fn) => {
+      const doc = fn({ _id: id, type: 'list', name: 'Test' })
+      return { ok: true, id, rev: '2-new' }
+    })
+    db.getAllDocs.mockResolvedValue([])
+
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { generateShareCode } = useShoppingList()
+
+    const code = await generateShareCode('list_1')
+    expect(code).toHaveLength(6)
+    expect(code).toMatch(/^[A-Z2-9]+$/)
+    expect(db.updateDoc).toHaveBeenCalledWith('list_1', expect.any(Function))
+  })
+})
+
+// ─────────────────────────────────────────────
+// Sharing: joinListByCode
+// ─────────────────────────────────────────────
+describe('useShoppingList – joinListByCode', () => {
+  it('gibt Fehler zurück wenn Code leer ist', async () => {
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { joinListByCode } = useShoppingList()
+
+    const result = await joinListByCode('')
+    expect(result.success).toBe(false)
+    expect(result.message).toContain('Code')
+  })
+
+  it('gibt Fehler zurück wenn Liste bereits lokal vorhanden', async () => {
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { joinListByCode, lists } = useShoppingList()
+
+    lists.value = [{ _id: 'list_1', shareCode: 'ABC123' }]
+
+    const result = await joinListByCode('ABC123')
+    expect(result.success).toBe(false)
+    expect(result.message).toContain('bereits')
+  })
+
+  it('gibt Fehler zurück wenn kein Dokument gefunden', async () => {
+    const db = await getMockDatabaseModule()
+    db.findListByShareCode.mockResolvedValueOnce(null)
+
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { joinListByCode } = useShoppingList()
+
+    const result = await joinListByCode('XXXXXX')
+    expect(result.success).toBe(false)
+    expect(result.message).toContain('Keine Liste')
+  })
+
+  it('tritt einer Liste bei wenn Code gültig ist', async () => {
+    const db = await getMockDatabaseModule()
+    db.findListByShareCode.mockResolvedValueOnce({
+      _id: 'list_shared', _rev: '1-a', type: 'list', name: 'Geteilte Liste', shareCode: 'XYZ789'
+    })
+    db.fetchItemsForListFromRemote.mockResolvedValueOnce([
+      { _id: 'item_1', type: 'item', list_id: 'list_shared', name: 'Milch' }
+    ])
+    db.getAllDocs.mockResolvedValue([])
+
+    const { useShoppingList } = await import('../useShoppingList.js')
+    const { joinListByCode } = useShoppingList()
+
+    const result = await joinListByCode('XYZ789')
+    expect(result.success).toBe(true)
+    expect(result.message).toContain('Geteilte Liste')
   })
 })
 

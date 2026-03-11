@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useShoppingList } from '@/composables/useShoppingList'
 import { useSession } from '@/composables/useSession'
 import SessionSetup from './SessionSetup.vue'
@@ -17,6 +17,8 @@ const {
   addItem,
   addList,
   deleteList,
+  renameList,
+  renameItem,
   getItemsForList,
   getActiveItemsForList,
   getDeletedItemsForList,
@@ -29,10 +31,64 @@ const {
   acceptDelete,
   rejectDelete,
   hasChangedItems,
-  clearListChanges
+  clearListChanges,
+  generateShareCode,
+  joinListByCode
 } = useShoppingList()
 
 const { sessionName, clearSession } = useSession()
+
+// ── Inline Editing ──
+const editingListId = ref(null)
+const editingListName = ref('')
+const editingItemId = ref(null)
+const editingItemName = ref('')
+
+function startEditList(list) {
+  editingListId.value = list._id
+  editingListName.value = list.name
+}
+
+function cancelEditList() {
+  editingListId.value = null
+  editingListName.value = ''
+}
+
+async function saveEditList(listId) {
+  if (editingListName.value.trim()) {
+    await renameList(listId, editingListName.value)
+  }
+  editingListId.value = null
+  editingListName.value = ''
+}
+
+function startEditItem(item) {
+  editingItemId.value = item._id
+  editingItemName.value = item.name
+}
+
+function cancelEditItem() {
+  editingItemId.value = null
+  editingItemName.value = ''
+}
+
+async function saveEditItem(item) {
+  if (editingItemName.value.trim()) {
+    await renameItem(item, editingItemName.value)
+  }
+  editingItemId.value = null
+  editingItemName.value = ''
+}
+
+// ── Suche ──
+const searchQuery = ref('')
+function clearSearch() {
+  searchQuery.value = ''
+}
+function isSearchMatch(item) {
+  if (!searchQuery.value) return true
+  return item.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+}
 
 // Neue Liste
 const newListName = ref('')
@@ -57,6 +113,43 @@ function getTab(listId) {
 
 function setTab(listId, tab) {
   activeTabs.value[listId] = tab
+}
+
+// ── Sharing ──
+const shareModal = ref({ show: false, listId: null, code: null, loading: false })
+const joinCode = ref('')
+const joinMessage = ref({ text: '', type: '' })
+
+async function openShareDialog(list) {
+  shareModal.value = { show: true, listId: list._id, code: list.shareCode || null, loading: false }
+  // Falls noch kein Code existiert, gleich generieren
+  if (!list.shareCode) {
+    shareModal.value.loading = true
+    const code = await generateShareCode(list._id)
+    shareModal.value.code = code
+    shareModal.value.loading = false
+  }
+}
+
+function closeShareDialog() {
+  shareModal.value = { show: false, listId: null, code: null, loading: false }
+}
+
+async function copyShareCode() {
+  if (shareModal.value.code) {
+    await navigator.clipboard.writeText(shareModal.value.code)
+  }
+}
+
+async function submitJoinCode() {
+  if (!joinCode.value.trim()) return
+  joinMessage.value = { text: '', type: '' }
+  const result = await joinListByCode(joinCode.value)
+  joinMessage.value = { text: result.message, type: result.success ? 'success' : 'error' }
+  if (result.success) {
+    joinCode.value = ''
+    setTimeout(() => { joinMessage.value = { text: '', type: '' } }, 3000)
+  }
 }
 
 function conflictBannerText(conflict) {
@@ -153,12 +246,57 @@ function confirmDeleteList(list) {
           <button class="add-btn" @click="submitNewList">+ Liste</button>
         </div>
 
+        <!-- Liste beitreten -->
+        <div class="join-form">
+          <input
+            v-model="joinCode"
+            class="join-input"
+            placeholder="Share-Code eingeben..."
+            maxlength="6"
+            @keyup.enter="submitJoinCode" />
+          <button class="join-btn" @click="submitJoinCode">🔗 Beitreten</button>
+        </div>
+        <div v-if="joinMessage.text" class="join-message" :class="joinMessage.type">
+          {{ joinMessage.text }}
+        </div>
+
+        <!-- Suchfeld -->
+        <div class="search-bar">
+          <input
+            v-model="searchQuery"
+            class="search-input"
+            type="text"
+            placeholder="Artikel suchen…"
+          />
+          <button
+            v-if="searchQuery"
+            class="search-clear-btn"
+            @click="clearSearch"
+            title="Suche zurücksetzen"
+          >✕</button>
+        </div>
+
         <!-- Listen -->
         <div v-if="!loading && !error" class="lists">
           <div v-for="list in lists" :key="list._id" class="list">
             <div class="list-header">
               <div class="list-title">
-                <h2>{{ list.name }}</h2>
+                <div v-if="editingListId !== list._id" class="list-name-display">
+                  <h2>{{ list.name }}</h2>
+                  <button class="edit-list-btn" @click="startEditList(list)" title="Liste umbenennen">✏️</button>
+                </div>
+                <div v-else class="edit-list-form">
+                  <input
+                    v-model="editingListName"
+                    class="edit-input"
+                    @keyup.enter="saveEditList(list._id)"
+                    @keyup.esc="cancelEditList"
+                    ref="editListInput"
+                    autofocus
+                  />
+                  <button class="edit-save-btn" @click="saveEditList(list._id)" title="Speichern">✓</button>
+                  <button class="edit-cancel-btn" @click="cancelEditList" title="Abbrechen">✕</button>
+                </div>
                 <span class="list-meta">{{ list.owner }} • {{ new Date(list.createdAt).toLocaleDateString('de-DE') }}</span>
               </div>
               <div class="list-stats">
@@ -170,6 +308,7 @@ function confirmDeleteList(list) {
                   ✓ Gesehen
                 </button>
                 <span class="progress-text">{{ getProgress(list._id) }}%</span>
+                <button class="share-list-btn" title="Liste teilen" @click="openShareDialog(list)">🔗</button>
                 <button class="delete-list-btn" title="Liste löschen" @click="confirmDeleteList(list)">🗑️</button>
               </div>
             </div>
@@ -199,18 +338,34 @@ function confirmDeleteList(list) {
             <!-- Tab: Aktive Artikel -->
             <ul v-if="getTab(list._id) === 'active'" class="items">
               <template v-for="item in getActiveItemsForList(list._id)" :key="item._id">
-                <li :class="{ checked: item.checked }" class="item">
+                <li :class="{ checked: item.checked, 'search-dimmed': searchQuery && !isSearchMatch(item) }" class="item">
                   <input type="checkbox"
                          :checked="item.checked"
                          @click.stop="toggleItem(item)"
                          class="checkbox">
                   <div class="item-content" @click="toggleItem(item)">
-                    <span class="item-name">{{ item.name }}</span>
-                    <span v-if="item._remoteChanged && !item._pendingDelete" class="item-changed-hint">
+                    <div v-if="editingItemId !== item._id" class="item-name-display">
+                      <span class="item-name">{{ item.name }}</span>
+                      <button class="edit-item-btn" @click.stop="startEditItem(item)" title="Artikel umbenennen">✏️</button>
+                    </div>
+                    <div v-else class="edit-item-form" @click.stop>
+                      <input
+                        v-model="editingItemName"
+                        class="edit-input"
+                        @keyup.enter="saveEditItem(item)"
+                        @keyup.esc="cancelEditItem"
+                        @click.stop
+                        autofocus
+                      />
+                      <button class="edit-save-btn" @click.stop="saveEditItem(item)" title="Speichern">✓</button>
+                      <button class="edit-cancel-btn" @click.stop="cancelEditItem" title="Abbrechen">✕</button>
+                    </div>
+                    <span v-if="item._remoteChanged && !item._pendingDelete && editingItemId !== item._id" class="item-changed-hint">
                       ✏️ Geändert von {{ item.lastModifiedBy || 'Unbekannt' }}
                     </span>
                   </div>
                   <button
+                    v-if="editingItemId !== item._id"
                     class="delete-item-btn"
                     title="Als gelöscht markieren"
                     @click.stop="markItemDeleted(item)">
@@ -239,7 +394,7 @@ function confirmDeleteList(list) {
               </div>
               <ul class="items">
                 <template v-for="item in getDeletedItemsForList(list._id)" :key="item._id">
-                  <li class="item item-deleted">
+                  <li :class="{ 'search-dimmed': searchQuery && !isSearchMatch(item) }" class="item item-deleted">
                     <div class="item-content">
                       <span class="item-name">{{ item.name }}</span>
                     </div>
@@ -290,6 +445,23 @@ function confirmDeleteList(list) {
           <button class="modal-btn-cancel" @click="closeConfirm">{{ confirmModal.action ? 'Abbrechen' : 'OK' }}</button>
           <button v-if="confirmModal.action && confirmModal.step === 1" class="modal-btn-confirm" @click="confirmStep1">Weiter</button>
           <button v-else-if="confirmModal.action && confirmModal.step === 2" class="modal-btn-confirm modal-btn-danger" @click="confirmStep2">Ja, löschen</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Share Code Modal -->
+    <div v-if="shareModal.show" class="modal-overlay" @click.self="closeShareDialog">
+      <div class="modal share-modal">
+        <div class="modal-title">🔗 Liste teilen</div>
+        <div v-if="shareModal.loading" class="modal-message">Code wird generiert...</div>
+        <div v-else class="share-code-display">
+          <div class="share-code-label">Dein Share-Code:</div>
+          <div class="share-code">{{ shareModal.code }}</div>
+          <button class="share-copy-btn" @click="copyShareCode">📋 Code kopieren</button>
+          <p class="share-hint">Teile diesen Code, damit andere der Liste beitreten können.</p>
+        </div>
+        <div class="modal-btns">
+          <button class="modal-btn-cancel" @click="closeShareDialog">Schließen</button>
         </div>
       </div>
     </div>
