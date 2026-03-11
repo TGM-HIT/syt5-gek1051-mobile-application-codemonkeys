@@ -1,4 +1,7 @@
 # syt5-gek1051-mobile-application-codemonkeys
+
+![CI](https://github.com/TGM-HIT/syt5-gek1051-mobile-application-codemonkeys/actions/workflows/ci.yml/badge.svg)
+
 syt5-gek1051-mobile-application-codemonkeys created by GitHub Classroom
 
 ## Team
