@@ -70,17 +70,37 @@ test.describe('Session Setup', () => {
   'shopping-list.spec.js': `import { test, expect } from '@playwright/test'
 
 async function setupSession(page, name = 'E2EUser') {
-  await page.goto('/')
-  await page.evaluate(() => localStorage.clear())
-  await page.evaluate(() => new Promise(resolve => {
-    const r = indexedDB.deleteDatabase('einkaufsliste_db')
-    r.onsuccess = resolve; r.onerror = resolve
-  }))
-  await page.reload()
+  await page.goto('/', { waitUntil: 'domcontentloaded' })
+  
+  // Clear storage
+  await page.evaluate(() => {
+    localStorage.clear()
+    sessionStorage.clear()
+  })
+  
+  // Delete IndexedDB with timeout
+  await page.evaluate(async () => {
+    return new Promise((resolve) => {
+      const timeout = setTimeout(() => resolve(), 2000)
+      try {
+        const req = indexedDB.deleteDatabase('einkaufsliste_db')
+        req.onsuccess = () => { clearTimeout(timeout); resolve() }
+        req.onerror = () => { clearTimeout(timeout); resolve() }
+        req.onblocked = () => { clearTimeout(timeout); resolve() }
+      } catch (e) {
+        clearTimeout(timeout)
+        resolve()
+      }
+    })
+  })
+  
+  await page.reload({ waitUntil: 'domcontentloaded' })
+  await page.waitForTimeout(500) // Small delay for app to initialize
+  
   await page.fill('.session-input', name)
   await page.click('.session-btn')
-  await page.waitForSelector('.session-overlay', { state: 'hidden' })
-}
+  await page.waitForSelector('.session-overlay', { state: 'hidden', timeout: 5000 })
+}`
 
 test.describe('Listen verwalten', () => {
   test('zeigt Meldung wenn keine Listen vorhanden', async ({ page }) => {
@@ -243,16 +263,36 @@ test.describe('Session Badge', () => {
   'sharing.spec.js': `import { test, expect } from '@playwright/test'
 
 async function setupSession(page, name = 'ShareUser') {
-  await page.goto('/')
-  await page.evaluate(() => localStorage.clear())
-  await page.evaluate(() => new Promise(resolve => {
-    const r = indexedDB.deleteDatabase('einkaufsliste_db')
-    r.onsuccess = resolve; r.onerror = resolve
-  }))
-  await page.reload()
+  await page.goto('/', { waitUntil: 'domcontentloaded' })
+  
+  // Clear storage
+  await page.evaluate(() => {
+    localStorage.clear()
+    sessionStorage.clear()
+  })
+  
+  // Delete IndexedDB with timeout
+  await page.evaluate(async () => {
+    return new Promise((resolve) => {
+      const timeout = setTimeout(() => resolve(), 2000)
+      try {
+        const req = indexedDB.deleteDatabase('einkaufsliste_db')
+        req.onsuccess = () => { clearTimeout(timeout); resolve() }
+        req.onerror = () => { clearTimeout(timeout); resolve() }
+        req.onblocked = () => { clearTimeout(timeout); resolve() }
+      } catch (e) {
+        clearTimeout(timeout)
+        resolve()
+      }
+    })
+  })
+  
+  await page.reload({ waitUntil: 'domcontentloaded' })
+  await page.waitForTimeout(500) // Small delay for app to initialize
+  
   await page.fill('.session-input', name)
   await page.click('.session-btn')
-  await page.waitForSelector('.session-overlay', { state: 'hidden' })
+  await page.waitForSelector('.session-overlay', { state: 'hidden', timeout: 5000 })
 }
 
 test.describe('Liste teilen', () => {
