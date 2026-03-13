@@ -100,7 +100,7 @@ async function setupSession(page, name = 'E2EUser') {
   await page.fill('.session-input', name)
   await page.click('.session-btn')
   await page.waitForSelector('.session-overlay', { state: 'hidden', timeout: 5000 })
-}`
+}
 
 test.describe('Listen verwalten', () => {
   test('zeigt Meldung wenn keine Listen vorhanden', async ({ page }) => {
