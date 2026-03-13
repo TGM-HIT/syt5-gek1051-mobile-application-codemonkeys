@@ -23,7 +23,7 @@ export default defineConfig({
     setupFiles: ['./src/composables/__tests__/setup.js'],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'html', 'json-summary'],
+      reporter: ['text', 'html', 'json-summary', 'json'],
       include: ['src/composables/**/*.js'],
       thresholds: {
         lines: 80,

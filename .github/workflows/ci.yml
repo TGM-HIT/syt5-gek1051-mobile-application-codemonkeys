@@ -2,14 +2,17 @@ name: CI
 
 on:
   push:
+    branches:
+      - '**'
   pull_request:
     branches:
-      - main
-      - dev
+      - '**'
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
@@ -40,3 +43,97 @@ jobs:
         if: always()
         with:
           working-directory: frontend
+
+      - name: Update coverage badge in README
+        if: github.event_name == 'push'
+        run: |
+          AVG=$(node -e "const j=require('./frontend/coverage/coverage-summary.json');const t=j.total;process.stdout.write(String(Math.round((t.lines.pct+t.branches.pct+t.functions.pct+t.statements.pct)/4)))")
+          COLOR=$(node -e "const a=parseInt('$AVG');process.stdout.write(a>=80?'brightgreen':a>=70?'green':a>=60?'yellow':'red')")
+          sed -i "s|!\[Coverage\](https://img.shields.io/badge/coverage-[^)]*)|![Coverage](https://img.shields.io/badge/coverage-${AVG}%25-${COLOR})|g" README.md
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add README.md
+          git diff --staged --quiet || git commit -m "chore: update coverage badge [skip ci]"
+          git push
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: test
+
+    env:
+      COUCHDB_USER: admin
+      COUCHDB_PASSWORD: passwort
+      DB_NAME: einkaufsliste
+      VITE_COUCHDB_URL: http://localhost:5984/einkaufsliste
+      VITE_COUCHDB_USER: admin
+      VITE_COUCHDB_PASSWORD: passwort
+
+    services:
+      couchdb:
+        image: couchdb:3.3
+        ports:
+          - 5984:5984
+        env:
+          COUCHDB_USER: admin
+          COUCHDB_PASSWORD: passwort
+        options: >-
+          --health-cmd "curl -f http://localhost:5984 || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm install
+
+      - name: Wait for CouchDB to be ready
+        run: |
+          for i in {1..30}; do
+            if curl -f http://localhost:5984 > /dev/null 2>&1; then
+              echo "✓ CouchDB is ready"
+              exit 0
+            fi
+            echo "Waiting for CouchDB... ($i/30)"
+            sleep 2
+          done
+          echo "✗ CouchDB failed to start"
+          exit 1
+
+      - name: Initialize CouchDB database
+        run: |
+          curl -X PUT http://admin:passwort@localhost:5984/einkaufsliste
+
+      - name: Create E2E test files
+        run: node create-e2e-dir.js
+
+      - name: Install Playwright browsers
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        working-directory: frontend
+        run: npm run test:e2e
+
+      - name: Upload E2E test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 30
+
+      - name: Upload E2E test screenshots
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-screenshots
+          path: frontend/test-results/
+          retention-days: 7
