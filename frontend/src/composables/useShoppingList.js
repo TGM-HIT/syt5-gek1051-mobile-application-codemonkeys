@@ -7,6 +7,8 @@ import {
   createDoc,
   hardDeleteDoc,
   clearRemoteChangedFlag,
+  findListByShareCode,
+  fetchItemsForListFromRemote,
 } from './database';
 import { useSession } from './useSession';
 
@@ -25,6 +27,28 @@ export function useShoppingList() {
   const syncActive = ref(false);
   const conflicts = ref({}); // nicht mehr aktiv genutzt, für Kompatibilität behalten
 
+  // ── Joined Lists (localStorage) ──
+  function getJoinedListIds() {
+    try {
+      return JSON.parse(localStorage.getItem('joinedListIds') || '[]');
+    } catch {
+      return [];
+    }
+  }
+
+  function addJoinedListId(listId) {
+    const ids = getJoinedListIds();
+    if (!ids.includes(listId)) {
+      ids.push(listId);
+      localStorage.setItem('joinedListIds', JSON.stringify(ids));
+    }
+  }
+
+  function removeJoinedListId(listId) {
+    const ids = getJoinedListIds().filter((id) => id !== listId);
+    localStorage.setItem('joinedListIds', JSON.stringify(ids));
+  }
+
   /**
    * Lädt alle Listen und Items aus der lokalen Datenbank
    */
@@ -34,8 +58,20 @@ export function useShoppingList() {
 
       const docs = await getAllDocs();
 
-      lists.value = docs.filter((doc) => doc.type === 'list' && !doc.deleted);
-      items.value = docs.filter((doc) => doc.type === 'item' && !doc.deleted);
+      const allLists = docs.filter((doc) => doc.type === 'list' && !doc.deleted);
+      const joinedIds = getJoinedListIds();
+      const currentUser = sessionName.value || '';
+
+      // Nur eigene Listen + beigetretene Listen anzeigen
+      lists.value = allLists.filter(
+        (list) => list.owner === currentUser || joinedIds.includes(list._id),
+      );
+
+      // Items nur für sichtbare Listen laden
+      const visibleListIds = new Set(lists.value.map((l) => l._id));
+      items.value = docs.filter(
+        (doc) => doc.type === 'item' && !doc.deleted && visibleListIds.has(doc.list_id),
+      );
 
       error.value = null;
     } catch (err) {
@@ -47,21 +83,32 @@ export function useShoppingList() {
   }
 
   async function deleteList(list) {
-    await hardDeleteDoc(list._id);
-    await loadData();
+    try {
+      removeJoinedListId(list._id);
+      await hardDeleteDoc(list._id);
+      await loadData();
+    } catch (err) {
+      console.error('Fehler beim Löschen der Liste:', err);
+      error.value = 'Liste konnte nicht gelöscht werden';
+    }
   }
 
   async function addItem(listId, name) {
     if (!name || !name.trim()) return;
-    await createDoc({
-      type: 'item',
-      list_id: listId,
-      name: name.trim(),
-      checked: false,
-      markedDeleted: false,
-      lastModifiedBy: sessionName.value || 'Unbekannt',
-    });
-    await loadData();
+    try {
+      await createDoc({
+        type: 'item',
+        list_id: listId,
+        name: name.trim(),
+        checked: false,
+        markedDeleted: false,
+        lastModifiedBy: sessionName.value || 'Unbekannt',
+      });
+      await loadData();
+    } catch (err) {
+      console.error('Fehler beim Hinzufügen des Items:', err);
+      error.value = 'Item konnte nicht hinzugefügt werden';
+    }
   }
 
   async function addList(name) {
@@ -126,10 +173,93 @@ export function useShoppingList() {
     }
   }
 
+  // Nicht mehr benötigt - _pendingDelete wird direkt auf items gesetzt
   function getConflictForItem() {
     return null;
   }
   async function resolveConflict() {}
+
+  /**
+   * Generiert einen 6-stelligen Share-Code für eine Liste
+   * und speichert ihn auf dem Listen-Dokument.
+   * @param {string} listId - Die ID der Liste
+   * @returns {string} Der generierte Share-Code
+   */
+  async function generateShareCode(listId) {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // ohne I/O/0/1 zur Vermeidung von Verwechslungen
+    let code = '';
+    for (let i = 0; i < 6; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+
+    try {
+      await updateDoc(listId, (doc) => {
+        return {
+          ...doc,
+          shareCode: code,
+          updatedAt: new Date().toISOString(),
+        };
+      });
+
+      await loadData();
+      return code;
+    } catch (err) {
+      console.error('Fehler beim Generieren des Share-Codes:', err);
+      error.value = 'Share-Code konnte nicht generiert werden';
+      return null;
+    }
+  }
+
+  /**
+   * Tritt einer geteilten Liste bei anhand des Share-Codes.
+   * Sucht die Liste in CouchDB und importiert sie + Items lokal.
+   * @param {string} code - Der 6-stellige Share-Code
+   * @returns {Object} { success: boolean, message: string }
+   */
+  async function joinListByCode(code) {
+    if (!code || !code.trim()) {
+      return { success: false, message: 'Bitte einen Code eingeben.' };
+    }
+
+    const trimmedCode = code.trim().toUpperCase();
+
+    // Prüfen ob Liste bereits lokal vorhanden ist
+    const existingList = lists.value.find((l) => l.shareCode === trimmedCode);
+    if (existingList) {
+      return { success: false, message: 'Diese Liste hast du bereits.' };
+    }
+
+    // Liste in CouchDB suchen
+    const remoteList = await findListByShareCode(trimmedCode);
+    if (!remoteList) {
+      return { success: false, message: 'Keine Liste mit diesem Code gefunden.' };
+    }
+
+    // Liste lokal speichern (in IndexedDB)
+    const db = await (await import('./database')).initPouchDB();
+    const idb = db.localDB;
+    await new Promise((resolve) => {
+      const tx = idb.transaction('documents', 'readwrite');
+      tx.objectStore('documents').put(remoteList);
+      tx.oncomplete = () => resolve();
+    });
+
+    // Items der Liste von CouchDB holen und lokal speichern
+    const remoteItems = await fetchItemsForListFromRemote(remoteList._id);
+    for (const item of remoteItems) {
+      await new Promise((resolve) => {
+        const tx = idb.transaction('documents', 'readwrite');
+        tx.objectStore('documents').put(item);
+        tx.oncomplete = () => resolve();
+      });
+    }
+
+    // Liste als "beigetreten" in localStorage merken
+    addJoinedListId(remoteList._id);
+
+    await loadData();
+    return { success: true, message: `Liste "${remoteList.name}" beigetreten!` };
+  }
 
   /**
    * Online/Offline Event-Handler
@@ -295,6 +425,54 @@ export function useShoppingList() {
   }
 
   /**
+   * Ändert den Namen einer Liste
+   * @param {string} listId - Die ID der Liste
+   * @param {string} newName - Der neue Name
+   */
+  async function renameList(listId, newName) {
+    if (!newName || !newName.trim()) return;
+    try {
+      await updateDoc(listId, (doc) => {
+        return {
+          ...doc,
+          name: newName.trim(),
+          updatedAt: new Date().toISOString(),
+        };
+      });
+      await loadData();
+    } catch (err) {
+      console.error('Fehler beim Umbenennen der Liste:', err);
+      error.value = 'Liste konnte nicht umbenannt werden';
+      setTimeout(() => (error.value = null), 3000);
+    }
+  }
+
+  /**
+   * Ändert den Namen eines Artikels
+   * @param {Object} item - Das zu ändernde Item
+   * @param {string} newName - Der neue Name
+   */
+  async function renameItem(item, newName) {
+    if (!newName || !newName.trim()) return;
+    try {
+      const result = await updateDoc(item._id, (doc) => {
+        return {
+          ...doc,
+          name: newName.trim(),
+          lastModifiedBy: sessionName.value || 'Unbekannt',
+          updatedAt: new Date().toISOString(),
+        };
+      });
+      item._rev = result.rev;
+      item.name = newName.trim();
+    } catch (err) {
+      console.error('Fehler beim Umbenennen des Artikels:', err);
+      error.value = 'Artikel konnte nicht umbenannt werden';
+      setTimeout(() => (error.value = null), 3000);
+    }
+  }
+
+  /**
    * Berechnet den Fortschritt einer Listein Prozent (nur aktive Items)
    * @param {string} listId - Die ID der Liste
    * @returns {number} Fortschritt in Prozent (0-100)
@@ -337,6 +515,8 @@ export function useShoppingList() {
     addItem,
     addList,
     deleteList,
+    renameList,
+    renameItem,
     getItemsForList,
     getActiveItemsForList,
     getDeletedItemsForList,
@@ -350,5 +530,7 @@ export function useShoppingList() {
     rejectDelete,
     hasChangedItems,
     clearListChanges,
+    generateShareCode,
+    joinListByCode,
   };
 }

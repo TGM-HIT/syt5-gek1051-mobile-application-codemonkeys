@@ -101,6 +101,7 @@
   100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.5;
   }
@@ -291,6 +292,7 @@ h1 {
     opacity: 0;
     transform: translateY(-5px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -558,6 +560,69 @@ h1 {
   opacity: 0.82;
 }
 
+/* Search bar */
+.search-bar {
+  position: relative;
+  margin-bottom: 1.25rem;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.65rem 2.5rem 0.65rem 0.875rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  outline: none;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+  background: white;
+  box-sizing: border-box;
+}
+
+.search-input:focus {
+  border-color: #e53e3e;
+  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
+}
+
+.search-input::placeholder {
+  color: #a0aec0;
+}
+
+.search-clear-btn {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 1rem;
+  color: #a0aec0;
+  cursor: pointer;
+  padding: 0.25rem 0.4rem;
+  border-radius: 50%;
+  line-height: 1;
+  transition:
+    color 0.15s,
+    background 0.15s;
+}
+
+.search-clear-btn:hover {
+  color: #e53e3e;
+  background: #fed7d7;
+}
+
+/* Search dimmed items (non-matching during search) */
+.item.search-dimmed {
+  opacity: 0.45;
+  background: #e0e0e0;
+  pointer-events: none;
+}
+
+.item.search-dimmed .item-name {
+  color: #8a8a8a;
+}
+
 /* Add forms */
 .add-list-form {
   display: flex;
@@ -700,4 +765,261 @@ h1 {
 
 .modal-btn-danger {
   background: #c53030;
+}
+
+/* Join form (Liste beitreten) */
+.join-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.join-input {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.15s;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-weight: 700;
+}
+
+.join-input:focus {
+  border-color: #667eea;
+}
+
+.join-input::placeholder {
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 400;
+}
+
+.join-btn {
+  padding: 0.5rem 1rem;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.join-btn:hover {
+  background: #5a67d8;
+}
+
+.join-message {
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 1.25rem;
+  animation: fadeIn 0.3s ease-in;
+}
+
+.join-message.success {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.join-message.error {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* Share button on list header */
+.share-list-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.25rem 0.375rem;
+  border-radius: 6px;
+  opacity: 0.6;
+  transition:
+    opacity 0.15s,
+    background 0.15s;
+}
+
+.share-list-btn:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Share modal */
+.share-modal {
+  text-align: center;
+}
+
+.share-code-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 0;
+}
+
+.share-code-label {
+  font-size: 0.85rem;
+  color: #718096;
+  font-weight: 600;
+}
+
+.share-code {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: 6px;
+  color: #1a1a1a;
+  background: #f7fafc;
+  border: 2px dashed #e2e8f0;
+  border-radius: 12px;
+  padding: 0.75rem 1.5rem;
+  font-family: 'Courier New', monospace;
+}
+
+.share-copy-btn {
+  padding: 0.5rem 1.25rem;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.share-copy-btn:hover {
+  background: #5a67d8;
+}
+
+.share-hint {
+  font-size: 0.8rem;
+  color: #a0aec0;
+  margin: 0;
+}
+
+/* Inline Edit Forms */
+.edit-list-form,
+.edit-item-form {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.edit-input {
+  flex: 1;
+  padding: 0.4rem 0.75rem;
+  border: 2px solid #667eea;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  outline: none;
+  background: white;
+  transition: border-color 0.2s;
+}
+
+.edit-input:focus {
+  border-color: #5a67d8;
+}
+
+.edit-save-btn,
+.edit-cancel-btn {
+  padding: 0.4rem 0.75rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.edit-save-btn {
+  background: #48bb78;
+  color: white;
+}
+
+.edit-save-btn:hover {
+  background: #38a169;
+}
+
+.edit-cancel-btn {
+  background: #e2e8f0;
+  color: #4a5568;
+}
+
+.edit-cancel-btn:hover {
+  background: #cbd5e0;
+}
+
+/* List name and item name display with edit button */
+.list-name-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.list-name-display h2 {
+  margin: 0;
+}
+
+.edit-list-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+  opacity: 0.7;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  backdrop-filter: blur(10px);
+}
+
+.edit-list-btn:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+.item-name-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.edit-item-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  opacity: 0.4;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.item:hover .edit-item-btn {
+  opacity: 1;
+}
+
+.edit-item-btn:hover {
+  background: #e6f2ff;
+  transform: scale(1.1);
+}
+
+.item-name {
+  flex: 1;
 }

@@ -7,7 +7,7 @@ const sessionName = ref(localStorage.getItem(SESSION_KEY) || '');
 
 export function useSession() {
   function setSessionName(name) {
-    sessionName.value = name.trim();
+    sessionName.value = (name ?? '').trim();
     localStorage.setItem(SESSION_KEY, sessionName.value);
   }
 
