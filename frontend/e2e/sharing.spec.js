@@ -70,7 +70,7 @@ test.describe('Liste teilen', () => {
     await expect(page.locator('.join-btn')).toBeVisible()
   })
 
-  test.skip('zeigt Fehler bei leerem Code', async ({ page }) => {
+  test('zeigt Fehler bei leerem Code', async ({ page }) => {
     await setupSession(page)
     await page.locator('.join-btn').first().click()
     await expect(page.locator('.join-message').first()).toBeVisible()
