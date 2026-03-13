@@ -1,52 +1,58 @@
-import { ref, onMounted, onUnmounted } from 'vue'
-import { startSync, stopSync, getAllDocs, updateDoc, createDoc, hardDeleteDoc, restoreLocalVersion, clearRemoteChangedFlag, applyConflictResolution, clearPendingDeleteFlag } from './database'
-import { useSession } from './useSession'
+import { ref, onMounted, onUnmounted } from 'vue';
+import {
+  startSync,
+  stopSync,
+  getAllDocs,
+  updateDoc,
+  createDoc,
+  hardDeleteDoc,
+  clearRemoteChangedFlag,
+} from './database';
+import { useSession } from './useSession';
 
 /**
  * Composable für die Einkaufslisten-Logik mit PouchDB Offline-First
  */
 export function useShoppingList() {
-  const { sessionName } = useSession()
+  const { sessionName } = useSession();
 
   // State
-  const lists = ref([])
-  const items = ref([])
-  const loading = ref(true)
-  const error = ref(null)
-  const isOnline = ref(false) // Initial false, wird durch ersten Sync gesetzt
-  const syncActive = ref(false)
-  const conflicts = ref({}) // nicht mehr aktiv genutzt, für Kompatibilität behalten
-
-  let syncHandler = null
+  const lists = ref([]);
+  const items = ref([]);
+  const loading = ref(true);
+  const error = ref(null);
+  const isOnline = ref(false); // Initial false, wird durch ersten Sync gesetzt
+  const syncActive = ref(false);
+  const conflicts = ref({}); // nicht mehr aktiv genutzt, für Kompatibilität behalten
 
   /**
    * Lädt alle Listen und Items aus der lokalen Datenbank
    */
   async function loadData() {
     try {
-      loading.value = true
+      loading.value = true;
 
-      const docs = await getAllDocs()
+      const docs = await getAllDocs();
 
-      lists.value = docs.filter(doc => doc.type === 'list' && !doc.deleted)
-      items.value = docs.filter(doc => doc.type === 'item' && !doc.deleted)
+      lists.value = docs.filter((doc) => doc.type === 'list' && !doc.deleted);
+      items.value = docs.filter((doc) => doc.type === 'item' && !doc.deleted);
 
-      error.value = null
+      error.value = null;
     } catch (err) {
-      console.error('Fehler beim Laden:', err)
-      error.value = 'Fehler beim Laden der lokalen Daten'
+      console.error('Fehler beim Laden:', err);
+      error.value = 'Fehler beim Laden der lokalen Daten';
     } finally {
-      loading.value = false
+      loading.value = false;
     }
   }
 
   async function deleteList(list) {
-    await hardDeleteDoc(list._id)
-    await loadData()
+    await hardDeleteDoc(list._id);
+    await loadData();
   }
 
   async function addItem(listId, name) {
-    if (!name || !name.trim()) return
+    if (!name || !name.trim()) return;
     await createDoc({
       type: 'item',
       list_id: listId,
@@ -54,19 +60,19 @@ export function useShoppingList() {
       checked: false,
       markedDeleted: false,
       lastModifiedBy: sessionName.value || 'Unbekannt',
-    })
-    await loadData()
+    });
+    await loadData();
   }
 
   async function addList(name) {
-    if (!name || !name.trim()) return
+    if (!name || !name.trim()) return;
     await createDoc({
       type: 'list',
       name: name.trim(),
       owner: sessionName.value || 'Unbekannt',
       deleted: false,
-    })
-    await loadData()
+    });
+    await loadData();
   }
 
   /**
@@ -75,25 +81,24 @@ export function useShoppingList() {
    */
   async function toggleItem(item) {
     try {
-      const newCheckedState = !item.checked
-      item.checked = newCheckedState
+      const newCheckedState = !item.checked;
+      item.checked = newCheckedState;
 
       const result = await updateDoc(item._id, (doc) => {
         return {
           ...doc,
           checked: newCheckedState,
           lastModifiedBy: sessionName.value || 'Unbekannt',
-          updatedAt: new Date().toISOString()
-        }
-      })
+          updatedAt: new Date().toISOString(),
+        };
+      });
 
-      item._rev = result.rev
-
+      item._rev = result.rev;
     } catch (err) {
-      console.error('Fehler beim Updaten:', err)
-      item.checked = !item.checked
-      error.value = 'Item konnte nicht aktualisiert werden'
-      setTimeout(() => error.value = null, 3000)
+      console.error('Fehler beim Updaten:', err);
+      item.checked = !item.checked;
+      error.value = 'Item konnte nicht aktualisiert werden';
+      setTimeout(() => (error.value = null), 3000);
     }
   }
 
@@ -102,43 +107,42 @@ export function useShoppingList() {
    */
   function initSync() {
     try {
-      syncHandler = startSync(
+      startSync(
         // Status-Callback
         (status) => {
-          isOnline.value = status.online
-          syncActive.value = status.syncing
+          isOnline.value = status.online;
+          syncActive.value = status.syncing;
         },
         // Conflict-Callback – nicht mehr für markedDeleted nötig
         () => {},
         // Data-Change-Callback
-        (changedDocIds) => {
-          loadData() // UI neu laden bei Remote-Änderungen
-        }
-      )
-      syncActive.value = true
+        () => {
+          loadData(); // UI neu laden bei Remote-Änderungen
+        },
+      );
+      syncActive.value = true;
     } catch (err) {
-      console.error('Sync initialization failed:', err)
+      console.error('Sync initialization failed:', err);
     }
   }
 
-  // Nicht mehr benötigt - _pendingDelete wird direkt auf items gesetzt
-  function handleConflict() {}
-  function dismissConflict() {}
-  function getConflictForItem() { return null }
+  function getConflictForItem() {
+    return null;
+  }
   async function resolveConflict() {}
 
   /**
    * Online/Offline Event-Handler
    */
   function handleOnline() {
-    console.log('Network is online')
+    console.log('Network is online');
     // Status wird durch Sync-Callback aktualisiert
   }
 
   function handleOffline() {
-    console.log('Network is offline')
-    isOnline.value = false
-    syncActive.value = false
+    console.log('Network is offline');
+    isOnline.value = false;
+    syncActive.value = false;
   }
 
   /**
@@ -147,21 +151,21 @@ export function useShoppingList() {
    * @returns {Array} Array von Items
    */
   function getItemsForList(listId) {
-    return items.value.filter(i => i.list_id === listId)
+    return items.value.filter((i) => i.list_id === listId);
   }
 
   /**
    * Gibt aktive (nicht gelöscht markierte) Items für eine Liste zurück
    */
   function getActiveItemsForList(listId) {
-    return items.value.filter(i => i.list_id === listId && !i.markedDeleted)
+    return items.value.filter((i) => i.list_id === listId && !i.markedDeleted);
   }
 
   /**
    * Gibt als gelöscht markierte Items für eine Liste zurück
    */
   function getDeletedItemsForList(listId) {
-    return items.value.filter(i => i.list_id === listId && i.markedDeleted)
+    return items.value.filter((i) => i.list_id === listId && i.markedDeleted);
   }
 
   /**
@@ -175,15 +179,15 @@ export function useShoppingList() {
           ...doc,
           markedDeleted: false,
           lastModifiedBy: sessionName.value || 'Unbekannt',
-          updatedAt: new Date().toISOString()
-        }
-      })
-      item._rev = result.rev
-      item.markedDeleted = false
+          updatedAt: new Date().toISOString(),
+        };
+      });
+      item._rev = result.rev;
+      item.markedDeleted = false;
     } catch (err) {
-      console.error('Fehler beim Wiederherstellen:', err)
-      error.value = 'Item konnte nicht wiederhergestellt werden'
-      setTimeout(() => error.value = null, 3000)
+      console.error('Fehler beim Wiederherstellen:', err);
+      error.value = 'Item konnte nicht wiederhergestellt werden';
+      setTimeout(() => (error.value = null), 3000);
     }
   }
 
@@ -192,11 +196,11 @@ export function useShoppingList() {
    * @param {string} listId - Die ID der Liste
    */
   async function permanentlyDeleteAllMarked(listId) {
-    const deletedItems = getDeletedItemsForList(listId)
+    const deletedItems = getDeletedItemsForList(listId);
     for (const item of deletedItems) {
-      await hardDeleteDoc(item._id)
+      await hardDeleteDoc(item._id);
     }
-    await loadData()
+    await loadData();
   }
 
   /**
@@ -210,15 +214,15 @@ export function useShoppingList() {
           ...doc,
           markedDeleted: true,
           lastModifiedBy: sessionName.value || 'Unbekannt',
-          updatedAt: new Date().toISOString()
-        }
-      })
-      item._rev = result.rev
-      item.markedDeleted = true
+          updatedAt: new Date().toISOString(),
+        };
+      });
+      item._rev = result.rev;
+      item.markedDeleted = true;
     } catch (err) {
-      console.error('Fehler beim Markieren als gelöscht:', err)
-      error.value = 'Item konnte nicht gelöscht werden'
-      setTimeout(() => error.value = null, 3000)
+      console.error('Fehler beim Markieren als gelöscht:', err);
+      error.value = 'Item konnte nicht gelöscht werden';
+      setTimeout(() => (error.value = null), 3000);
     }
   }
 
@@ -228,7 +232,7 @@ export function useShoppingList() {
    * @returns {boolean} True wenn es geänderte Items gibt
    */
   function hasChangedItems(listId) {
-    return getItemsForList(listId).some(item => item._remoteChanged)
+    return getItemsForList(listId).some((item) => item._remoteChanged);
   }
 
   /**
@@ -236,14 +240,14 @@ export function useShoppingList() {
    * @param {string} listId - Die ID der Liste
    */
   async function clearListChanges(listId) {
-    const listItems = getItemsForList(listId)
-    const changedItems = listItems.filter(item => item._remoteChanged)
-    
+    const listItems = getItemsForList(listId);
+    const changedItems = listItems.filter((item) => item._remoteChanged);
+
     for (const item of changedItems) {
-      await clearRemoteChangedFlag(item._id)
+      await clearRemoteChangedFlag(item._id);
     }
-    
-    await loadData() // UI aktualisieren
+
+    await loadData(); // UI aktualisieren
   }
 
   /**
@@ -251,15 +255,20 @@ export function useShoppingList() {
    */
   async function acceptDelete(item) {
     try {
-      item._pendingDelete = undefined
-      const result = await updateDoc(item._id, (doc) => {
-        const clean = { ...doc }
-        delete clean._pendingDelete
-        return { ...clean, markedDeleted: true, lastModifiedBy: sessionName.value || 'Unbekannt', updatedAt: new Date().toISOString() }
-      })
-      await loadData()
+      item._pendingDelete = undefined;
+      await updateDoc(item._id, (doc) => {
+        const clean = { ...doc };
+        delete clean._pendingDelete;
+        return {
+          ...clean,
+          markedDeleted: true,
+          lastModifiedBy: sessionName.value || 'Unbekannt',
+          updatedAt: new Date().toISOString(),
+        };
+      });
+      await loadData();
     } catch (err) {
-      console.error('Fehler beim Akzeptieren der Löschung:', err)
+      console.error('Fehler beim Akzeptieren der Löschung:', err);
     }
   }
 
@@ -268,15 +277,20 @@ export function useShoppingList() {
    */
   async function rejectDelete(item) {
     try {
-      item._pendingDelete = undefined
-      const result = await updateDoc(item._id, (doc) => {
-        const clean = { ...doc }
-        delete clean._pendingDelete
-        return { ...clean, markedDeleted: false, lastModifiedBy: sessionName.value || 'Unbekannt', updatedAt: new Date().toISOString() }
-      })
-      await loadData()
+      item._pendingDelete = undefined;
+      await updateDoc(item._id, (doc) => {
+        const clean = { ...doc };
+        delete clean._pendingDelete;
+        return {
+          ...clean,
+          markedDeleted: false,
+          lastModifiedBy: sessionName.value || 'Unbekannt',
+          updatedAt: new Date().toISOString(),
+        };
+      });
+      await loadData();
     } catch (err) {
-      console.error('Fehler beim Ablehnen der Löschung:', err)
+      console.error('Fehler beim Ablehnen der Löschung:', err);
     }
   }
 
@@ -286,26 +300,26 @@ export function useShoppingList() {
    * @returns {number} Fortschritt in Prozent (0-100)
    */
   function getProgress(listId) {
-    const listItems = getActiveItemsForList(listId)
-    if (listItems.length === 0) return 0
-    const checked = listItems.filter(i => i.checked).length
-    return Math.round((checked / listItems.length) * 100)
+    const listItems = getActiveItemsForList(listId);
+    if (listItems.length === 0) return 0;
+    const checked = listItems.filter((i) => i.checked).length;
+    return Math.round((checked / listItems.length) * 100);
   }
 
   // Daten beim Mount laden
   onMounted(() => {
-    loadData()
-    initSync()
-    
-    window.addEventListener('online', handleOnline)
-    window.addEventListener('offline', handleOffline)
-  })
+    loadData();
+    initSync();
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+  });
 
   onUnmounted(() => {
-    stopSync()
-    window.removeEventListener('online', handleOnline)
-    window.removeEventListener('offline', handleOffline)
-  })
+    stopSync();
+    window.removeEventListener('online', handleOnline);
+    window.removeEventListener('offline', handleOffline);
+  });
 
   // Public API
   return {
@@ -335,7 +349,6 @@ export function useShoppingList() {
     acceptDelete,
     rejectDelete,
     hasChangedItems,
-    clearListChanges
-  }
+    clearListChanges,
+  };
 }
-
