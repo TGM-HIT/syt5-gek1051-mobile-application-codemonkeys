@@ -2,6 +2,8 @@
 
 ![CI](https://github.com/TGM-HIT/syt5-gek1051-mobile-application-codemonkeys/actions/workflows/ci.yml/badge.svg)
 
+Webseite: http://51.11.225.25/
+
 syt5-gek1051-mobile-application-codemonkeys created by GitHub Classroom
 
 ## Team
