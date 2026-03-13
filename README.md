@@ -1,5 +1,10 @@
 # syt5-gek1051-mobile-application-codemonkeys
 
+![CI](https://github.com/TGM-HIT/syt5-gek1051-mobile-application-codemonkeys/actions/workflows/ci.yml/badge.svg)
+![Coverage](https://img.shields.io/badge/coverage-85%25-brightgreen)
+![Tests](https://img.shields.io/badge/tests-107%2B-blue)
+![E2E](https://img.shields.io/badge/E2E-Playwright-45ba4b)
+
 Eine mobile Einkaufslisten-App mit Offline-Fähigkeit und bidirektionaler Synchronisation, gebaut mit Vue 3 + PouchDB/CouchDB.
 
 ## Team
@@ -20,6 +25,7 @@ Eine mobile Einkaufslisten-App mit Offline-Fähigkeit und bidirektionaler Synchr
 - [Projektstruktur](#projektstruktur)
 - [Branch-Strategie](#branch-strategie)
 - [Code-Qualität](#code-qualität)
+- [Testing](#testing)
 - [Stories und Tasks](#stories-und-tasks)
 
 ## Voraussetzungen
@@ -79,6 +85,8 @@ Alle Scripts werden im `frontend/`-Verzeichnis ausgeführt:
 | `npm test` | Führt alle Unit-Tests einmalig aus (Vitest) |
 | `npm run test:watch` | Führt Tests im Watch-Modus aus |
 | `npm run test:coverage` | Erstellt einen Coverage-Report |
+| `npm run test:e2e` | Führt E2E-Tests mit Playwright aus |
+| `npm run test:all` | Unit-Tests + E2E-Tests zusammen |
 
 ## Projektstruktur
 
@@ -86,7 +94,7 @@ Alle Scripts werden im `frontend/`-Verzeichnis ausgeführt:
 syt5-gek1051-mobile-application-codemonkeys/
 ├── .github/
 │   └── workflows/
-│       └── ci.yml          # CI-Pipeline (Lint + Tests)
+│       └── ci.yml          # CI-Pipeline (Lint + Tests + E2E)
 ├── frontend/               # Vue 3 Frontend-App
 │   ├── src/
 │   │   ├── assets/
@@ -94,14 +102,17 @@ syt5-gek1051-mobile-application-codemonkeys/
 │   │   ├── composables/
 │   │   ├── App.vue
 │   │   └── main.js
+│   ├── e2e/                # Playwright E2E-Tests
 │   ├── public/
 │   ├── eslint.config.js    # ESLint-Konfiguration (mit Prettier)
 │   ├── .prettierrc         # Prettier-Konfiguration
+│   ├── playwright.config.js
 │   ├── vite.config.js
 │   └── package.json
 ├── init-scripts/           # CouchDB-Initialisierungsscripte
 ├── docker-compose.yml      # Docker-Setup für CouchDB
 ├── STORIES.md              # User & Developer Stories
+├── TESTING.md              # Vollständige Test-Dokumentation
 └── README.md
 ```
 
@@ -142,10 +153,29 @@ npm run lint
 
 ### CI-Pipeline
 
-Bei jedem Push und jedem Pull Request auf `main` oder `dev` werden automatisch ausgeführt:
+Bei jedem Push und jedem Pull Request werden automatisch ausgeführt:
 
 1. **Lint-Job**: ESLint prüft den gesamten Code
-2. **Test-Job**: Vitest führt alle Unit-Tests aus
+2. **Test-Job**: Vitest führt alle Unit-Tests aus + Coverage-Report
+3. **E2E-Job**: Playwright führt End-to-End Tests aus
+
+## Testing
+
+```bash
+# Unit Tests
+npm test
+
+# E2E Tests (benötigt laufenden Dev-Server)
+npm run test:e2e
+
+# Alle Tests
+npm run test:all
+
+# Coverage Report
+npm run test:coverage
+```
+
+📖 Vollständige Test-Dokumentation: [TESTING.md](TESTING.md)
 
 ## Stories und Tasks
 

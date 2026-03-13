@@ -640,6 +640,65 @@ export async function hardDeleteDoc(id) {
   }
 }
 
+// Sucht eine Liste anhand ihres Share-Codes in CouchDB
+export async function findListByShareCode(code) {
+  try {
+    const response = await fetch(`${COUCHDB_URL}/_find`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Basic ${btoa(`${COUCHDB_USER}:${COUCHDB_PASSWORD}`)}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        selector: {
+          type: 'list',
+          shareCode: code,
+        },
+        limit: 1,
+      }),
+    });
+
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    if (data.docs && data.docs.length > 0) {
+      return data.docs[0];
+    }
+    return null;
+  } catch (err) {
+    console.error('Error finding list by share code:', err);
+    return null;
+  }
+}
+
+// Holt alle Items einer Liste von CouchDB (für Sharing)
+export async function fetchItemsForListFromRemote(listId) {
+  try {
+    const response = await fetch(`${COUCHDB_URL}/_find`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Basic ${btoa(`${COUCHDB_USER}:${COUCHDB_PASSWORD}`)}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        selector: {
+          type: 'item',
+          list_id: listId,
+        },
+        limit: 1000,
+      }),
+    });
+
+    if (!response.ok) return [];
+
+    const data = await response.json();
+    return data.docs || [];
+  } catch (err) {
+    console.error('Error fetching items from remote:', err);
+    return [];
+  }
+}
+
 export async function deleteDoc(id) {
   try {
     const db = await openDB();

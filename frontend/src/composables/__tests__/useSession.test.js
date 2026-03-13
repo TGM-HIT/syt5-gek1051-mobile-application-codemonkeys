@@ -90,4 +90,55 @@ describe('useSession', () => {
     setSessionName('   ');
     expect(sessionName.value).toBe('');
   });
+
+  it('handles undefined as input gracefully', async () => {
+    localStorageMock.getItem.mockReturnValueOnce(null);
+    const { useSession } = await import('../useSession.js');
+    const { setSessionName, sessionName } = useSession();
+
+    setSessionName(undefined);
+    expect(sessionName.value).toBe('');
+  });
+
+  it('handles null as input gracefully', async () => {
+    localStorageMock.getItem.mockReturnValueOnce(null);
+    const { useSession } = await import('../useSession.js');
+    const { setSessionName, sessionName } = useSession();
+
+    setSessionName(null);
+    expect(sessionName.value).toBe('');
+  });
+
+  it('handles very long names by storing them', async () => {
+    localStorageMock.getItem.mockReturnValueOnce(null);
+    const { useSession } = await import('../useSession.js');
+    const { setSessionName, sessionName } = useSession();
+
+    const longName = 'A'.repeat(100);
+    setSessionName(longName);
+    expect(sessionName.value).toBe(longName);
+    expect(localStorageMock.setItem).toHaveBeenCalledWith('einkaufsliste_session_name', longName);
+  });
+
+  it('clearSession is idempotent', async () => {
+    localStorageMock.getItem.mockReturnValueOnce('Alice');
+    const { useSession } = await import('../useSession.js');
+    const { clearSession, sessionName } = useSession();
+
+    clearSession();
+    clearSession();
+    clearSession();
+
+    expect(sessionName.value).toBe('');
+    expect(localStorageMock.removeItem).toHaveBeenCalled();
+  });
+
+  it('setSessionName with special characters', async () => {
+    localStorageMock.getItem.mockReturnValueOnce(null);
+    const { useSession } = await import('../useSession.js');
+    const { setSessionName, sessionName } = useSession();
+
+    setSessionName('Alice & Bob 🛒');
+    expect(sessionName.value).toBe('Alice & Bob 🛒');
+  });
 });
