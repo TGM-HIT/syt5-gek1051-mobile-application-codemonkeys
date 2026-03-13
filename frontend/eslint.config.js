@@ -12,12 +12,20 @@ export default defineConfig([
     extends: ['js/recommended'],
     languageOptions: { globals: globals.browser },
   },
+  {
+    files: ['**/*.test.js', '**/__tests__/**/*.js', '*.config.js'],
+    languageOptions: { globals: { ...globals.browser, ...globals.node } },
+  },
   pluginVue.configs['flat/essential'],
   configPrettier,
   {
     plugins: { prettier: pluginPrettier },
     rules: {
       'prettier/prettier': 'error',
+      'no-unused-vars': [
+        'error',
+        { caughtErrors: 'none', argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
     },
   },
 ]);
