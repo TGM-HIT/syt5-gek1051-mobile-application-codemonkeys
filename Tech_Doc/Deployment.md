@@ -53,8 +53,10 @@ VITE_COUCHDB_PASSWORD=passwordvonEuch
 Danach:
 
 ``` bash
+docker compose up -d
+cd frontend
 npm install
-npm run build  # Erstellt dist/
+npm run build  
 ```
 
 Build nach Nginx verschieben:
