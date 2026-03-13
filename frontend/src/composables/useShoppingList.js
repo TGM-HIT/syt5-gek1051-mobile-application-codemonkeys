@@ -73,22 +73,32 @@ export function useShoppingList() {
   }
 
   async function deleteList(list) {
-    removeJoinedListId(list._id)
-    await hardDeleteDoc(list._id)
-    await loadData()
+    try {
+      removeJoinedListId(list._id)
+      await hardDeleteDoc(list._id)
+      await loadData()
+    } catch (err) {
+      console.error('Fehler beim Löschen der Liste:', err)
+      error.value = 'Liste konnte nicht gelöscht werden'
+    }
   }
 
   async function addItem(listId, name) {
     if (!name || !name.trim()) return
-    await createDoc({
-      type: 'item',
-      list_id: listId,
-      name: name.trim(),
-      checked: false,
-      markedDeleted: false,
-      lastModifiedBy: sessionName.value || 'Unbekannt',
-    })
-    await loadData()
+    try {
+      await createDoc({
+        type: 'item',
+        list_id: listId,
+        name: name.trim(),
+        checked: false,
+        markedDeleted: false,
+        lastModifiedBy: sessionName.value || 'Unbekannt',
+      })
+      await loadData()
+    } catch (err) {
+      console.error('Fehler beim Hinzufügen des Items:', err)
+      error.value = 'Item konnte nicht hinzugefügt werden'
+    }
   }
 
   async function addList(name) {
@@ -167,24 +177,28 @@ export function useShoppingList() {
    * @returns {string} Der generierte Share-Code
    */
   async function generateShareCode(listId) {
-    // Zufälligen 6-stelligen alphanumerischen Code generieren
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789' // ohne I/O/0/1 zur Vermeidung von Verwechslungen
     let code = ''
     for (let i = 0; i < 6; i++) {
       code += chars.charAt(Math.floor(Math.random() * chars.length))
     }
 
-    // Code auf dem Listen-Dokument speichern
-    await updateDoc(listId, (doc) => {
-      return {
-        ...doc,
-        shareCode: code,
-        updatedAt: new Date().toISOString()
-      }
-    })
+    try {
+      await updateDoc(listId, (doc) => {
+        return {
+          ...doc,
+          shareCode: code,
+          updatedAt: new Date().toISOString()
+        }
+      })
 
-    await loadData()
-    return code
+      await loadData()
+      return code
+    } catch (err) {
+      console.error('Fehler beim Generieren des Share-Codes:', err)
+      error.value = 'Share-Code konnte nicht generiert werden'
+      return null
+    }
   }
 
   /**
