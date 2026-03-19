@@ -2,8 +2,10 @@
 
 ![CI](https://github.com/TGM-HIT/syt5-gek1051-mobile-application-codemonkeys/actions/workflows/ci.yml/badge.svg)
 ![Coverage](https://img.shields.io/badge/coverage-85%25-brightgreen)
-![Tests](https://img.shields.io/badge/tests-107%2B-blue)
-![E2E](https://img.shields.io/badge/E2E-Playwright-45ba4b)
+![Tests](https://img.shields.io/badge/tests-606%2B-blue)
+![E2E](https://img.shields.io/badge/E2E-Pending-blue)
+
+Webseite: http://51.11.225.25/
 
 Eine mobile Einkaufslisten-App mit Offline-Fähigkeit und bidirektionaler Synchronisation, gebaut mit Vue 3 + PouchDB/CouchDB.
 
