@@ -26,18 +26,13 @@
         "name": "chromium",
         "testDir": "C:/Users/heral/IdeaProjects/syt5-gek1051-mobile-application-codemonkeys/frontend/e2e",
         "testIgnore": [],
-        "testMatch": [
-          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
-        ],
+        "testMatch": ["**/*.@(spec|test).?(c|m)[jt]s?(x)"],
         "timeout": 30000
       }
     ],
     "quiet": false,
     "reporter": [
-      [
-        "html",
-        null
-      ],
+      ["html", null],
       [
         "json",
         {
