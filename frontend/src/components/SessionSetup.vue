@@ -1,14 +1,14 @@
 <script setup>
-import { ref } from 'vue'
-import { useSession } from '@/composables/useSession'
+import { ref } from 'vue';
+import { useSession } from '@/composables/useSession';
 
-const { setSessionName } = useSession()
-const nameInput = ref('')
+const { setSessionName } = useSession();
+const nameInput = ref('');
 
 function submit() {
-  const trimmed = nameInput.value.trim()
+  const trimmed = nameInput.value.trim();
   if (trimmed) {
-    setSessionName(trimmed)
+    setSessionName(trimmed);
   }
 }
 </script>
@@ -101,7 +101,9 @@ function submit() {
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
-  transition: opacity 0.2s, transform 0.1s;
+  transition:
+    opacity 0.2s,
+    transform 0.1s;
 }
 
 .session-btn:hover:not(:disabled) {

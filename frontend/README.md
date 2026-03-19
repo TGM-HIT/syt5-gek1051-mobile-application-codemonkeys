@@ -47,5 +47,6 @@ npm run preview
 ## Datenbank-Verbindung
 
 CouchDB: `http://localhost:5984/einkaufsliste`
+
 - User: `admin`
 - Passwort: `passwort`
