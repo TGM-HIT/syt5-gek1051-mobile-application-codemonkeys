@@ -77,12 +77,15 @@ test.describe('Listen verwalten', () => {
 });
 
 test.describe('Artikel verwalten', () => {
+  let listName = ''
+
   test.beforeEach(async ({ page }) => {
-    await setupSession(page);
-    await page.fill('.add-list-form .add-input', 'Testliste');
-    await page.click('.add-list-form .add-btn');
-    await expect(page.locator('.list').last()).toBeVisible();
-  });
+    await setupSession(page)
+    listName = `Testliste-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+    await page.fill('.add-list-form .add-input', listName)
+    await page.click('.add-list-form .add-btn')
+    await expect(page.locator('.list').filter({ has: page.getByRole('heading', { name: listName }) })).toBeVisible()
+  })
 
   test('fügt einen Artikel hinzu', async ({ page }) => {
     const list = page.locator('.list').last();
@@ -140,20 +143,50 @@ test.describe('Artikel verwalten', () => {
   });
 
   test('Daten bleiben nach Reload erhalten', async ({ page }) => {
-    const list = page.locator('.list').last();
-    await list.locator('.add-item-form .add-input').fill('Apfel');
-    await list.locator('.add-item-form .add-btn').click();
-    await expect(
-      page.locator('.list').last().locator('.item').filter({ hasText: 'Apfel' }),
-    ).toBeVisible();
-    await page.reload();
-    await page.waitForLoadState('domcontentloaded');
-    await page.waitForTimeout(500);
-    await expect(
-      page.locator('.list').last().locator('.item').filter({ hasText: 'Apfel' }),
-    ).toBeVisible();
-  });
-});
+    const list = page.locator('.list').filter({ has: page.getByRole('heading', { name: listName }) })
+    await list.locator('.add-item-form .add-input').fill('Apfel')
+    await list.locator('.add-item-form .add-btn').click()
+    await expect(list.locator('.item').filter({ hasText: 'Apfel' })).toBeVisible()
+
+    // Absichern, dass der Eintrag wirklich in IndexedDB persistiert ist,
+    // bevor die Seite neu geladen wird.
+    await expect.poll(async () => {
+      return await page.evaluate(async () => {
+        return await new Promise((resolve) => {
+          try {
+            const req = indexedDB.open('einkaufsliste_db')
+            req.onerror = () => resolve(false)
+            req.onsuccess = () => {
+              const db = req.result
+              const tx = db.transaction('documents', 'readonly')
+              const getAllReq = tx.objectStore('documents').getAll()
+              getAllReq.onerror = () => resolve(false)
+              getAllReq.onsuccess = () => {
+                const docs = getAllReq.result || []
+                const exists = docs.some((doc) =>
+                  doc?.type === 'item' &&
+                  doc?.name === 'Apfel' &&
+                  doc?.markedDeleted !== true &&
+                  doc?.deleted !== true
+                )
+                resolve(exists)
+              }
+            }
+          } catch (_) {
+            resolve(false)
+          }
+        })
+      })
+    }).toBe(true)
+
+    await page.reload()
+    await page.waitForLoadState('domcontentloaded')
+    await expect(page.locator('.message').filter({ hasText: 'Daten werden geladen...' })).not.toBeVisible()
+    const reloadedList = page.locator('.list').filter({ has: page.getByRole('heading', { name: listName }) })
+    await expect(reloadedList).toBeVisible()
+    await expect(reloadedList.locator('.item').filter({ hasText: 'Apfel' })).toBeVisible()
+  })
+})
 
 test.describe('Suche', () => {
   test.beforeEach(async ({ page }) => {
