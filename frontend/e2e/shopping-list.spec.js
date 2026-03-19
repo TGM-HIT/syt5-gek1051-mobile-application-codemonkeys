@@ -68,11 +68,14 @@ test.describe('Listen verwalten', () => {
 })
 
 test.describe('Artikel verwalten', () => {
+  let listName = ''
+
   test.beforeEach(async ({ page }) => {
     await setupSession(page)
-    await page.fill('.add-list-form .add-input', 'Testliste')
+    listName = `Testliste-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+    await page.fill('.add-list-form .add-input', listName)
     await page.click('.add-list-form .add-btn')
-    await expect(page.locator('.list').last()).toBeVisible()
+    await expect(page.locator('.list').filter({ has: page.getByRole('heading', { name: listName }) })).toBeVisible()
   })
 
   test('fügt einen Artikel hinzu', async ({ page }) => {
@@ -127,14 +130,15 @@ test.describe('Artikel verwalten', () => {
   })
 
   test('Daten bleiben nach Reload erhalten', async ({ page }) => {
-    const list = page.locator('.list').last()
+    const list = page.locator('.list').filter({ has: page.getByRole('heading', { name: listName }) })
     await list.locator('.add-item-form .add-input').fill('Apfel')
     await list.locator('.add-item-form .add-btn').click()
-    await expect(page.locator('.list').last().locator('.item').filter({ hasText: 'Apfel' })).toBeVisible()
+    await expect(list.locator('.item').filter({ hasText: 'Apfel' })).toBeVisible()
     await page.reload()
     await page.waitForLoadState('domcontentloaded')
-    await page.waitForTimeout(500)
-    await expect(page.locator('.list').last().locator('.item').filter({ hasText: 'Apfel' })).toBeVisible()
+    await expect(page.locator('.message').filter({ hasText: 'Daten werden geladen...' })).not.toBeVisible()
+    const reloadedList = page.locator('.list').filter({ has: page.getByRole('heading', { name: listName }) })
+    await expect(reloadedList.locator('.item').filter({ hasText: 'Apfel' })).toBeVisible()
   })
 })
 
