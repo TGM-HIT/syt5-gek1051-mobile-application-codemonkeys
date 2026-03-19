@@ -192,7 +192,38 @@ test.describe('Artikel verwalten', () => {
   test('Daten bleiben nach Reload erhalten', async ({ page }) => {
     await page.fill('.add-item-form .add-input', 'Apfel')
     await page.click('.add-item-form .add-btn')
+    await expect(page.locator('.item').filter({ hasText: 'Apfel' })).toBeVisible()
+    await expect.poll(async () => {
+      return await page.evaluate(async () => {
+        return await new Promise((resolve) => {
+          try {
+            const req = indexedDB.open('einkaufsliste_db')
+            req.onerror = () => resolve(false)
+            req.onsuccess = () => {
+              const db = req.result
+              const tx = db.transaction('documents', 'readonly')
+              const getAllReq = tx.objectStore('documents').getAll()
+              getAllReq.onerror = () => resolve(false)
+              getAllReq.onsuccess = () => {
+                const docs = getAllReq.result || []
+                const exists = docs.some((doc) =>
+                  doc?.type === 'item' &&
+                  doc?.name === 'Apfel' &&
+                  doc?.markedDeleted !== true &&
+                  doc?.deleted !== true
+                )
+                resolve(exists)
+              }
+            }
+          } catch (_) {
+            resolve(false)
+          }
+        })
+      })
+    }).toBe(true)
     await page.reload()
+    await page.waitForLoadState('domcontentloaded')
+    await expect(page.locator('.message').filter({ hasText: 'Daten werden geladen...' })).not.toBeVisible()
     await expect(page.locator('.item').filter({ hasText: 'Apfel' })).toBeVisible()
   })
 })
