@@ -114,6 +114,11 @@ jobs:
       - name: Create E2E test files
         run: node create-e2e-dir.js
 
+      - name: Check generated E2E reload test
+        run: |
+          grep -n "expect.poll" frontend/e2e/shopping-list.spec.js
+          grep -n "Daten werden geladen" frontend/e2e/shopping-list.spec.js
+
       - name: Install Playwright browsers
         working-directory: frontend
         run: npx playwright install --with-deps chromium
