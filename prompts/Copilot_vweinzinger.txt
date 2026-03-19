@@ -46,3 +46,15 @@
    5. Gib mir die anfragen und prompts von heute alle zurück (13.03 - 12:07)
    6. Run npm run test:coverage (13.03 - 12:04)
 
+
+Für diese aktuelle Session (19.03.2026) sind die Prompts:
+
+   1. „alle prompts mir am ende wenn ich frage zurückgeben“
+   2. npm run test:e2e Fehlerlog + „fixe mir die tests und sag was ich commiten muss“
+   3. Neuer E2E-Fehlerlog + „fixe ihn mir“
+   4. Wieder Reload-Fehler + „es kommt immer noch …“
+   5. npm run test:coverage Fehlerlog + „wieso kommt das jetzt“
+   6. Diff-Auszug + „… verlinkungen verändert …“
+   7. CI-Log „No tests found“ + „fixe das“
+   8. „gib mir alle prompts“
+   9. Diese Nachricht mit dem Session-Format-Beispiel.
