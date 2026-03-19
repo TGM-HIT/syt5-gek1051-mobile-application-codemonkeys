@@ -138,8 +138,11 @@ async function copyShareCode() {
 }
 
 async function submitJoinCode() {
-  if (!joinCode.value.trim()) return;
   joinMessage.value = { text: '', type: '' };
+  if (!joinCode.value.trim()) {
+    joinMessage.value = { text: 'Bitte einen Code eingeben.', type: 'error' };
+    return;
+  }
   const result = await joinListByCode(joinCode.value);
   joinMessage.value = { text: result.message, type: result.success ? 'success' : 'error' };
   if (result.success) {
