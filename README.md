@@ -7,9 +7,19 @@
 
 ## Projektbeschreibung
 
-Dieses Projekt ist eine mobile Einkaufslisten-App mit Offline-Fähigkeit und bidirektionaler Synchronisation.
+Dieses Projekt ist eine mobile Einkaufslisten-App, die den Alltag beim Einkaufen einfacher macht.
 
-Die Anwendung basiert auf **Vue 3** im Frontend und nutzt **PouchDB/CouchDB** für lokale Datenspeicherung und Synchronisation. Ziel ist eine robuste Nutzererfahrung, bei der Listen auch ohne aktive Internetverbindung bearbeitet werden können.
+Die Idee ist: Du kannst deine Einkaufsliste jederzeit bearbeiten - auch ohne Internet. Sobald wieder eine Verbindung besteht, werden alle Änderungen automatisch mit dem Server abgeglichen.
+
+Das bedeutet in der Praxis:
+
+- Du kannst zu Hause Produkte zur Liste hinzufügen.
+- Im Supermarkt kannst du auch ohne Empfang weiter abhaken oder ergänzen.
+- Später sind die Daten auf allen Geräten wieder auf demselben Stand.
+
+Die App ist also besonders nützlich für Situationen mit schlechtem Netz und für Personen, die eine verlässliche Liste ohne Datenverlust möchten.
+
+Technisch basiert die Anwendung auf **Vue 3** (Benutzeroberfläche) sowie **PouchDB/CouchDB** (Datenspeicherung und Synchronisation).
 
 Live-Demo: http://51.11.225.25/
 
