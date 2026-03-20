@@ -93,10 +93,13 @@ function submitNewList() {
   newListName.value = '';
 }
 
-// Neuer Artikel pro Liste
+// Neuer Artikel pro Liste (unterstützt kommaseparierte Eingabe)
 const newItemNames = ref({});
 function submitNewItem(listId) {
-  addItem(listId, newItemNames.value[listId] || '');
+  const input = newItemNames.value[listId] || '';
+  if (!input.trim()) return;
+  const itemsToAdd = input.split(',').map(i => i.trim()).filter(i => i);
+  itemsToAdd.forEach(itemName => addItem(listId, itemName));
   newItemNames.value[listId] = '';
 }
 
@@ -204,6 +207,36 @@ function confirmDeleteList(list) {
   showConfirm('Liste löschen?', `Willst du die Liste "${list.name}" wirklich löschen?`, () =>
     deleteList(list),
   );
+}
+
+// ── Paginierung ──
+const ITEMS_PER_PAGE = 40
+const visibleCounts = ref({})
+
+function getVisibleCount(listId, tab) {
+  const key = `${listId}_${tab}`
+  return visibleCounts.value[key] || ITEMS_PER_PAGE
+}
+
+function getVisibleActiveItems(listId) {
+  const items = getActiveItemsForList(listId)
+  return items.slice(0, getVisibleCount(listId, 'active'))
+}
+
+function getVisibleDeletedItems(listId) {
+  const items = getDeletedItemsForList(listId)
+  return items.slice(0, getVisibleCount(listId, 'deleted'))
+}
+
+function hasMoreItems(listId, tab) {
+  const items = tab === 'active' ? getActiveItemsForList(listId) : getDeletedItemsForList(listId)
+  return getVisibleCount(listId, tab) < items.length
+}
+
+function loadMoreItems(listId, tab) {
+  const key = `${listId}_${tab}`
+  const current = visibleCounts.value[key] || ITEMS_PER_PAGE
+  visibleCounts.value[key] = current + ITEMS_PER_PAGE
 }
 </script>
 
@@ -372,7 +405,7 @@ function confirmDeleteList(list) {
 
             <!-- Tab: Aktive Artikel -->
             <ul v-if="getTab(list._id) === 'active'" class="items">
-              <template v-for="item in getActiveItemsForList(list._id)" :key="item._id">
+              <template v-for="item in getVisibleActiveItems(list._id)" :key="item._id">
                 <li
                   :class="{
                     checked: item.checked,
@@ -452,6 +485,13 @@ function confirmDeleteList(list) {
               </template>
             </ul>
 
+            <!-- "Weitere Artikel anzeigen" Button (Aktiv) -->
+            <div v-if="getTab(list._id) === 'active' && hasMoreItems(list._id, 'active')" class="load-more-container">
+              <button class="load-more-btn" @click="loadMoreItems(list._id, 'active')">
+                Weitere Artikel anzeigen
+              </button>
+            </div>
+
             <!-- Tab: Gelöschte Artikel -->
             <template v-if="getTab(list._id) === 'deleted'">
               <div v-if="getDeletedItemsForList(list._id).length > 0" class="permanent-delete-bar">
@@ -460,7 +500,7 @@ function confirmDeleteList(list) {
                 </button>
               </div>
               <ul class="items">
-                <template v-for="item in getDeletedItemsForList(list._id)" :key="item._id">
+                <template v-for="item in getVisibleDeletedItems(list._id)" :key="item._id">
                   <li
                     :class="{ 'search-dimmed': searchQuery && !isSearchMatch(item) }"
                     class="item item-deleted"
@@ -478,6 +518,13 @@ function confirmDeleteList(list) {
                   </li>
                 </template>
               </ul>
+
+              <!-- "Weitere Artikel anzeigen" Button (Gelöscht) -->
+              <div v-if="getTab(list._id) === 'deleted' && hasMoreItems(list._id, 'deleted')" class="load-more-container">
+                <button class="load-more-btn" @click="loadMoreItems(list._id, 'deleted')">
+                  Weitere Artikel anzeigen
+                </button>
+              </div>
             </template>
 
             <div
