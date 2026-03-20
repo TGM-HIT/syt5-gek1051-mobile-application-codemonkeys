@@ -5,9 +5,128 @@
 ![Tests](https://img.shields.io/badge/tests-601%2B-blue)
 ![E2E](https://img.shields.io/badge/E2E-Pending-blue)
 
-Webseite: http://51.11.225.25/
+## Projektbeschreibung
 
-Eine mobile Einkaufslisten-App mit Offline-Fähigkeit und bidirektionaler Synchronisation, gebaut mit Vue 3 + PouchDB/CouchDB.
+Dieses Projekt ist eine mobile Einkaufslisten-App mit Offline-Fähigkeit und bidirektionaler Synchronisation.
+
+Die Anwendung basiert auf **Vue 3** im Frontend und nutzt **PouchDB/CouchDB** für lokale Datenspeicherung und Synchronisation. Ziel ist eine robuste Nutzererfahrung, bei der Listen auch ohne aktive Internetverbindung bearbeitet werden können.
+
+Live-Demo: http://51.11.225.25/
+
+## Inhaltsverzeichnis
+
+- [Features](#features)
+- [Technologie-Stack](#technologie-stack)
+- [Voraussetzungen](#voraussetzungen)
+- [Installation](#installation)
+- [Projekt-Setup](#projekt-setup)
+- [Verfügbare Skripte](#verfügbare-skripte)
+- [Projektstruktur](#projektstruktur)
+- [Team](#team)
+- [Branch-Strategie](#branch-strategie)
+- [Code-Qualität](#code-qualität)
+- [Testing](#testing)
+- [Stories und Tasks](#stories-und-tasks)
+
+## Features
+
+- Offline-First Einkaufslistenverwaltung
+- Bidirektionale Synchronisation zwischen lokalem Speicher und Backend
+- Moderne Vue-3-Frontend-Architektur
+- Unit- und E2E-Testabdeckung mit CI-Integration
+
+## Technologie-Stack
+
+- **Frontend:** Vue 3, Vite
+- **Datenspeicherung/Sync:** PouchDB, CouchDB
+- **Testing:** Vitest, Playwright
+- **Qualitätssicherung:** ESLint, Prettier
+- **Container:** Docker, Docker Compose
+
+## Voraussetzungen
+
+Folgende Tools müssen installiert sein:
+
+- **Node.js** `^20.19.0` oder `>=22.12.0`
+- **npm** (kommt mit Node.js)
+- **Docker** & **Docker Compose** (für das Backend / CouchDB)
+- **Git**
+
+## Installation
+
+```bash
+git clone https://github.com/TGM-HIT/syt5-gek1051-mobile-application-codemonkeys.git
+cd syt5-gek1051-mobile-application-codemonkeys
+```
+
+## Projekt-Setup
+
+### 1. Frontend-Dependencies installieren
+
+```bash
+cd frontend
+npm install
+```
+
+### 2. Backend starten (CouchDB via Docker)
+
+```bash
+# Im Root-Verzeichnis des Projekts
+docker compose up -d
+```
+
+CouchDB ist danach erreichbar unter: `http://localhost:5984`
+
+### 3. Frontend starten
+
+```bash
+cd frontend
+npm run dev
+```
+
+Die App ist dann unter `http://localhost:5173` erreichbar.
+
+## Verfügbare Skripte
+
+Alle Skripte werden im Verzeichnis `frontend/` ausgeführt:
+
+| Skript | Beschreibung |
+| :--- | :--- |
+| `npm run dev` | Startet den Vite-Entwicklungsserver mit Hot-Reload |
+| `npm run build` | Erstellt einen Production-Build im `dist/`-Ordner |
+| `npm run preview` | Vorschau des Production-Builds lokal |
+| `npm run lint` | ESLint prüft alle `.js`, `.mjs`, `.cjs` und `.vue`-Dateien |
+| `npm run format` | Prettier formatiert alle Dateien automatisch |
+| `npm test` | Führt alle Unit-Tests einmalig aus (Vitest) |
+| `npm run test:watch` | Führt Tests im Watch-Modus aus |
+| `npm run test:coverage` | Erstellt einen Coverage-Report |
+| `npm run test:e2e` | Führt E2E-Tests mit Playwright aus |
+| `npm run test:e2e:ui` | Startet Playwright im UI-Modus |
+| `npm run test:e2e:headed` | Führt E2E-Tests im sichtbaren Browser aus |
+| `npm run test:e2e:debug` | Führt E2E-Tests im Debug-Modus aus |
+| `npm run test:all` | Unit-Tests + E2E-Tests zusammen |
+
+## Projektstruktur
+
+```text
+syt5-gek1051-mobile-application-codemonkeys/
+├── .github/
+│   └── workflows/
+│       └── ci.yml
+├── frontend/
+│   ├── src/
+│   ├── e2e/
+│   ├── public/
+│   ├── eslint.config.js
+│   ├── playwright.config.js
+│   ├── vite.config.js
+│   └── package.json
+├── init-scripts/
+├── docker-compose.yml
+├── STORIES.md
+├── TESTING.md
+└── README.md
+```
 
 ## Team
 
@@ -19,165 +138,55 @@ Eine mobile Einkaufslisten-App mit Offline-Fähigkeit und bidirektionaler Synchr
 | Developer (Bmeise) | Maged Negm |
 | Developer (Cmeise) | Aran Yildirim |
 
-## Inhaltsverzeichnis
-
-- [Voraussetzungen](#voraussetzungen)
-- [Projekt-Setup](#projekt-setup)
-- [Verfügbare Scripts](#verfügbare-scripts)
-- [Projektstruktur](#projektstruktur)
-- [Branch-Strategie](#branch-strategie)
-- [Code-Qualität](#code-qualität)
-- [Testing](#testing)
-- [Stories und Tasks](#stories-und-tasks)
-
-## Voraussetzungen
-
-Folgende Tools müssen installiert sein:
-
-- **Node.js** `^20.19.0` oder `>=22.12.0`
-- **npm** (kommt mit Node.js)
-- **Docker** & **Docker Compose** (für das Backend / CouchDB)
-- **Git**
-
-## Projekt-Setup
-
-### 1. Repository klonen
-
-```bash
-git clone https://github.com/TGM-HIT/syt5-gek1051-mobile-application-codemonkeys.git
-cd syt5-gek1051-mobile-application-codemonkeys
-```
-
-### 2. Frontend-Dependencies installieren
-
-```bash
-cd frontend
-npm install
-```
-
-### 3. Backend starten (CouchDB via Docker)
-
-```bash
-# Im Root-Verzeichnis des Projekts
-docker compose up -d
-```
-
-CouchDB ist danach erreichbar unter: `http://localhost:5984`
-
-### 4. Frontend starten
-
-```bash
-cd frontend
-npm run dev
-```
-
-Die App ist dann unter `http://localhost:5173` erreichbar.
-
-## Verfügbare Scripts
-
-Alle Scripts werden im `frontend/`-Verzeichnis ausgeführt:
-
-| Script | Beschreibung |
-| :--- | :--- |
-| `npm run dev` | Startet den Vite-Entwicklungsserver mit Hot-Reload |
-| `npm run build` | Erstellt einen Production-Build im `dist/`-Ordner |
-| `npm run preview` | Vorschau des Production-Builds lokal |
-| `npm run lint` | ESLint prüft alle `.js`, `.mjs`, `.cjs` und `.vue`-Dateien |
-| `npm run format` | Prettier formatiert alle Dateien automatisch |
-| `npm test` | Führt alle Unit-Tests einmalig aus (Vitest) |
-| `npm run test:watch` | Führt Tests im Watch-Modus aus |
-| `npm run test:coverage` | Erstellt einen Coverage-Report |
-| `npm run test:e2e` | Führt E2E-Tests mit Playwright aus |
-| `npm run test:all` | Unit-Tests + E2E-Tests zusammen |
-
-## Projektstruktur
-
-```
-syt5-gek1051-mobile-application-codemonkeys/
-├── .github/
-│   └── workflows/
-│       └── ci.yml          # CI-Pipeline (Lint + Tests + E2E)
-├── frontend/               # Vue 3 Frontend-App
-│   ├── src/
-│   │   ├── assets/
-│   │   ├── components/
-│   │   ├── composables/
-│   │   ├── App.vue
-│   │   └── main.js
-│   ├── e2e/                # Playwright E2E-Tests
-│   ├── public/
-│   ├── eslint.config.js    # ESLint-Konfiguration (mit Prettier)
-│   ├── .prettierrc         # Prettier-Konfiguration
-│   ├── playwright.config.js
-│   ├── vite.config.js
-│   └── package.json
-├── init-scripts/           # CouchDB-Initialisierungsscripte
-├── docker-compose.yml      # Docker-Setup für CouchDB
-├── STORIES.md              # User & Developer Stories
-├── TESTING.md              # Vollständige Test-Dokumentation
-└── README.md
-```
-
 ## Branch-Strategie
 
-- **`main`**: Stabiler Produktionsbranch — nur über Pull Requests befüllbar
-- **`dev`**: Integrations-Branch — Features werden hier zusammengeführt
+- **`main`**: Stabiler Produktionsbranch - nur über Pull Requests befüllbar
+- **`dev`**: Integrations-Branch - Features werden hier zusammengeführt
 - **`feature/<name>`**: Neue Features oder Bugfixes
 
-**Branch Protection Rules für `main`:**
+Branch-Protection-Rules für `main`:
+
 - Direktes Pushen ist gesperrt
 - Pull Requests erfordern mindestens 1 Approval
 - CI-Pipeline (Lint + Tests) muss vor dem Merge grün sein
 
 Workflow:
-```
-feature-branch → dev (PR) → main (PR)
+
+```text
+feature-branch -> dev (PR) -> main (PR)
 ```
 
 ## Code-Qualität
 
 Das Projekt verwendet **ESLint** und **Prettier** zur Sicherstellung einheitlichen Codes.
 
-### Konfiguration
+- **ESLint** (`eslint.config.js`): Vue-3- und JavaScript-Regeln mit Prettier-Integration
+- **Prettier** (`.prettierrc`): Einheitliche Formatierung
 
-- **ESLint** (`eslint.config.js`): Vue 3 + JS-Regeln mit Prettier-Integration
-- **Prettier** (`.prettierrc`): Single Quotes, Semikolons, max. 100 Zeichen Zeilenbreite
-
-### Vor einem Commit empfohlen
+Vor einem Commit empfohlen:
 
 ```bash
-# Code formatieren
 npm run format
-
-# Lint-Fehler prüfen
 npm run lint
 ```
-
-### CI-Pipeline
-
-Bei jedem Push und jedem Pull Request werden automatisch ausgeführt:
-
-1. **Lint-Job**: ESLint prüft den gesamten Code
-2. **Test-Job**: Vitest führt alle Unit-Tests aus + Coverage-Report
-3. **E2E-Job**: Playwright führt End-to-End Tests aus
 
 ## Testing
 
 ```bash
-# Unit Tests
+# Unit-Tests
 npm test
 
-# E2E Tests (benötigt laufenden Dev-Server)
+# E2E-Tests (benötigt laufenden Dev-Server)
 npm run test:e2e
 
 # Alle Tests
 npm run test:all
 
-# Coverage Report
+# Coverage-Report
 npm run test:coverage
 ```
 
-📖 Vollständige Test-Dokumentation: [TESTING.md](TESTING.md)
+Weitere Details: [TESTING.md](TESTING.md)
 
 ## Stories und Tasks
 
