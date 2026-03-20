@@ -1,18 +1,16 @@
 <script setup>
-import { ref, computed } from 'vue'
-import { useShoppingList } from '@/composables/useShoppingList'
-import { useSession } from '@/composables/useSession'
-import SessionSetup from './SessionSetup.vue'
+import { ref } from 'vue';
+import { useShoppingList } from '@/composables/useShoppingList';
+import { useSession } from '@/composables/useSession';
+import SessionSetup from './SessionSetup.vue';
 
 // Alle Logik ist jetzt im Composable ausgelagert
 const {
   lists,
-  items,
   loading,
   error,
   isOnline,
   syncActive,
-  conflicts,
   toggleItem,
   addItem,
   addList,
@@ -26,180 +24,186 @@ const {
   restoreItem,
   permanentlyDeleteAllMarked,
   getProgress,
-  getConflictForItem,
-  resolveConflict,
   acceptDelete,
   rejectDelete,
   hasChangedItems,
   clearListChanges,
   generateShareCode,
-  joinListByCode
-} = useShoppingList()
+  joinListByCode,
+} = useShoppingList();
 
-const { sessionName, clearSession } = useSession()
+const { sessionName, clearSession } = useSession();
 
 // ── Inline Editing ──
-const editingListId = ref(null)
-const editingListName = ref('')
-const editingItemId = ref(null)
-const editingItemName = ref('')
+const editingListId = ref(null);
+const editingListName = ref('');
+const editingItemId = ref(null);
+const editingItemName = ref('');
 
 function startEditList(list) {
-  editingListId.value = list._id
-  editingListName.value = list.name
+  editingListId.value = list._id;
+  editingListName.value = list.name;
 }
 
 function cancelEditList() {
-  editingListId.value = null
-  editingListName.value = ''
+  editingListId.value = null;
+  editingListName.value = '';
 }
 
 async function saveEditList(listId) {
   if (editingListName.value.trim()) {
-    await renameList(listId, editingListName.value)
+    await renameList(listId, editingListName.value);
   }
-  editingListId.value = null
-  editingListName.value = ''
+  editingListId.value = null;
+  editingListName.value = '';
 }
 
 function startEditItem(item) {
-  editingItemId.value = item._id
-  editingItemName.value = item.name
+  editingItemId.value = item._id;
+  editingItemName.value = item.name;
 }
 
 function cancelEditItem() {
-  editingItemId.value = null
-  editingItemName.value = ''
+  editingItemId.value = null;
+  editingItemName.value = '';
 }
 
 async function saveEditItem(item) {
   if (editingItemName.value.trim()) {
-    await renameItem(item, editingItemName.value)
+    await renameItem(item, editingItemName.value);
   }
-  editingItemId.value = null
-  editingItemName.value = ''
+  editingItemId.value = null;
+  editingItemName.value = '';
 }
 
 // ── Suche ──
-const searchQuery = ref('')
+const searchQuery = ref('');
 function clearSearch() {
-  searchQuery.value = ''
+  searchQuery.value = '';
 }
 function isSearchMatch(item) {
-  if (!searchQuery.value) return true
-  return item.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+  if (!searchQuery.value) return true;
+  return item.name.toLowerCase().includes(searchQuery.value.toLowerCase());
 }
 
 // Neue Liste
-const newListName = ref('')
+const newListName = ref('');
 function submitNewList() {
-  addList(newListName.value)
-  newListName.value = ''
+  addList(newListName.value);
+  newListName.value = '';
 }
 
 // Neuer Artikel pro Liste
-const newItemNames = ref({})
+const newItemNames = ref({});
 function submitNewItem(listId) {
-  addItem(listId, newItemNames.value[listId] || '')
-  newItemNames.value[listId] = ''
+  addItem(listId, newItemNames.value[listId] || '');
+  newItemNames.value[listId] = '';
 }
 
 // Aktiver Tab pro Liste: 'active' oder 'deleted'
-const activeTabs = ref({})
+const activeTabs = ref({});
 
 function getTab(listId) {
-  return activeTabs.value[listId] || 'active'
+  return activeTabs.value[listId] || 'active';
 }
 
 function setTab(listId, tab) {
-  activeTabs.value[listId] = tab
+  activeTabs.value[listId] = tab;
 }
 
 // ── Sharing ──
-const shareModal = ref({ show: false, listId: null, code: null, loading: false })
-const joinCode = ref('')
-const joinMessage = ref({ text: '', type: '' })
+const shareModal = ref({ show: false, listId: null, code: null, loading: false });
+const joinCode = ref('');
+const joinMessage = ref({ text: '', type: '' });
 
 async function openShareDialog(list) {
-  shareModal.value = { show: true, listId: list._id, code: list.shareCode || null, loading: false }
+  shareModal.value = { show: true, listId: list._id, code: list.shareCode || null, loading: false };
   // Falls noch kein Code existiert, gleich generieren
   if (!list.shareCode) {
-    shareModal.value.loading = true
-    const code = await generateShareCode(list._id)
-    shareModal.value.code = code
-    shareModal.value.loading = false
+    shareModal.value.loading = true;
+    const code = await generateShareCode(list._id);
+    shareModal.value.code = code;
+    shareModal.value.loading = false;
   }
 }
 
 function closeShareDialog() {
-  shareModal.value = { show: false, listId: null, code: null, loading: false }
+  shareModal.value = { show: false, listId: null, code: null, loading: false };
 }
 
 async function copyShareCode() {
   if (shareModal.value.code) {
-    await navigator.clipboard.writeText(shareModal.value.code)
+    await navigator.clipboard.writeText(shareModal.value.code);
   }
 }
 
 async function submitJoinCode() {
-  if (!joinCode.value.trim()) return
-  joinMessage.value = { text: '', type: '' }
-  const result = await joinListByCode(joinCode.value)
-  joinMessage.value = { text: result.message, type: result.success ? 'success' : 'error' }
+  joinMessage.value = { text: '', type: '' };
+  if (!joinCode.value.trim()) {
+    joinMessage.value = { text: 'Bitte einen Code eingeben.', type: 'error' };
+    return;
+  }
+  const result = await joinListByCode(joinCode.value);
+  joinMessage.value = { text: result.message, type: result.success ? 'success' : 'error' };
   if (result.success) {
-    joinCode.value = ''
-    setTimeout(() => { joinMessage.value = { text: '', type: '' } }, 3000)
+    joinCode.value = '';
+    setTimeout(() => {
+      joinMessage.value = { text: '', type: '' };
+    }, 3000);
   }
-}
-
-function conflictBannerText(conflict) {
-  const f = conflict.conflictingFields[0]
-  if (!f) return 'Konflikt erkannt.'
-  if (f.crossField) {
-    const deleter = f.remoteValue ? f.remoteUser : f.localUser
-    const other   = f.remoteValue ? f.localUser  : f.remoteUser
-    return `👤 ${other} hat diesen Artikel geändert. 👤 ${deleter} hat ihn als gelöscht markiert.`
-  }
-  if (f.field === 'checked') {
-    const remoteState = f.remoteValue ? 'abgehakt ✅' : 'nicht abgehakt ☐'
-    return `👤 ${f.remoteUser} hat diesen Artikel ${remoteState}.`
-  }
-  return `👤 ${f.remoteUser} hat etwas geändert.`
 }
 
 // Custom confirm modal
-const confirmModal = ref({ show: false, title: '', message: '', step: 1, listId: null, action: null })
+const confirmModal = ref({
+  show: false,
+  title: '',
+  message: '',
+  step: 1,
+  listId: null,
+  action: null,
+});
 
 function showConfirm(title, message, action) {
-  confirmModal.value = { show: true, title, message, step: 1, action }
+  confirmModal.value = { show: true, title, message, step: 1, action };
 }
 
 function confirmStep1() {
-  confirmModal.value.step = 2
-  confirmModal.value.message = 'Bist du wirklich sicher? Diese Aktion kann nicht rückgängig gemacht werden!'
+  confirmModal.value.step = 2;
+  confirmModal.value.message =
+    'Bist du wirklich sicher? Diese Aktion kann nicht rückgängig gemacht werden!';
 }
 
 function confirmStep2() {
-  const action = confirmModal.value.action
-  confirmModal.value = { show: false }
-  if (action) action()
+  const action = confirmModal.value.action;
+  confirmModal.value = { show: false };
+  if (action) action();
 }
 
 function closeConfirm() {
-  confirmModal.value = { show: false }
+  confirmModal.value = { show: false };
 }
 
 function confirmPermanentDelete(listId) {
-  showConfirm('Alle löschen?', 'Willst du wirklich alle gelöschten Artikel endgültig löschen?', () => permanentlyDeleteAllMarked(listId))
+  showConfirm(
+    'Alle löschen?',
+    'Willst du wirklich alle gelöschten Artikel endgültig löschen?',
+    () => permanentlyDeleteAllMarked(listId),
+  );
 }
 
 function confirmDeleteList(list) {
-  const listItems = getItemsForList(list._id)
+  const listItems = getItemsForList(list._id);
   if (listItems.length > 0) {
-    showConfirm('Liste nicht leer', `Die Liste "${list.name}" hat noch ${listItems.length} Artikel. Bitte zuerst alle Artikel endgültig löschen.`, null)
-    return
+    showConfirm(
+      'Liste nicht leer',
+      `Die Liste "${list.name}" hat noch ${listItems.length} Artikel. Bitte zuerst alle Artikel endgültig löschen.`,
+      null,
+    );
+    return;
   }
-  showConfirm('Liste löschen?', `Willst du die Liste "${list.name}" wirklich löschen?`, () => deleteList(list))
+  showConfirm('Liste löschen?', `Willst du die Liste "${list.name}" wirklich löschen?`, () =>
+    deleteList(list),
+  );
 }
 
 // ── Export ──
@@ -349,7 +353,12 @@ async function handleFileImport(event) {
       <div class="container">
         <h1>Einkaufslisten</h1>
         <div class="header-actions">
-          <div class="session-badge" v-if="sessionName" @click="clearSession" title="Session beenden">
+          <div
+            class="session-badge"
+            v-if="sessionName"
+            @click="clearSession"
+            title="Session beenden"
+          >
             👤 {{ sessionName }}
           </div>
           <div class="status-indicator" :class="{ online: isOnline, offline: !isOnline }">
@@ -364,9 +373,7 @@ async function handleFileImport(event) {
     <main class="main">
       <div class="container">
         <!-- Loading -->
-        <div v-if="loading" class="message">
-          Daten werden geladen...
-        </div>
+        <div v-if="loading" class="message">Daten werden geladen...</div>
 
         <!-- Error -->
         <div v-if="error && !loading" class="message error">
@@ -379,7 +386,8 @@ async function handleFileImport(event) {
             v-model="newListName"
             class="add-input"
             placeholder="Neue Liste..."
-            @keyup.enter="submitNewList" />
+            @keyup.enter="submitNewList"
+          />
           <button class="add-btn" @click="submitNewList">+ Liste</button>
           <button class="import-btn" @click="openImportDialog" title="Liste aus JSON importieren">📤 Import</button>
         </div>
@@ -391,7 +399,8 @@ async function handleFileImport(event) {
             class="join-input"
             placeholder="Share-Code eingeben..."
             maxlength="6"
-            @keyup.enter="submitJoinCode" />
+            @keyup.enter="submitJoinCode"
+          />
           <button class="join-btn" @click="submitJoinCode">🔗 Beitreten</button>
         </div>
         <div v-if="joinMessage.text" class="join-message" :class="joinMessage.type">
@@ -411,7 +420,9 @@ async function handleFileImport(event) {
             class="search-clear-btn"
             @click="clearSearch"
             title="Suche zurücksetzen"
-          >✕</button>
+          >
+            ✕
+          </button>
         </div>
 
         <!-- Listen -->
@@ -421,7 +432,13 @@ async function handleFileImport(event) {
               <div class="list-title">
                 <div v-if="editingListId !== list._id" class="list-name-display">
                   <h2>{{ list.name }}</h2>
-                  <button class="edit-list-btn" @click="startEditList(list)" title="Liste umbenennen">✏️</button>
+                  <button
+                    class="edit-list-btn"
+                    @click="startEditList(list)"
+                    title="Liste umbenennen"
+                  >
+                    ✏️
+                  </button>
                 </div>
                 <div v-else class="edit-list-form">
                   <input
@@ -432,23 +449,46 @@ async function handleFileImport(event) {
                     ref="editListInput"
                     autofocus
                   />
-                  <button class="edit-save-btn" @click="saveEditList(list._id)" title="Speichern">✓</button>
-                  <button class="edit-cancel-btn" @click="cancelEditList" title="Abbrechen">✕</button>
+                  <button class="edit-save-btn" @click="saveEditList(list._id)" title="Speichern">
+                    ✓
+                  </button>
+                  <button class="edit-cancel-btn" @click="cancelEditList" title="Abbrechen">
+                    ✕
+                  </button>
                 </div>
-                <span class="list-meta">{{ list.owner }} • {{ new Date(list.createdAt).toLocaleDateString('de-DE') }}</span>
+                <span class="list-meta"
+                  >{{ list.owner }} •
+                  {{ new Date(list.createdAt).toLocaleDateString('de-DE') }}</span
+                >
               </div>
               <div class="list-stats">
-                <button 
+                <button
                   v-if="hasChangedItems(list._id)"
                   @click="clearListChanges(list._id)"
                   class="clear-changes-btn"
-                  title="Änderungshinweise entfernen">
+                  title="Änderungshinweise entfernen"
+                >
                   ✓ Gesehen
                 </button>
                 <span class="progress-text">{{ getProgress(list._id) }}%</span>
-                <button class="export-list-btn" title="Als JSON exportieren" @click="exportListAsJson(list)">📥</button>
-                <button class="share-list-btn" title="Liste teilen" @click="openShareDialog(list)">🔗</button>
-                <button class="delete-list-btn" title="Liste löschen" @click="confirmDeleteList(list)">🗑️</button>
+                <button 
+                  class="export-list-btn" 
+                  title="Als JSON exportieren" 
+                  @click="exportListAsJson(list)"
+                >
+                  📥
+                </button>
+                <button class="share-list-btn" title="Liste teilen" @click="openShareDialog(list)">
+                  🔗
+                </button>
+                <button
+                  class="delete-list-btn"
+                  title="Liste löschen"
+                  @click="confirmDeleteList(list)"
+                >
+                  🗑️
+                </button>
+
               </div>
             </div>
 
@@ -461,14 +501,16 @@ async function handleFileImport(event) {
               <button
                 class="tab-btn"
                 :class="{ active: getTab(list._id) === 'active' }"
-                @click="setTab(list._id, 'active')">
+                @click="setTab(list._id, 'active')"
+              >
                 Aktiv
                 <span class="tab-count">{{ getActiveItemsForList(list._id).length }}</span>
               </button>
               <button
                 class="tab-btn"
                 :class="{ active: getTab(list._id) === 'deleted' }"
-                @click="setTab(list._id, 'deleted')">
+                @click="setTab(list._id, 'deleted')"
+              >
                 Gelöscht
                 <span class="tab-count">{{ getDeletedItemsForList(list._id).length }}</span>
               </button>
@@ -477,15 +519,29 @@ async function handleFileImport(event) {
             <!-- Tab: Aktive Artikel -->
             <ul v-if="getTab(list._id) === 'active'" class="items">
               <template v-for="item in getActiveItemsForList(list._id)" :key="item._id">
-                <li :class="{ checked: item.checked, 'search-dimmed': searchQuery && !isSearchMatch(item) }" class="item">
-                  <input type="checkbox"
-                         :checked="item.checked"
-                         @click.stop="toggleItem(item)"
-                         class="checkbox">
+                <li
+                  :class="{
+                    checked: item.checked,
+                    'search-dimmed': searchQuery && !isSearchMatch(item),
+                  }"
+                  class="item"
+                >
+                  <input
+                    type="checkbox"
+                    :checked="item.checked"
+                    @click.stop="toggleItem(item)"
+                    class="checkbox"
+                  />
                   <div class="item-content" @click="toggleItem(item)">
                     <div v-if="editingItemId !== item._id" class="item-name-display">
                       <span class="item-name">{{ item.name }}</span>
-                      <button class="edit-item-btn" @click.stop="startEditItem(item)" title="Artikel umbenennen">✏️</button>
+                      <button
+                        class="edit-item-btn"
+                        @click.stop="startEditItem(item)"
+                        title="Artikel umbenennen"
+                      >
+                        ✏️
+                      </button>
                     </div>
                     <div v-else class="edit-item-form" @click.stop>
                       <input
@@ -496,10 +552,27 @@ async function handleFileImport(event) {
                         @click.stop
                         autofocus
                       />
-                      <button class="edit-save-btn" @click.stop="saveEditItem(item)" title="Speichern">✓</button>
-                      <button class="edit-cancel-btn" @click.stop="cancelEditItem" title="Abbrechen">✕</button>
+                      <button
+                        class="edit-save-btn"
+                        @click.stop="saveEditItem(item)"
+                        title="Speichern"
+                      >
+                        ✓
+                      </button>
+                      <button
+                        class="edit-cancel-btn"
+                        @click.stop="cancelEditItem"
+                        title="Abbrechen"
+                      >
+                        ✕
+                      </button>
                     </div>
-                    <span v-if="item._remoteChanged && !item._pendingDelete && editingItemId !== item._id" class="item-changed-hint">
+                    <span
+                      v-if="
+                        item._remoteChanged && !item._pendingDelete && editingItemId !== item._id
+                      "
+                      class="item-changed-hint"
+                    >
                       ✏️ Geändert von {{ item.lastModifiedBy || 'Unbekannt' }}
                     </span>
                   </div>
@@ -507,7 +580,8 @@ async function handleFileImport(event) {
                     v-if="editingItemId !== item._id"
                     class="delete-item-btn"
                     title="Als gelöscht markieren"
-                    @click.stop="markItemDeleted(item)">
+                    @click.stop="markItemDeleted(item)"
+                  >
                     🗑️
                   </button>
                 </li>
@@ -533,14 +607,18 @@ async function handleFileImport(event) {
               </div>
               <ul class="items">
                 <template v-for="item in getDeletedItemsForList(list._id)" :key="item._id">
-                  <li :class="{ 'search-dimmed': searchQuery && !isSearchMatch(item) }" class="item item-deleted">
+                  <li
+                    :class="{ 'search-dimmed': searchQuery && !isSearchMatch(item) }"
+                    class="item item-deleted"
+                  >
                     <div class="item-content">
                       <span class="item-name">{{ item.name }}</span>
                     </div>
                     <button
                       class="restore-item-btn"
                       title="Wiederherstellen"
-                      @click.stop="restoreItem(item)">
+                      @click.stop="restoreItem(item)"
+                    >
                       ↩️
                     </button>
                   </li>
@@ -548,7 +626,10 @@ async function handleFileImport(event) {
               </ul>
             </template>
 
-            <div v-if="getTab(list._id) === 'active' && getActiveItemsForList(list._id).length === 0" class="empty-list">
+            <div
+              v-if="getTab(list._id) === 'active' && getActiveItemsForList(list._id).length === 0"
+              class="empty-list"
+            >
               Keine aktiven Artikel in dieser Liste
             </div>
 
@@ -558,17 +639,19 @@ async function handleFileImport(event) {
                 v-model="newItemNames[list._id]"
                 class="add-input"
                 placeholder="Neuer Artikel..."
-                @keyup.enter="submitNewItem(list._id)" />
+                @keyup.enter="submitNewItem(list._id)"
+              />
               <button class="add-btn" @click="submitNewItem(list._id)">+</button>
             </div>
-            <div v-if="getTab(list._id) === 'deleted' && getDeletedItemsForList(list._id).length === 0" class="empty-list">
+            <div
+              v-if="getTab(list._id) === 'deleted' && getDeletedItemsForList(list._id).length === 0"
+              class="empty-list"
+            >
               Keine gelöschten Artikel
             </div>
           </div>
 
-          <div v-if="lists.length === 0" class="message">
-            Keine Listen vorhanden
-          </div>
+          <div v-if="lists.length === 0" class="message">Keine Listen vorhanden</div>
         </div>
       </div>
     </main>
@@ -581,9 +664,23 @@ async function handleFileImport(event) {
         <div class="modal-title">{{ confirmModal.title }}</div>
         <div class="modal-message">{{ confirmModal.message }}</div>
         <div class="modal-btns">
-          <button class="modal-btn-cancel" @click="closeConfirm">{{ confirmModal.action ? 'Abbrechen' : 'OK' }}</button>
-          <button v-if="confirmModal.action && confirmModal.step === 1" class="modal-btn-confirm" @click="confirmStep1">Weiter</button>
-          <button v-else-if="confirmModal.action && confirmModal.step === 2" class="modal-btn-confirm modal-btn-danger" @click="confirmStep2">Ja, löschen</button>
+          <button class="modal-btn-cancel" @click="closeConfirm">
+            {{ confirmModal.action ? 'Abbrechen' : 'OK' }}
+          </button>
+          <button
+            v-if="confirmModal.action && confirmModal.step === 1"
+            class="modal-btn-confirm"
+            @click="confirmStep1"
+          >
+            Weiter
+          </button>
+          <button
+            v-else-if="confirmModal.action && confirmModal.step === 2"
+            class="modal-btn-confirm modal-btn-danger"
+            @click="confirmStep2"
+          >
+            Ja, löschen
+          </button>
         </div>
       </div>
     </div>

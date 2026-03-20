@@ -1,0 +1,68 @@
+ Session: 06.03.2026 – Projekt Setup (25821d2b)
+
+  1. [Lange Taskbeschreibung Dezentrale Systeme...] mach mir e2e tests und unit tests und tests für die datenbank das
+  alles abdeckt und schreib mir die coverage ins readme ganz oben als badge (10:49)
+
+  -------------------------------------------------------------------------------------------------------------------
+
+  Session: 06.03.2026 – CI Fixes (5a5942f3)
+
+  2. @fehler.txt nutze das file da stehen die fhler aus dem worklow drinnen fixe diese fehler (11:22)
+
+  3. @fehler.txt das ist der fehler der jetzt kommt im e2e tests und bitte stelle die badges so ein das unsere tests
+  angezeigt werden wie viel coverage wir haben und nicht einf ein image (11:30)
+
+  4. jetzt laufen die tests nichtmehr durch bitte lass sie automatisch auf jeden branch laufen (11:36)
+
+  5. [📷 img.png] hier seihst du jetzt läuft der wokflow nicht merh automatisch durch ich brauch das mach das bitte
+  (11:39)
+
+  6. es läuft immer noch nicht durch wieso (11:41)
+
+  7. @fehler.txt da sit der fehler der kommt hilf mir das zu fixen (12:08)
+
+  8. @fehler.txt das ist der fehler der kommt mach mir das (12:19)
+
+  -------------------------------------------------------------------------------------------------------------------
+
+  Session: 12.03.2026 – Prompts abrufen (0b8991fd)
+
+  9. gib mir jetzt die prompts alle zurück um die ich dich letztes mal gefragt habe (13:27)
+
+  10. ja bitte geh zu letzten chat zurück (13:29)
+
+  -------------------------------------------------------------------------------------------------------------------
+
+  Session: 12.03.2026 – Aktuell (e7f13323)
+
+  11. prompts vom letzen mal mir alle geben (13:31)
+
+  12. zum letzen chat in dem ordner (13:31)
+
+  13. gib mir die letzten 20 prompts (13:34)
+
+   3. Gib mir die komplette session list von heute (13.03 - 12:11)
+   4. Ich hatte heute viel mehr prompts gib mir alle von heute (13.03 - 12:08)
+   5. Gib mir die anfragen und prompts von heute alle zurück (13.03 - 12:07)
+   6. Run npm run test:coverage (13.03 - 12:04)
+
+
+Für diese aktuelle Session (19.03.2026) sind die Prompts:
+
+   1. „alle prompts mir am ende wenn ich frage zurückgeben“
+   2. npm run test:e2e Fehlerlog + „fixe mir die tests und sag was ich commiten muss“
+   3. Neuer E2E-Fehlerlog + „fixe ihn mir“
+   4. Wieder Reload-Fehler + „es kommt immer noch …“
+   5. npm run test:coverage Fehlerlog + „wieso kommt das jetzt“
+   6. Diff-Auszug + „… verlinkungen verändert …“
+   7. CI-Log „No tests found“ + „fixe das“
+   8. „gib mir alle prompts“
+   9. Diese Nachricht mit dem Session-Format-Beispiel.
+
+   Für diese aktuelle Session (20.03.2026) sind die Prompts:
+
+      1. die projekt beschreibung in der readme noch genauer damit nicht it versierte auch ahnung haben können von dem
+         projekt und es verstehen können
+      2. gib mir die prompts von heute für mein promptverzeichnis
+      3. nein die promps die ich dir heute gegeeben habe also gefragt habe damit ich das file ergänzen kann
+
