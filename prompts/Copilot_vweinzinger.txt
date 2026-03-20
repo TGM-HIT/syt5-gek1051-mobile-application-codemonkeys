@@ -58,3 +58,11 @@ Für diese aktuelle Session (19.03.2026) sind die Prompts:
    7. CI-Log „No tests found“ + „fixe das“
    8. „gib mir alle prompts“
    9. Diese Nachricht mit dem Session-Format-Beispiel.
+
+   ür diese aktuelle Session (20.03.2026) sind die Prompts:
+
+      1. die projekt beschreibung in der readme noch genauer damit nicht it versierte auch ahnung haben können von dem
+         projekt und es verstehen können
+      2. gib mir die prompts von heute für mein promptverzeichnis
+      3. nein die promps die ich dir heute gegeeben habe also gefragt habe damit ich das file ergänzen kann
+
