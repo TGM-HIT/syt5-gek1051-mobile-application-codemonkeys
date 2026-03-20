@@ -205,6 +205,143 @@ function confirmDeleteList(list) {
     deleteList(list),
   );
 }
+
+// ── Export ──
+function exportListAsJson(list) {
+  const listItems = getItemsForList(list._id)
+
+  const exportData = {
+    list: {
+      id: list._id,
+      name: list.name,
+      owner: list.owner,
+      createdAt: list.createdAt,
+      shareCode: list.shareCode || null
+    },
+    items: listItems.map(item => ({
+      id: item._id,
+      name: item.name,
+      checked: item.checked,
+      markedDeleted: item.markedDeleted,
+      lastModifiedBy: item.lastModifiedBy,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt
+    })),
+    statistics: {
+      totalItems: listItems.length,
+      activeItems: getActiveItemsForList(list._id).length,
+      deletedItems: getDeletedItemsForList(list._id).length,
+      checkedItems: listItems.filter(i => i.checked && !i.markedDeleted).length,
+      progress: getProgress(list._id)
+    },
+    exportedAt: new Date().toISOString(),
+    exportedBy: sessionName.value
+  }
+
+  const jsonString = JSON.stringify(exportData, null, 2)
+  const blob = new Blob([jsonString], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `${list.name.replace(/[^a-z0-9]/gi, '_')}_${new Date().toISOString().split('T')[0]}.json`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
+
+// ── Import ──
+const importModal = ref({ show: false, error: null, success: null })
+const fileInput = ref(null)
+
+function openImportDialog() {
+  importModal.value = { show: true, error: null, success: null }
+}
+
+function closeImportDialog() {
+  importModal.value = { show: false, error: null, success: null }
+  if (fileInput.value) {
+    fileInput.value.value = ''
+  }
+}
+
+function triggerFileSelect() {
+  fileInput.value?.click()
+}
+
+async function handleFileImport(event) {
+  const file = event.target.files?.[0]
+  if (!file) return
+
+  importModal.value.error = null
+  importModal.value.success = null
+
+  try {
+    const text = await file.text()
+    const data = JSON.parse(text)
+
+    // Validiere Struktur
+    if (!data.list || !data.items) {
+      throw new Error('Ungültiges Format: list oder items fehlen')
+    }
+
+    // Prüfe ob Liste bereits existiert
+    const existingList = lists.value.find(l => l.name === data.list.name)
+    if (existingList) {
+      importModal.value.error = `Liste "${data.list.name}" existiert bereits. Bitte umbenennen oder löschen Sie die vorhandene Liste zuerst.`
+      return
+    }
+
+    // Importiere Liste
+    await addList(data.list.name)
+
+    // Finde die neu erstellte Liste
+    await new Promise(resolve => setTimeout(resolve, 100)) // Warte auf loadData
+    const newList = lists.value.find(l => l.name === data.list.name)
+
+    if (!newList) {
+      throw new Error('Liste konnte nicht erstellt werden')
+    }
+
+    // Importiere Items
+    for (const item of data.items) {
+      await addItem(newList._id, item.name)
+    }
+
+    // Wenn Items checked oder deleted waren, aktualisiere sie
+    await new Promise(resolve => setTimeout(resolve, 100))
+    const importedItems = getItemsForList(newList._id)
+
+    for (let i = 0; i < data.items.length && i < importedItems.length; i++) {
+      const sourceItem = data.items[i]
+      const targetItem = importedItems[i]
+
+      if (sourceItem.checked || sourceItem.markedDeleted) {
+        // Verwende toggleItem oder markItemDeleted je nach Zustand
+        if (sourceItem.checked && !sourceItem.markedDeleted) {
+          await toggleItem(targetItem)
+        }
+        if (sourceItem.markedDeleted) {
+          await markItemDeleted(targetItem)
+        }
+      }
+    }
+
+    importModal.value.success = `Liste "${data.list.name}" mit ${data.items.length} Artikel(n) erfolgreich importiert!`
+
+    // Modal nach 2 Sekunden schließen
+    setTimeout(() => {
+      if (importModal.value.success) {
+        closeImportDialog()
+      }
+    }, 2000)
+
+  } catch (err) {
+    console.error('Import-Fehler:', err)
+    importModal.value.error = `Import fehlgeschlagen: ${err.message}`
+  }
+}
 </script>
 
 <template>
@@ -252,6 +389,7 @@ function confirmDeleteList(list) {
             @keyup.enter="submitNewList"
           />
           <button class="add-btn" @click="submitNewList">+ Liste</button>
+          <button class="import-btn" @click="openImportDialog" title="Liste aus JSON importieren">📤 Import</button>
         </div>
 
         <!-- Liste beitreten -->
@@ -333,6 +471,13 @@ function confirmDeleteList(list) {
                   ✓ Gesehen
                 </button>
                 <span class="progress-text">{{ getProgress(list._id) }}%</span>
+                <button 
+                  class="export-list-btn" 
+                  title="Als JSON exportieren" 
+                  @click="exportListAsJson(list)"
+                >
+                  📥
+                </button>
                 <button class="share-list-btn" title="Liste teilen" @click="openShareDialog(list)">
                   🔗
                 </button>
@@ -343,6 +488,7 @@ function confirmDeleteList(list) {
                 >
                   🗑️
                 </button>
+
               </div>
             </div>
 
@@ -552,6 +698,40 @@ function confirmDeleteList(list) {
         </div>
         <div class="modal-btns">
           <button class="modal-btn-cancel" @click="closeShareDialog">Schließen</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Import Modal -->
+    <div v-if="importModal.show" class="modal-overlay" @click.self="closeImportDialog">
+      <div class="modal import-modal">
+        <div class="modal-title">📤 Liste importieren</div>
+        <div class="modal-message">
+          Wähle eine JSON-Datei aus, die zuvor exportiert wurde.
+        </div>
+
+        <div v-if="importModal.error" class="import-error">
+          ⚠️ {{ importModal.error }}
+        </div>
+
+        <div v-if="importModal.success" class="import-success">
+          ✓ {{ importModal.success }}
+        </div>
+
+        <input
+          type="file"
+          ref="fileInput"
+          accept="application/json,.json"
+          @change="handleFileImport"
+          style="display: none"
+        />
+
+        <button class="import-file-btn" @click="triggerFileSelect">
+          📁 Datei auswählen
+        </button>
+
+        <div class="modal-btns">
+          <button class="modal-btn-cancel" @click="closeImportDialog">Schließen</button>
         </div>
       </div>
     </div>
