@@ -26,6 +26,7 @@ export function useShoppingList() {
   const isOnline = ref(false); // Initial false, wird durch ersten Sync gesetzt
   const syncActive = ref(false);
   const conflicts = ref({}); // nicht mehr aktiv genutzt, für Kompatibilität behalten
+  const notifications = ref([]); // Benachrichtigungen für Remote-Änderungen
 
   // ── Joined Lists (localStorage) ──
   function getJoinedListIds() {
@@ -163,8 +164,9 @@ export function useShoppingList() {
         // Conflict-Callback – nicht mehr für markedDeleted nötig
         () => {},
         // Data-Change-Callback
-        () => {
-          loadData(); // UI neu laden bei Remote-Änderungen
+        async () => {
+          await loadData(); // UI neu laden bei Remote-Änderungen
+          generateNotifications(); // Benachrichtigungen erzeugen
         },
       );
       syncActive.value = true;
@@ -366,6 +368,43 @@ export function useShoppingList() {
   }
 
   /**
+   * Gibt alle remote-geänderten aktiven Items einer Liste zurück
+   * @param {string} listId - Die ID der Liste
+   * @returns {Array} Array von geänderten Items
+   */
+  function getChangedItemsForList(listId) {
+    return items.value.filter((i) => i.list_id === listId && i._remoteChanged && !i.markedDeleted);
+  }
+
+  /**
+   * Erzeugt Benachrichtigungen für alle remote-geänderten Items,
+   * gruppiert nach Person + Liste.
+   */
+  function generateNotifications() {
+    const groups = {};
+    for (const item of items.value) {
+      if (!item._remoteChanged) continue;
+      const list = lists.value.find((l) => l._id === item.list_id);
+      if (!list) continue;
+      const person = item.lastModifiedBy || 'Unbekannt';
+      const key = `${item.list_id}__${person}`;
+      if (!groups[key]) {
+        groups[key] = { id: key, listId: item.list_id, listName: list.name, person, itemNames: [] };
+      }
+      groups[key].itemNames.push(item.name);
+    }
+    notifications.value = Object.values(groups);
+  }
+
+  /**
+   * Entfernt eine einzelne Benachrichtigung aus der Liste
+   * @param {string} id - Die Benachrichtigungs-ID
+   */
+  function dismissNotification(id) {
+    notifications.value = notifications.value.filter((n) => n.id !== id);
+  }
+
+  /**
    * Entfernt alle Änderungs-Hinweise für eine Liste
    * @param {string} listId - Die ID der Liste
    */
@@ -378,6 +417,7 @@ export function useShoppingList() {
     }
 
     await loadData(); // UI aktualisieren
+    generateNotifications(); // Benachrichtigungen aktualisieren
   }
 
   /**
@@ -509,6 +549,7 @@ export function useShoppingList() {
     isOnline,
     syncActive,
     conflicts,
+    notifications,
 
     // Actions
     toggleItem,
@@ -520,6 +561,7 @@ export function useShoppingList() {
     getItemsForList,
     getActiveItemsForList,
     getDeletedItemsForList,
+    getChangedItemsForList,
     markItemDeleted,
     restoreItem,
     permanentlyDeleteAllMarked,
@@ -530,6 +572,7 @@ export function useShoppingList() {
     rejectDelete,
     hasChangedItems,
     clearListChanges,
+    dismissNotification,
     generateShareCode,
     joinListByCode,
   };

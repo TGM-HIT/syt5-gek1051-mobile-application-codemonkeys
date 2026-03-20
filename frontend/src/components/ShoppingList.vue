@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useShoppingList } from '@/composables/useShoppingList';
 import { useSession } from '@/composables/useSession';
 import SessionSetup from './SessionSetup.vue';
@@ -7,10 +7,12 @@ import SessionSetup from './SessionSetup.vue';
 // Alle Logik ist jetzt im Composable ausgelagert
 const {
   lists,
+  items,
   loading,
   error,
   isOnline,
   syncActive,
+  notifications,
   toggleItem,
   addItem,
   addList,
@@ -20,6 +22,7 @@ const {
   getItemsForList,
   getActiveItemsForList,
   getDeletedItemsForList,
+  getChangedItemsForList,
   markItemDeleted,
   restoreItem,
   permanentlyDeleteAllMarked,
@@ -28,9 +31,22 @@ const {
   rejectDelete,
   hasChangedItems,
   clearListChanges,
+  dismissNotification,
   generateShareCode,
   joinListByCode,
 } = useShoppingList();
+
+// ── Nur geänderte Artikel anzeigen ──
+const showOnlyChanged = ref(false);
+
+function getDisplayItems(listId) {
+  if (showOnlyChanged.value) {
+    return getChangedItemsForList(listId);
+  }
+  return getActiveItemsForList(listId);
+}
+
+const totalChangedCount = computed(() => items.value.filter((i) => i._remoteChanged).length);
 
 const { sessionName, clearSession } = useSession();
 
@@ -287,6 +303,31 @@ function confirmDeleteList(list) {
           </button>
         </div>
 
+        <!-- Benachrichtigungen -->
+        <div v-if="notifications.length > 0" class="notifications">
+          <div v-for="notif in notifications" :key="notif.id" class="notification-banner">
+            <span class="notification-text">
+              <strong>{{ notif.person }}</strong> / {{ notif.listName }}:
+              Es wurde geändert {{ notif.itemNames.join(', ') }}
+            </span>
+            <button class="notification-dismiss" @click="dismissNotification(notif.id)" title="Schließen">✕</button>
+          </div>
+        </div>
+
+        <!-- Filter: Nur geänderte Artikel -->
+        <div class="filter-bar">
+          <button
+            class="filter-changed-btn"
+            :class="{ active: showOnlyChanged }"
+            @click="showOnlyChanged = !showOnlyChanged"
+          >
+            {{ showOnlyChanged ? '✓ Nur geänderte' : 'Nur geänderte' }}
+            <span class="filter-badge" :class="{ 'filter-badge-active': showOnlyChanged }">
+              {{ totalChangedCount }}
+            </span>
+          </button>
+        </div>
+
         <!-- Listen -->
         <div v-if="!loading && !error" class="lists">
           <div v-for="list in lists" :key="list._id" class="list">
@@ -350,8 +391,8 @@ function confirmDeleteList(list) {
               <div class="progress-fill" :style="{ width: getProgress(list._id) + '%' }"></div>
             </div>
 
-            <!-- Tabs -->
-            <div class="tabs">
+            <!-- Tabs (ausgeblendet wenn nur geänderte angezeigt werden) -->
+            <div v-if="!showOnlyChanged" class="tabs">
               <button
                 class="tab-btn"
                 :class="{ active: getTab(list._id) === 'active' }"
@@ -370,9 +411,9 @@ function confirmDeleteList(list) {
               </button>
             </div>
 
-            <!-- Tab: Aktive Artikel -->
-            <ul v-if="getTab(list._id) === 'active'" class="items">
-              <template v-for="item in getActiveItemsForList(list._id)" :key="item._id">
+            <!-- Tab: Aktive Artikel / Geänderte Artikel -->
+            <ul v-if="showOnlyChanged || getTab(list._id) === 'active'" class="items">
+              <template v-for="item in getDisplayItems(list._id)" :key="item._id">
                 <li
                   :class="{
                     checked: item.checked,
@@ -452,8 +493,8 @@ function confirmDeleteList(list) {
               </template>
             </ul>
 
-            <!-- Tab: Gelöschte Artikel -->
-            <template v-if="getTab(list._id) === 'deleted'">
+            <!-- Tab: Gelöschte Artikel (nur wenn kein Filter aktiv) -->
+            <template v-if="!showOnlyChanged && getTab(list._id) === 'deleted'">
               <div v-if="getDeletedItemsForList(list._id).length > 0" class="permanent-delete-bar">
                 <button class="permanent-delete-btn" @click="confirmPermanentDelete(list._id)">
                   🗑️ Alle endgültig löschen
@@ -481,14 +522,14 @@ function confirmDeleteList(list) {
             </template>
 
             <div
-              v-if="getTab(list._id) === 'active' && getActiveItemsForList(list._id).length === 0"
+              v-if="(showOnlyChanged || getTab(list._id) === 'active') && getDisplayItems(list._id).length === 0"
               class="empty-list"
             >
-              Keine aktiven Artikel in dieser Liste
+              {{ showOnlyChanged ? 'Keine geänderten Artikel in dieser Liste' : 'Keine aktiven Artikel in dieser Liste' }}
             </div>
 
-            <!-- Artikel hinzufügen -->
-            <div v-if="getTab(list._id) === 'active'" class="add-item-form">
+            <!-- Artikel hinzufügen (nur wenn kein Filter aktiv) -->
+            <div v-if="!showOnlyChanged && getTab(list._id) === 'active'" class="add-item-form">
               <input
                 v-model="newItemNames[list._id]"
                 class="add-input"
@@ -498,7 +539,7 @@ function confirmDeleteList(list) {
               <button class="add-btn" @click="submitNewItem(list._id)">+</button>
             </div>
             <div
-              v-if="getTab(list._id) === 'deleted' && getDeletedItemsForList(list._id).length === 0"
+              v-if="!showOnlyChanged && getTab(list._id) === 'deleted' && getDeletedItemsForList(list._id).length === 0"
               class="empty-list"
             >
               Keine gelöschten Artikel

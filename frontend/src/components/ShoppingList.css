@@ -1023,3 +1023,101 @@ h1 {
 .item-name {
   flex: 1;
 }
+
+/* Benachrichtigungen */
+.notifications {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.notification-banner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: #ebf8ff;
+  border: 1px solid #bee3f8;
+  border-left: 4px solid #3182ce;
+  border-radius: 8px;
+  animation: fadeIn 0.3s ease-in;
+}
+
+.notification-text {
+  font-size: 0.88rem;
+  color: #2b6cb0;
+  line-height: 1.5;
+  flex: 1;
+}
+
+.notification-dismiss {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: #90cdf4;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+  line-height: 1;
+  transition: color 0.15s, background 0.15s;
+}
+
+.notification-dismiss:hover {
+  color: #2b6cb0;
+  background: #bee3f8;
+}
+
+/* Filter-Leiste */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.filter-changed-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.875rem;
+  background: white;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #718096;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-changed-btn:hover {
+  border-color: #3182ce;
+  color: #2b6cb0;
+}
+
+.filter-changed-btn.active {
+  background: #ebf8ff;
+  border-color: #3182ce;
+  color: #2b6cb0;
+}
+
+.filter-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  background: #e2e8f0;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #4a5568;
+}
+
+.filter-badge-active {
+  background: #bee3f8;
+  color: #2b6cb0;
+}
