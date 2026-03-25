@@ -1,0 +1,45 @@
+name: Update STORIES.md Status
+
+on:
+  issues:
+    types: [opened, closed, reopened]
+
+jobs:
+  update-markdown:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Wichtig, damit der Bot pushen darf
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Update Status in STORIES.md
+        run: |
+          # Speichere die URL und den aktuellen Status des getriggerten Issues
+          ISSUE_URL="${{ github.event.issue.html_url }}"
+          STATE="${{ github.event.issue.state }}"
+
+          # Setze den neuen Text basierend auf dem Status
+          if [ "$STATE" = "closed" ]; then
+            NEW_STATUS="[🔴 Closed]($ISSUE_URL)"
+          else
+            NEW_STATUS="[🟢 Open]($ISSUE_URL)"
+          fi
+
+          # Ersetze den alten Text (egal was zwischen den [] steht) bei genau dieser URL
+          # Erklärung sed: Suche nach [irgendwas](ISSUE_URL) und ersetze es durch den NEW_STATUS
+          sed -i -E "s|\[[^]]+\]\($ISSUE_URL\)|$NEW_STATUS|g" STORIES.md
+
+      - name: Commit and Push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Nur committen, wenn sich die Datei wirklich geändert hat
+          if git diff --exit-code STORIES.md; then
+            echo "No changes to commit."
+          else
+            git commit -am "chore: Update issue #${{ github.event.issue.number }} status to $STATE"
+            git push
+          fi
