@@ -3,43 +3,71 @@ name: Update STORIES.md Status
 on:
   issues:
     types: [opened, closed, reopened]
+  workflow_dispatch: # Erlaubt das manuelle Starten per Button für ALLE Issues!
 
 jobs:
   update-markdown:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Wichtig, damit der Bot pushen darf
+      contents: write # Bot darf in die Datei schreiben
+      issues: read    # Bot darf den Status der Issues auslesen
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Update Status in STORIES.md
+      # --- SCHRITT 1: Wenn EIN Issue geschlossen/geöffnet wird (Automatisch) ---
+      - name: Update Status in STORIES.md (Single Issue)
+        if: github.event_name == 'issues'
         run: |
-          # Speichere die URL und den aktuellen Status des getriggerten Issues
           ISSUE_URL="${{ github.event.issue.html_url }}"
           STATE="${{ github.event.issue.state }}"
-
-          # Setze den neuen Text basierend auf dem Status
+          
           if [ "$STATE" = "closed" ]; then
             NEW_STATUS="[🔴 Closed]($ISSUE_URL)"
           else
             NEW_STATUS="[🟢 Open]($ISSUE_URL)"
           fi
-
-          # Ersetze den alten Text (egal was zwischen den [] steht) bei genau dieser URL
-          # Erklärung sed: Suche nach [irgendwas](ISSUE_URL) und ersetze es durch den NEW_STATUS
+          
           sed -i -E "s|\[[^]]+\]\($ISSUE_URL\)|$NEW_STATUS|g" STORIES.md
 
+      # --- SCHRITT 2: Wenn der Button gedrückt wird (Manueller Sync von ALLEN) ---
+      - name: Sync ALL Issues in STORIES.md (Manual Sync)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Auth für die GitHub CLI
+        run: |
+          # Finde alle Issue-URLs in der Datei
+          grep -oE 'https://github.com/[^/]+/[^/]+/issues/[0-9]+' STORIES.md | sort -u | while read -r url; do
+            # Extrahiere die Issue-Nummer aus der URL
+            ISSUE_NUM=$(echo "$url" | awk -F'/' '{print $NF}')
+            
+            # Hole den Status via GitHub CLI
+            STATE=$(gh issue view "$ISSUE_NUM" --json state -q .state || echo "OPEN")
+            
+            if [ "$STATE" = "CLOSED" ]; then
+              sed -i -E "s|\[[^]]+\]\($url\)|[🔴 Closed]($url)|g" STORIES.md
+            else
+              sed -i -E "s|\[[^]]+\]\($url\)|[🟢 Open]($url)|g" STORIES.md
+            fi
+            echo "Updated Issue #$ISSUE_NUM to $STATE"
+          done
+
+      # --- SCHRITT 3: Änderungen speichern ---
       - name: Commit and Push changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-          # Nur committen, wenn sich die Datei wirklich geändert hat
+          # Nur committen, wenn sich die Datei geändert hat
           if git diff --exit-code STORIES.md; then
             echo "No changes to commit."
           else
-            git commit -am "chore: Update issue #${{ github.event.issue.number }} status to $STATE"
+            if [ "${{ github.event_name }}" = "issues" ]; then
+              MSG="chore: Update issue #${{ github.event.issue.number }} status"
+            else
+              MSG="chore: Sync all issue statuses in STORIES.md"
+            fi
+            git commit -am "$MSG"
             git push
           fi
