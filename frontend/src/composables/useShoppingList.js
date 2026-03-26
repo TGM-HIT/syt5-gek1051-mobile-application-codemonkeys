@@ -27,6 +27,7 @@ export function useShoppingList() {
   const syncActive = ref(false);
   const conflicts = ref({}); // nicht mehr aktiv genutzt, für Kompatibilität behalten
   const notifications = ref([]); // Benachrichtigungen für Remote-Änderungen
+  const shownNotificationIds = new Set(); // Verhindert doppelte OS-Benachrichtigungen
 
   // ── Joined Lists (localStorage) ──
   function getJoinedListIds() {
@@ -377,22 +378,99 @@ export function useShoppingList() {
   }
 
   /**
+   * Fragt die Berechtigung für Browser/OS-Benachrichtigungen an.
+   * Muss beim ersten Mal durch eine Nutzeraktion ausgelöst werden.
+   */
+  async function requestNotificationPermission() {
+    if (!('Notification' in window)) return 'unsupported';
+    if (Notification.permission === 'granted') return 'granted';
+    if (Notification.permission === 'denied') return 'denied';
+    const result = await Notification.requestPermission();
+    return result;
+  }
+
+  /**
+   * Zeigt eine echte OS-/Browser-Benachrichtigung (wie WhatsApp).
+   * Zeigt maximal 3 Items pro Kategorie, subtil formuliert.
+   */
+  function showOsNotification(listName, categories) {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+
+    const lines = [];
+    if (categories.modified.length > 0) {
+      const preview = categories.modified.slice(0, 3).join(', ');
+      const more = categories.modified.length > 3 ? ` +${categories.modified.length - 3}` : '';
+      lines.push(`✏️ Geändert: ${preview}${more}`);
+    }
+    if (categories.added.length > 0) {
+      const preview = categories.added.slice(0, 3).join(', ');
+      const more = categories.added.length > 3 ? ` +${categories.added.length - 3}` : '';
+      lines.push(`➕ Hinzugefügt: ${preview}${more}`);
+    }
+    if (categories.deleted.length > 0) {
+      const preview = categories.deleted.slice(0, 3).join(', ');
+      const more = categories.deleted.length > 3 ? ` +${categories.deleted.length - 3}` : '';
+      lines.push(`🗑️ Gelöscht markiert: ${preview}${more}`);
+    }
+
+    new Notification(`🛒 ${listName} wurde geändert`, {
+      body: lines.join('\n'),
+      icon: '/favicon.ico',
+      tag: `einkaufsliste_${listName}`,
+      renotify: true,
+    });
+  }
+
+  /**
    * Erzeugt Benachrichtigungen für alle remote-geänderten Items,
-   * gruppiert nach Person + Liste.
+   * gruppiert nach Liste mit 3 Kategorien: modified / added / deleted.
+   * Feuert für neue Gruppen auch eine echte OS-Benachrichtigung.
    */
   function generateNotifications() {
+    // Gruppieren nach Liste (nicht nach Person – mehrere Personen pro Liste möglich)
     const groups = {};
     for (const item of items.value) {
       if (!item._remoteChanged) continue;
       const list = lists.value.find((l) => l._id === item.list_id);
       if (!list) continue;
-      const person = item.lastModifiedBy || 'Unbekannt';
-      const key = `${item.list_id}__${person}`;
-      if (!groups[key]) {
-        groups[key] = { id: key, listId: item.list_id, listName: list.name, person, itemNames: [] };
+
+      if (!groups[item.list_id]) {
+        groups[item.list_id] = {
+          id: item.list_id,
+          listId: item.list_id,
+          listName: list.name,
+          modified: [],  // geänderte Items
+          added: [],     // neu hinzugefügte Items
+          deleted: [],   // als gelöscht markierte Items
+          maxTimestamp: 0,
+        };
       }
-      groups[key].itemNames.push(item.name);
+      const g = groups[item.list_id];
+      const ts = item._changeTimestamp || 0;
+      if (ts > g.maxTimestamp) g.maxTimestamp = ts;
+
+      const type = item._changeType || (item.markedDeleted ? 'deleted' : 'modified');
+      if (type === 'added') g.added.push(item.name);
+      else if (type === 'deleted') g.deleted.push(item.name);
+      else g.modified.push(item.name);
     }
+
+    // OS-Benachrichtigung nur für wirklich neue Änderungen feuern
+    for (const group of Object.values(groups)) {
+      const uniqueId = `${group.id}__${group.maxTimestamp}`;
+      if (!shownNotificationIds.has(uniqueId)) {
+        showOsNotification(group.listName, group);
+        shownNotificationIds.add(uniqueId);
+      }
+    }
+
+    // Veraltete IDs bereinigen
+    const currentListIds = new Set(Object.keys(groups));
+    for (const id of shownNotificationIds) {
+      const listId = id.split('__')[0];
+      if (!currentListIds.has(listId)) shownNotificationIds.delete(id);
+    }
+
     notifications.value = Object.values(groups);
   }
 
@@ -528,6 +606,7 @@ export function useShoppingList() {
   onMounted(() => {
     loadData();
     initSync();
+    requestNotificationPermission();
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
@@ -573,6 +652,7 @@ export function useShoppingList() {
     hasChangedItems,
     clearListChanges,
     dismissNotification,
+    requestNotificationPermission,
     generateShareCode,
     joinListByCode,
   };

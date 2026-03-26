@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useShoppingList } from '@/composables/useShoppingList';
 import { useSession } from '@/composables/useSession';
 import SessionSetup from './SessionSetup.vue';
@@ -13,6 +13,7 @@ const {
   isOnline,
   syncActive,
   notifications,
+  requestNotificationPermission,
   toggleItem,
   addItem,
   addList,
@@ -35,6 +36,20 @@ const {
   generateShareCode,
   joinListByCode,
 } = useShoppingList();
+
+// ── Benachrichtigungsberechtigung ──
+const notifPermission = ref(typeof Notification !== 'undefined' ? Notification.permission : 'unsupported');
+
+async function enableNotifications() {
+  const result = await requestNotificationPermission();
+  notifPermission.value = result;
+}
+
+onMounted(() => {
+  if (typeof Notification !== 'undefined') {
+    notifPermission.value = Notification.permission;
+  }
+});
 
 // ── Nur geänderte Artikel anzeigen ──
 const showOnlyChanged = ref(false);
@@ -240,6 +255,17 @@ function confirmDeleteList(list) {
           >
             👤 {{ sessionName }}
           </div>
+          <button
+            v-if="notifPermission === 'default'"
+            class="notif-enable-btn"
+            @click="enableNotifications"
+            title="Benachrichtigungen aktivieren"
+          >
+            🔔 Benachrichtigungen erlauben
+          </button>
+          <span v-else-if="notifPermission === 'denied'" class="notif-denied-hint" title="In den Browser-Einstellungen aktivieren">
+            🔕 Benachrichtigungen blockiert
+          </span>
           <div class="status-indicator" :class="{ online: isOnline, offline: !isOnline }">
             <span class="status-dot"></span>
             <span class="status-text">{{ isOnline ? 'Online' : 'Offline' }}</span>
@@ -306,11 +332,24 @@ function confirmDeleteList(list) {
         <!-- Benachrichtigungen -->
         <div v-if="notifications.length > 0" class="notifications">
           <div v-for="notif in notifications" :key="notif.id" class="notification-banner">
-            <span class="notification-text">
-              <strong>{{ notif.person }}</strong> / {{ notif.listName }}:
-              Es wurde geändert {{ notif.itemNames.join(', ') }}
-            </span>
-            <button class="notification-dismiss" @click="dismissNotification(notif.id)" title="Schließen">✕</button>
+            <div class="notif-header">
+              <span class="notif-list-name">🛒 {{ notif.listName }}</span>
+              <button class="notification-dismiss" @click="dismissNotification(notif.id)" title="Schließen">✕</button>
+            </div>
+            <div class="notif-body">
+              <div v-if="notif.modified.length > 0" class="notif-row notif-modified">
+                <span class="notif-label">✏️ Geändert</span>
+                <span class="notif-items">{{ notif.modified.join(', ') }}</span>
+              </div>
+              <div v-if="notif.added.length > 0" class="notif-row notif-added">
+                <span class="notif-label">➕ Hinzugefügt</span>
+                <span class="notif-items">{{ notif.added.join(', ') }}</span>
+              </div>
+              <div v-if="notif.deleted.length > 0" class="notif-row notif-deleted">
+                <span class="notif-label">🗑️ Gelöscht markiert</span>
+                <span class="notif-items">{{ notif.deleted.join(', ') }}</span>
+              </div>
+            </div>
           </div>
         </div>
 
