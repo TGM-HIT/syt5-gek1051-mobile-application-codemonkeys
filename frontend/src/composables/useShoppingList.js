@@ -390,10 +390,12 @@ export function useShoppingList() {
   }
 
   /**
-   * Zeigt eine echte OS-/Browser-Benachrichtigung (wie WhatsApp).
-   * Zeigt maximal 3 Items pro Kategorie, subtil formuliert.
+   * Zeigt eine OS-/Browser-Systembenachrichtigung.
+   * Nutzt den Service Worker (PWA), wenn verfügbar – damit die Nachricht
+   * auch über der installierten App erscheint. Fallback auf window.Notification.
+   * Zeigt maximal 3 Items pro Kategorie.
    */
-  function showOsNotification(listName, categories) {
+  async function showOsNotification(listName, categories) {
     if (!('Notification' in window) || Notification.permission !== 'granted') return;
 
     const lines = [];
@@ -413,12 +415,26 @@ export function useShoppingList() {
       lines.push(`🗑️ Gelöscht markiert: ${preview}${more}`);
     }
 
-    new Notification(`🛒 ${listName} wurde geändert`, {
+    const options = {
       body: lines.join('\n'),
-      icon: '/favicon.ico',
+      icon: '/icons/icon-192.png',
+      badge: '/icons/icon-192.png',
       tag: `einkaufsliste_${listName}`,
       renotify: true,
-    });
+    };
+    const title = `🛒 ${listName} wurde geändert`;
+
+    // Service-Worker-Notification bevorzugen (erscheint als echte Systemnachricht über der PWA)
+    if ('serviceWorker' in navigator) {
+      try {
+        const registration = await navigator.serviceWorker.ready;
+        await registration.showNotification(title, options);
+        return;
+      } catch {
+        // Fallback auf window.Notification
+      }
+    }
+    new Notification(title, options);
   }
 
   /**
