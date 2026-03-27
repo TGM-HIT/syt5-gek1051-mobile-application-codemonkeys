@@ -166,7 +166,13 @@ async function syncFromRemote() {
     });
 
     if (!localDoc) {
-      await idbPut(db, remoteDoc);
+      // Neues Dokument von Remote → als "hinzugefügt" markieren
+      await idbPut(db, {
+        ...remoteDoc,
+        _remoteChanged: true,
+        _changeType: 'added',
+        _changeTimestamp: Date.now(),
+      });
       updatedCount++;
     } else if (localDoc._dirty) {
       // Lokale ungesyncte Änderungen - NICHT überschreiben
@@ -183,6 +189,7 @@ async function syncFromRemote() {
         await idbPut(db, {
           ...remoteDoc,
           _remoteChanged: true,
+          _changeType: remoteDoc.markedDeleted ? 'deleted' : 'modified',
           _changeTimestamp: Date.now(),
         });
       }
@@ -583,6 +590,7 @@ export async function clearRemoteChangedFlag(docId) {
         if (doc && doc._remoteChanged) {
           delete doc._remoteChanged;
           delete doc._changeTimestamp;
+          delete doc._changeType;
           store.put(doc);
         }
         resolve();

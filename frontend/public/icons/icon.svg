@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Background rounded rect -->
+  <rect width="512" height="512" rx="80" fill="#16a34a"/>
+  <!-- Shopping cart icon -->
+  <!-- Handle -->
+  <path fill="none" stroke="white" stroke-width="28" stroke-linecap="round"
+        d="M96 128 L144 128"/>
+  <!-- Cart body (trapezoid) -->
+  <path fill="white"
+        d="M144 128 L176 288 Q180 300 192 300 L352 300 Q364 300 368 288 L400 148 Q404 128 384 128 Z"/>
+  <!-- Wheels -->
+  <circle cx="208" cy="348" r="32" fill="white"/>
+  <circle cx="336" cy="348" r="32" fill="white"/>
+  <!-- Handle bar -->
+  <line x1="96" y1="128" x2="144" y2="128" stroke="white" stroke-width="28" stroke-linecap="round"/>
+  <line x1="96" y1="88" x2="96" y2="136" stroke="white" stroke-width="28" stroke-linecap="round"/>
+</svg>

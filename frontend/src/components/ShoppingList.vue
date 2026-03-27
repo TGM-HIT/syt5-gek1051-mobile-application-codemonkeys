@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useShoppingList } from '@/composables/useShoppingList';
 import { useSession } from '@/composables/useSession';
 import SessionSetup from './SessionSetup.vue';
@@ -7,10 +7,13 @@ import SessionSetup from './SessionSetup.vue';
 // Alle Logik ist jetzt im Composable ausgelagert
 const {
   lists,
+  items,
   loading,
   error,
   isOnline,
   syncActive,
+  notifications,
+  requestNotificationPermission,
   toggleItem,
   addItem,
   addList,
@@ -20,6 +23,7 @@ const {
   getItemsForList,
   getActiveItemsForList,
   getDeletedItemsForList,
+  getChangedItemsForList,
   markItemDeleted,
   restoreItem,
   permanentlyDeleteAllMarked,
@@ -28,9 +32,61 @@ const {
   rejectDelete,
   hasChangedItems,
   clearListChanges,
+  dismissNotification,
   generateShareCode,
   joinListByCode,
 } = useShoppingList();
+
+// ── Benachrichtigungsberechtigung ──
+const notifPermission = ref(typeof Notification !== 'undefined' ? Notification.permission : 'unsupported');
+
+async function enableNotifications() {
+  const result = await requestNotificationPermission();
+  notifPermission.value = result;
+}
+
+// ── PWA Install ──
+const installPrompt = ref(null);
+const installable = ref(false);
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  installPrompt.value = e;
+  installable.value = true;
+});
+
+window.addEventListener('appinstalled', () => {
+  installable.value = false;
+  installPrompt.value = null;
+});
+
+async function installPwa() {
+  if (!installPrompt.value) return;
+  installPrompt.value.prompt();
+  const { outcome } = await installPrompt.value.userChoice;
+  if (outcome === 'accepted') {
+    installable.value = false;
+    installPrompt.value = null;
+  }
+}
+
+onMounted(() => {
+  if (typeof Notification !== 'undefined') {
+    notifPermission.value = Notification.permission;
+  }
+});
+
+// ── Nur geänderte Artikel anzeigen ──
+const showOnlyChanged = ref(false);
+
+function getDisplayItems(listId) {
+  if (showOnlyChanged.value) {
+    return getChangedItemsForList(listId);
+  }
+  return getActiveItemsForList(listId);
+}
+
+const totalChangedCount = computed(() => items.value.filter((i) => i._remoteChanged).length);
 
 const { sessionName, clearSession } = useSession();
 
@@ -224,6 +280,25 @@ function confirmDeleteList(list) {
           >
             👤 {{ sessionName }}
           </div>
+          <button
+            v-if="installable"
+            class="pwa-install-btn"
+            @click="installPwa"
+            title="App installieren"
+          >
+            📲 App installieren
+          </button>
+          <button
+            v-if="notifPermission === 'default'"
+            class="notif-enable-btn"
+            @click="enableNotifications"
+            title="Benachrichtigungen aktivieren"
+          >
+            🔔 Benachrichtigungen erlauben
+          </button>
+          <span v-else-if="notifPermission === 'denied'" class="notif-denied-hint" title="In den Browser-Einstellungen aktivieren">
+            🔕 Benachrichtigungen blockiert
+          </span>
           <div class="status-indicator" :class="{ online: isOnline, offline: !isOnline }">
             <span class="status-dot"></span>
             <span class="status-text">{{ isOnline ? 'Online' : 'Offline' }}</span>
@@ -284,6 +359,44 @@ function confirmDeleteList(list) {
             title="Suche zurücksetzen"
           >
             ✕
+          </button>
+        </div>
+
+        <!-- Benachrichtigungen -->
+        <div v-if="notifications.length > 0" class="notifications">
+          <div v-for="notif in notifications" :key="notif.id" class="notification-banner">
+            <div class="notif-header">
+              <span class="notif-list-name">🛒 {{ notif.listName }}</span>
+              <button class="notification-dismiss" @click="dismissNotification(notif.id)" title="Schließen">✕</button>
+            </div>
+            <div class="notif-body">
+              <div v-if="notif.modified.length > 0" class="notif-row notif-modified">
+                <span class="notif-label">✏️ Geändert</span>
+                <span class="notif-items">{{ notif.modified.join(', ') }}</span>
+              </div>
+              <div v-if="notif.added.length > 0" class="notif-row notif-added">
+                <span class="notif-label">➕ Hinzugefügt</span>
+                <span class="notif-items">{{ notif.added.join(', ') }}</span>
+              </div>
+              <div v-if="notif.deleted.length > 0" class="notif-row notif-deleted">
+                <span class="notif-label">🗑️ Gelöscht markiert</span>
+                <span class="notif-items">{{ notif.deleted.join(', ') }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter: Nur geänderte Artikel -->
+        <div class="filter-bar">
+          <button
+            class="filter-changed-btn"
+            :class="{ active: showOnlyChanged }"
+            @click="showOnlyChanged = !showOnlyChanged"
+          >
+            {{ showOnlyChanged ? '✓ Nur geänderte' : 'Nur geänderte' }}
+            <span class="filter-badge" :class="{ 'filter-badge-active': showOnlyChanged }">
+              {{ totalChangedCount }}
+            </span>
           </button>
         </div>
 
@@ -350,8 +463,8 @@ function confirmDeleteList(list) {
               <div class="progress-fill" :style="{ width: getProgress(list._id) + '%' }"></div>
             </div>
 
-            <!-- Tabs -->
-            <div class="tabs">
+            <!-- Tabs (ausgeblendet wenn nur geänderte angezeigt werden) -->
+            <div v-if="!showOnlyChanged" class="tabs">
               <button
                 class="tab-btn"
                 :class="{ active: getTab(list._id) === 'active' }"
@@ -370,9 +483,9 @@ function confirmDeleteList(list) {
               </button>
             </div>
 
-            <!-- Tab: Aktive Artikel -->
-            <ul v-if="getTab(list._id) === 'active'" class="items">
-              <template v-for="item in getActiveItemsForList(list._id)" :key="item._id">
+            <!-- Tab: Aktive Artikel / Geänderte Artikel -->
+            <ul v-if="showOnlyChanged || getTab(list._id) === 'active'" class="items">
+              <template v-for="item in getDisplayItems(list._id)" :key="item._id">
                 <li
                   :class="{
                     checked: item.checked,
@@ -452,8 +565,8 @@ function confirmDeleteList(list) {
               </template>
             </ul>
 
-            <!-- Tab: Gelöschte Artikel -->
-            <template v-if="getTab(list._id) === 'deleted'">
+            <!-- Tab: Gelöschte Artikel (nur wenn kein Filter aktiv) -->
+            <template v-if="!showOnlyChanged && getTab(list._id) === 'deleted'">
               <div v-if="getDeletedItemsForList(list._id).length > 0" class="permanent-delete-bar">
                 <button class="permanent-delete-btn" @click="confirmPermanentDelete(list._id)">
                   🗑️ Alle endgültig löschen
@@ -481,14 +594,14 @@ function confirmDeleteList(list) {
             </template>
 
             <div
-              v-if="getTab(list._id) === 'active' && getActiveItemsForList(list._id).length === 0"
+              v-if="(showOnlyChanged || getTab(list._id) === 'active') && getDisplayItems(list._id).length === 0"
               class="empty-list"
             >
-              Keine aktiven Artikel in dieser Liste
+              {{ showOnlyChanged ? 'Keine geänderten Artikel in dieser Liste' : 'Keine aktiven Artikel in dieser Liste' }}
             </div>
 
-            <!-- Artikel hinzufügen -->
-            <div v-if="getTab(list._id) === 'active'" class="add-item-form">
+            <!-- Artikel hinzufügen (nur wenn kein Filter aktiv) -->
+            <div v-if="!showOnlyChanged && getTab(list._id) === 'active'" class="add-item-form">
               <input
                 v-model="newItemNames[list._id]"
                 class="add-input"
@@ -498,7 +611,7 @@ function confirmDeleteList(list) {
               <button class="add-btn" @click="submitNewItem(list._id)">+</button>
             </div>
             <div
-              v-if="getTab(list._id) === 'deleted' && getDeletedItemsForList(list._id).length === 0"
+              v-if="!showOnlyChanged && getTab(list._id) === 'deleted' && getDeletedItemsForList(list._id).length === 0"
               class="empty-list"
             >
               Keine gelöschten Artikel
