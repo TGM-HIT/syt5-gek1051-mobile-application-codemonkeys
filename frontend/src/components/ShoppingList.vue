@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useShoppingList } from '@/composables/useShoppingList';
 import { useAuth } from '@/composables/useAuth';
+import { useItemDetails, LABEL_COLORS, getLabelColor } from '@/composables/useItemDetails';
 
 const router = useRouter();
 const { currentUser, logout: authLogout } = useAuth();
@@ -271,43 +272,34 @@ function confirmDeleteList(list) {
   );
 }
 
-// ── Labels / Details ──
-const LABEL_COLORS = [
-  { name: 'rot', hex: '#ef4444' },
-  { name: 'orange', hex: '#f97316' },
-  { name: 'gelb', hex: '#eab308' },
-  { name: 'grün', hex: '#22c55e' },
-  { name: 'blau', hex: '#3b82f6' },
-  { name: 'lila', hex: '#a855f7' },
-];
-
-function getLabelColor(labelName) {
-  return LABEL_COLORS.find((c) => c.name === labelName)?.hex || null;
-}
-
-const expandedItemId = ref(null);
-const detailNote = ref('');
-const detailLabel = ref(null);
+// ── Labels / Details (via useItemDetails) ──
+const {
+  expandedItemId,
+  detailNote,
+  detailLabel,
+  isExpanded,
+  openDetail,
+  closeDetail,
+  toggleDetail,
+  getDetailValues,
+} = useItemDetails();
 
 function toggleItemDetail(item) {
-  if (expandedItemId.value === item._id) {
-    expandedItemId.value = null;
-  } else {
-    // Inline-Editing schließen wenn Detail geöffnet wird
+  // Inline-Editing schließen wenn Detail geöffnet wird
+  if (!isExpanded(item._id)) {
     editingItemId.value = null;
-    expandedItemId.value = item._id;
-    detailNote.value = item.note || '';
-    detailLabel.value = item.label || null;
   }
+  toggleDetail(item);
 }
 
 function closeItemDetail() {
-  expandedItemId.value = null;
+  closeDetail();
 }
 
 async function saveItemDetails(item) {
-  await updateItemDetails(item, detailNote.value, detailLabel.value);
-  expandedItemId.value = null;
+  const { note, label } = getDetailValues();
+  await updateItemDetails(item, note, label);
+  closeDetail();
 }
 </script>
 
