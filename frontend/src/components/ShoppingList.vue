@@ -1,8 +1,16 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { useShoppingList } from '@/composables/useShoppingList';
-import { useSession } from '@/composables/useSession';
-import SessionSetup from './SessionSetup.vue';
+import { useAuth } from '@/composables/useAuth';
+
+const router = useRouter();
+const { currentUser, logout: authLogout } = useAuth();
+
+async function handleLogout() {
+  await authLogout();
+  router.push('/login');
+}
 
 // Alle Logik ist jetzt im Composable ausgelagert
 const {
@@ -88,7 +96,6 @@ function getDisplayItems(listId) {
 
 const totalChangedCount = computed(() => items.value.filter((i) => i._remoteChanged).length);
 
-const { sessionName, clearSession } = useSession();
 
 // ── Inline Editing ──
 const editingListId = ref(null);
@@ -265,21 +272,14 @@ function confirmDeleteList(list) {
 
 <template>
   <div class="app">
-    <!-- Session Setup Modal -->
-    <SessionSetup v-if="!sessionName" />
-
     <header class="header">
       <div class="container">
         <h1>Einkaufslisten</h1>
         <div class="header-actions">
-          <div
-            class="session-badge"
-            v-if="sessionName"
-            @click="clearSession"
-            title="Session beenden"
-          >
-            👤 {{ sessionName }}
+          <div class="session-badge" v-if="currentUser" title="Eingeloggt als">
+            👤 {{ currentUser.name }}
           </div>
+          <button class="logout-btn" @click="handleLogout" title="Abmelden">Abmelden</button>
           <button
             v-if="installable"
             class="pwa-install-btn"
