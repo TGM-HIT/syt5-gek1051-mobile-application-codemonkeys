@@ -23,6 +23,7 @@ frontend/
 │   ├── shopping-list.spec.js         # CRUD operation tests
 │   ├── offline-mode.spec.js          # Offline functionality tests
 │   ├── sharing.spec.js               # Share code tests
+│   ├── item-details.spec.js          # U10: Notes & Labels E2E tests
 │   └── synchronization.spec.js       # Data sync tests
 │
 └── src/
@@ -30,6 +31,7 @@ frontend/
         └── __tests__/
             ├── database.test.js          # Database tests
             ├── useAuth.test.js           # Authentication composable tests
+            ├── useItemDetails.test.js    # U10: Item detail UI state tests
             ├── useShoppingList.test.js   # Shopping list composable tests
             ├── pwa-notifications.test.js # PWA notification tests
             └── search.test.js            # Search composable tests
@@ -89,9 +91,10 @@ npm run test:all
 
 ### Current Unit Test Coverage
 
-The unit tests cover:
+The unit tests cover (223 tests total):
 - ✅ Authentication (useAuth composable: register, login, logout, checkSession)
-- ✅ Shopping list operations (useShoppingList composable)
+- ✅ Shopping list operations (useShoppingList composable: CRUD, sharing, U10 details)
+- ✅ Item detail UI state (useItemDetails composable: 52 tests)
 - ✅ Database operations (database.js)
 - ✅ PWA notifications (pwa-notifications composable)
 - ✅ Search functionality (search composable)
@@ -108,6 +111,11 @@ The E2E tests cover:
 - ✅ Share code generation and joining
 - ✅ Data synchronization
 - ✅ Search functionality
+- ✅ U10: Detail panel open/close (9 tests)
+- ✅ U10: Note creation, preview and deletion (9 tests)
+- ✅ U10: Label assignment and color dot display (9 tests)
+- ✅ U10: LabelFilterBar visibility and filtering (4 tests)
+- ✅ U10: Combined note + label persistence (5 tests)
 - ✅ Error handling
 
 ## Test Enhancements Added
@@ -129,6 +137,18 @@ The E2E tests cover:
 - ✅ Empty list handling
 - ✅ Database error handling
 - ✅ Error propagation
+- ✅ U10: updateItemDetails (note, label, _rev update, null handling)
+- ✅ U10: addItem creates items with note='' and label=null
+
+**useItemDetails.test.js (U10, 52 tests):**
+- ✅ LABEL_COLORS: 6 colors, unique names and hex values
+- ✅ getLabelColor: correct hex, null/unknown handling, case-sensitive
+- ✅ getLabelObject: full metadata object, null handling
+- ✅ openDetail / closeDetail / toggleDetail lifecycle
+- ✅ isDirty: detects note and label changes
+- ✅ setLabel / clearLabel
+- ✅ getDetailValues: returns current editing state
+- ✅ isValidLabel: validates against LABEL_COLORS
 
 ## CI/CD Integration
 

@@ -3,6 +3,9 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useShoppingList } from '@/composables/useShoppingList';
 import { useAuth } from '@/composables/useAuth';
+import { useItemDetails, LABEL_COLORS, getLabelColor } from '@/composables/useItemDetails';
+import { useLabelFilter } from '@/composables/useLabelFilter';
+import LabelFilterBar from '@/components/LabelFilterBar.vue';
 
 const router = useRouter();
 const { currentUser, logout: authLogout } = useAuth();
@@ -28,6 +31,7 @@ const {
   deleteList,
   renameList,
   renameItem,
+  updateItemDetails,
   getItemsForList,
   getActiveItemsForList,
   getDeletedItemsForList,
@@ -269,6 +273,59 @@ function confirmDeleteList(list) {
     deleteList(list),
   );
 }
+
+// ── Label-Filter (via useLabelFilter) ──
+const {
+  activeLabelFilter,
+  setLabelFilter,
+  getLabelCounts: getLabelCountsRaw,
+  filterItemsByLabel,
+} = useLabelFilter();
+
+/**
+ * Zählt Artikel pro Label für eine bestimmte Liste.
+ * Wrapper um useLabelFilter.getLabelCounts() mit list-spezifischen Items.
+ */
+function getLabelCounts(listId) {
+  return getLabelCountsRaw(getActiveItemsForList(listId));
+}
+
+/**
+ * Gibt die anzuzeigenden Artikel zurück – berücksichtigt showOnlyChanged UND activeLabelFilter.
+ */
+function getFilteredItems(listId) {
+  const result = getDisplayItems(listId);
+  return filterItemsByLabel(result);
+}
+
+// ── Labels / Details (via useItemDetails) ──
+const {
+  expandedItemId,
+  detailNote,
+  detailLabel,
+  isExpanded,
+  closeDetail,
+  toggleDetail,
+  getDetailValues,
+} = useItemDetails();
+
+function toggleItemDetail(item) {
+  // Inline-Editing schließen wenn Detail geöffnet wird
+  if (!isExpanded(item._id)) {
+    editingItemId.value = null;
+  }
+  toggleDetail(item);
+}
+
+function closeItemDetail() {
+  closeDetail();
+}
+
+async function saveItemDetails(item) {
+  const { note, label } = getDetailValues();
+  await updateItemDetails(item, note, label);
+  closeDetail();
+}
 </script>
 
 <template>
@@ -474,6 +531,14 @@ function confirmDeleteList(list) {
               <div class="progress-fill" :style="{ width: getProgress(list._id) + '%' }"></div>
             </div>
 
+            <!-- Label-Filter-Leiste -->
+            <LabelFilterBar
+              v-if="!showOnlyChanged && getTab(list._id) === 'active'"
+              :active-label="activeLabelFilter"
+              :counts="getLabelCounts(list._id)"
+              @update:activeLabel="setLabelFilter($event)"
+            />
+
             <!-- Tabs (ausgeblendet wenn nur geänderte angezeigt werden) -->
             <div v-if="!showOnlyChanged" class="tabs">
               <button
@@ -496,13 +561,16 @@ function confirmDeleteList(list) {
 
             <!-- Tab: Aktive Artikel / Geänderte Artikel -->
             <ul v-if="showOnlyChanged || getTab(list._id) === 'active'" class="items">
-              <template v-for="item in getDisplayItems(list._id)" :key="item._id">
+              <template v-for="item in getFilteredItems(list._id)" :key="item._id">
                 <li
                   :class="{
                     checked: item.checked,
                     'search-dimmed': searchQuery && !isSearchMatch(item),
                   }"
                   class="item"
+                  :style="
+                    item.label ? { borderLeft: `4px solid ${getLabelColor(item.label)}` } : {}
+                  "
                 >
                   <input
                     type="checkbox"
@@ -512,7 +580,14 @@ function confirmDeleteList(list) {
                   />
                   <div class="item-content" @click="toggleItem(item)">
                     <div v-if="editingItemId !== item._id" class="item-name-display">
+                      <span
+                        v-if="item.label"
+                        class="item-label-dot"
+                        :style="{ background: getLabelColor(item.label) }"
+                        :title="item.label"
+                      ></span>
                       <span class="item-name">{{ item.name }}</span>
+                      <span v-if="item.note" class="item-note-icon" title="Hat eine Notiz">📝</span>
                       <button
                         class="edit-item-btn"
                         @click.stop="startEditItem(item)"
@@ -553,7 +628,19 @@ function confirmDeleteList(list) {
                     >
                       ✏️ Geändert von {{ item.lastModifiedBy || 'Unbekannt' }}
                     </span>
+                    <span v-if="item.note && expandedItemId !== item._id" class="item-note-preview">
+                      {{ item.note }}
+                    </span>
                   </div>
+                  <button
+                    v-if="editingItemId !== item._id"
+                    class="item-detail-btn"
+                    :class="{ active: expandedItemId === item._id }"
+                    title="Details / Notiz"
+                    @click.stop="toggleItemDetail(item)"
+                  >
+                    ⋯
+                  </button>
                   <button
                     v-if="editingItemId !== item._id"
                     class="delete-item-btn"
@@ -562,6 +649,49 @@ function confirmDeleteList(list) {
                   >
                     🗑️
                   </button>
+                </li>
+                <!-- Detail-Panel: Notiz + Label -->
+                <li v-if="expandedItemId === item._id" class="item-detail-panel">
+                  <div class="detail-note-section">
+                    <label class="detail-label-text">Notiz:</label>
+                    <textarea
+                      v-model="detailNote"
+                      class="detail-textarea"
+                      placeholder="Notiz hinzufügen…"
+                      rows="2"
+                      @click.stop
+                    ></textarea>
+                  </div>
+                  <div class="detail-color-section">
+                    <label class="detail-label-text">Label:</label>
+                    <div class="color-picker">
+                      <button
+                        class="color-option color-none"
+                        :class="{ active: detailLabel === null }"
+                        @click.stop="detailLabel = null"
+                        title="Kein Label"
+                      >
+                        ✕
+                      </button>
+                      <button
+                        v-for="c in LABEL_COLORS"
+                        :key="c.name"
+                        class="color-option"
+                        :class="{ active: detailLabel === c.name }"
+                        :style="{ background: c.hex }"
+                        @click.stop="detailLabel = c.name"
+                        :title="c.name"
+                      ></button>
+                    </div>
+                  </div>
+                  <div class="detail-actions">
+                    <button class="detail-save-btn" @click.stop="saveItemDetails(item)">
+                      ✓ Speichern
+                    </button>
+                    <button class="detail-cancel-btn" @click.stop="closeItemDetail">
+                      Abbrechen
+                    </button>
+                  </div>
                 </li>
                 <!-- Inline Lösch-Banner (jemand anderes hat gelöscht) -->
                 <li v-if="item._pendingDelete" class="conflict-banner">
@@ -607,14 +737,16 @@ function confirmDeleteList(list) {
             <div
               v-if="
                 (showOnlyChanged || getTab(list._id) === 'active') &&
-                getDisplayItems(list._id).length === 0
+                getFilteredItems(list._id).length === 0
               "
               class="empty-list"
             >
               {{
                 showOnlyChanged
                   ? 'Keine geänderten Artikel in dieser Liste'
-                  : 'Keine aktiven Artikel in dieser Liste'
+                  : activeLabelFilter
+                    ? `Keine Artikel mit Label „${activeLabelFilter}"`
+                    : 'Keine aktiven Artikel in dieser Liste'
               }}
             </div>
 
