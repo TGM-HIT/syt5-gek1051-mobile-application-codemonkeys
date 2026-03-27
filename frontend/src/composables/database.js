@@ -104,12 +104,21 @@ async function syncInBackground() {
 
     // Server ist erreichbar
     if (syncStatusCallback) {
-      syncStatusCallback({ online: true, syncing: true });
+      syncStatusCallback({ online: true, syncing: true, error: null });
     }
   } catch (err) {
-    // Server nicht erreichbar
+    let errorType = 'SYNC_ERROR';
+    if (err.message === 'Remote not reachable' || err.name === 'TypeError' || !navigator.onLine) {
+      errorType = 'NETWORK_ERROR';
+    } else if (err.message.includes('401') || err.message.includes('403')) {
+      errorType = 'AUTH_ERROR';
+    } else if (err.message.includes('404')) {
+      errorType = 'NOT_FOUND';
+    }
+
+    // Server nicht erreichbar oder Fehler
     if (syncStatusCallback) {
-      syncStatusCallback({ online: false, syncing: false });
+      syncStatusCallback({ online: false, syncing: false, error: errorType });
     }
   }
 }
@@ -125,7 +134,9 @@ async function syncFromRemote() {
   const response = await fetch(`${COUCHDB_URL}/_changes?include_docs=true&since=0`, {
     headers: { Authorization: `Basic ${btoa(`${COUCHDB_USER}:${COUCHDB_PASSWORD}`)}` },
   });
-  if (!response.ok) throw new Error('Remote not reachable');
+  if (!response.ok) {
+    throw new Error(`Remote error: ${response.status}`);
+  }
 
   const data = await response.json();
   const db = await openDB();

@@ -142,9 +142,43 @@ h1 {
 }
 
 .message.error {
-  background: #fff5f5;
-  border-color: #feb2b2;
-  color: #c53030;
+  background: var(--status-offline-bg);
+  border-color: var(--accent-color);
+  color: var(--status-offline-text);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  font-weight: 500;
+  animation: slideDown 0.3s ease-out;
+}
+
+.error-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  color: currentColor;
+  cursor: pointer;
+  opacity: 0.6;
+  padding: 0.25rem;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.error-close-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  opacity: 1;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .lists {

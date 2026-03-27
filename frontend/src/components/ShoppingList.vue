@@ -273,9 +273,10 @@ function loadMoreItems(listId, tab) {
         <!-- Loading -->
         <div v-if="loading" class="message">Daten werden geladen...</div>
 
-        <!-- Error -->
+        <!-- Error Display -->
         <div v-if="error && !loading" class="message error">
-          {{ error }}
+          <span>{{ error }}</span>
+          <button class="error-close-btn" @click="error = null" title="Schließen">✕</button>
         </div>
 
         <!-- Neue Liste hinzufügen -->
