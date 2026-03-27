@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import { useShoppingList } from '@/composables/useShoppingList';
 import { useAuth } from '@/composables/useAuth';
 import { useItemDetails, LABEL_COLORS, getLabelColor } from '@/composables/useItemDetails';
+import { useLabelFilter } from '@/composables/useLabelFilter';
 import LabelFilterBar from '@/components/LabelFilterBar.vue';
 
 const router = useRouter();
@@ -273,32 +274,28 @@ function confirmDeleteList(list) {
   );
 }
 
-// ── Label-Filter ──
-const activeLabelFilter = ref(null);
+// ── Label-Filter (via useLabelFilter) ──
+const {
+  activeLabelFilter,
+  setLabelFilter,
+  getLabelCounts: getLabelCountsRaw,
+  filterItemsByLabel,
+} = useLabelFilter();
 
 /**
- * Zählt Artikel pro Label für eine Liste (für LabelFilterBar).
+ * Zählt Artikel pro Label für eine bestimmte Liste.
+ * Wrapper um useLabelFilter.getLabelCounts() mit list-spezifischen Items.
  */
 function getLabelCounts(listId) {
-  const listItems = getActiveItemsForList(listId);
-  const counts = {};
-  for (const item of listItems) {
-    if (item.label) {
-      counts[item.label] = (counts[item.label] || 0) + 1;
-    }
-  }
-  return counts;
+  return getLabelCountsRaw(getActiveItemsForList(listId));
 }
 
 /**
  * Gibt die anzuzeigenden Artikel zurück – berücksichtigt showOnlyChanged UND activeLabelFilter.
  */
 function getFilteredItems(listId) {
-  let result = getDisplayItems(listId);
-  if (activeLabelFilter.value) {
-    result = result.filter((item) => item.label === activeLabelFilter.value);
-  }
-  return result;
+  const result = getDisplayItems(listId);
+  return filterItemsByLabel(result);
 }
 
 // ── Labels / Details (via useItemDetails) ──
@@ -539,7 +536,7 @@ async function saveItemDetails(item) {
               v-if="!showOnlyChanged && getTab(list._id) === 'active'"
               :active-label="activeLabelFilter"
               :counts="getLabelCounts(list._id)"
-              @update:activeLabel="activeLabelFilter = $event"
+              @update:activeLabel="setLabelFilter($event)"
             />
 
             <!-- Tabs (ausgeblendet wenn nur geänderte angezeigt werden) -->
