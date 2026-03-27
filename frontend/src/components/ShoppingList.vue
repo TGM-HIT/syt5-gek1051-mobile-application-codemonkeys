@@ -28,6 +28,7 @@ const {
   deleteList,
   renameList,
   renameItem,
+  updateItemDetails,
   getItemsForList,
   getActiveItemsForList,
   getDeletedItemsForList,
@@ -269,6 +270,45 @@ function confirmDeleteList(list) {
     deleteList(list),
   );
 }
+
+// ── Labels / Details ──
+const LABEL_COLORS = [
+  { name: 'rot', hex: '#ef4444' },
+  { name: 'orange', hex: '#f97316' },
+  { name: 'gelb', hex: '#eab308' },
+  { name: 'grün', hex: '#22c55e' },
+  { name: 'blau', hex: '#3b82f6' },
+  { name: 'lila', hex: '#a855f7' },
+];
+
+function getLabelColor(labelName) {
+  return LABEL_COLORS.find((c) => c.name === labelName)?.hex || null;
+}
+
+const expandedItemId = ref(null);
+const detailNote = ref('');
+const detailLabel = ref(null);
+
+function toggleItemDetail(item) {
+  if (expandedItemId.value === item._id) {
+    expandedItemId.value = null;
+  } else {
+    // Inline-Editing schließen wenn Detail geöffnet wird
+    editingItemId.value = null;
+    expandedItemId.value = item._id;
+    detailNote.value = item.note || '';
+    detailLabel.value = item.label || null;
+  }
+}
+
+function closeItemDetail() {
+  expandedItemId.value = null;
+}
+
+async function saveItemDetails(item) {
+  await updateItemDetails(item, detailNote.value, detailLabel.value);
+  expandedItemId.value = null;
+}
 </script>
 
 <template>
@@ -503,6 +543,7 @@ function confirmDeleteList(list) {
                     'search-dimmed': searchQuery && !isSearchMatch(item),
                   }"
                   class="item"
+                  :style="item.label ? { borderLeft: `4px solid ${getLabelColor(item.label)}` } : {}"
                 >
                   <input
                     type="checkbox"
@@ -512,7 +553,14 @@ function confirmDeleteList(list) {
                   />
                   <div class="item-content" @click="toggleItem(item)">
                     <div v-if="editingItemId !== item._id" class="item-name-display">
+                      <span
+                        v-if="item.label"
+                        class="item-label-dot"
+                        :style="{ background: getLabelColor(item.label) }"
+                        :title="item.label"
+                      ></span>
                       <span class="item-name">{{ item.name }}</span>
+                      <span v-if="item.note" class="item-note-icon" title="Hat eine Notiz">📝</span>
                       <button
                         class="edit-item-btn"
                         @click.stop="startEditItem(item)"
@@ -553,7 +601,19 @@ function confirmDeleteList(list) {
                     >
                       ✏️ Geändert von {{ item.lastModifiedBy || 'Unbekannt' }}
                     </span>
+                    <span v-if="item.note && expandedItemId !== item._id" class="item-note-preview">
+                      {{ item.note }}
+                    </span>
                   </div>
+                  <button
+                    v-if="editingItemId !== item._id"
+                    class="item-detail-btn"
+                    :class="{ active: expandedItemId === item._id }"
+                    title="Details / Notiz"
+                    @click.stop="toggleItemDetail(item)"
+                  >
+                    ⋯
+                  </button>
                   <button
                     v-if="editingItemId !== item._id"
                     class="delete-item-btn"
@@ -562,6 +622,49 @@ function confirmDeleteList(list) {
                   >
                     🗑️
                   </button>
+                </li>
+                <!-- Detail-Panel: Notiz + Label -->
+                <li v-if="expandedItemId === item._id" class="item-detail-panel">
+                  <div class="detail-note-section">
+                    <label class="detail-label-text">Notiz:</label>
+                    <textarea
+                      v-model="detailNote"
+                      class="detail-textarea"
+                      placeholder="Notiz hinzufügen…"
+                      rows="2"
+                      @click.stop
+                    ></textarea>
+                  </div>
+                  <div class="detail-color-section">
+                    <label class="detail-label-text">Label:</label>
+                    <div class="color-picker">
+                      <button
+                        class="color-option color-none"
+                        :class="{ active: detailLabel === null }"
+                        @click.stop="detailLabel = null"
+                        title="Kein Label"
+                      >
+                        ✕
+                      </button>
+                      <button
+                        v-for="c in LABEL_COLORS"
+                        :key="c.name"
+                        class="color-option"
+                        :class="{ active: detailLabel === c.name }"
+                        :style="{ background: c.hex }"
+                        @click.stop="detailLabel = c.name"
+                        :title="c.name"
+                      ></button>
+                    </div>
+                  </div>
+                  <div class="detail-actions">
+                    <button class="detail-save-btn" @click.stop="saveItemDetails(item)">
+                      ✓ Speichern
+                    </button>
+                    <button class="detail-cancel-btn" @click.stop="closeItemDetail">
+                      Abbrechen
+                    </button>
+                  </div>
                 </li>
                 <!-- Inline Lösch-Banner (jemand anderes hat gelöscht) -->
                 <li v-if="item._pendingDelete" class="conflict-banner">
