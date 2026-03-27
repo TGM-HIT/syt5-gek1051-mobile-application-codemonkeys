@@ -738,3 +738,156 @@ describe('useShoppingList – joinListByCode', () => {
     expect(result.message).toContain('Geteilte Liste');
   });
 });
+
+// ── U10: updateItemDetails ────────────────────────────────────────────────────
+
+describe('updateItemDetails()', () => {
+  async function getMockDb() {
+    return await vi.importMock('../database.js');
+  }
+
+  it('ruft updateDoc mit der richtigen item-ID auf', async () => {
+    const db = await getMockDb();
+    db.updateDoc.mockResolvedValueOnce({ ok: true, id: 'item-x', rev: '3-upd' });
+    db.getAllDocs.mockResolvedValue([]);
+
+    const { useShoppingList } = await import('../useShoppingList.js');
+    const { updateItemDetails } = useShoppingList();
+
+    const item = { _id: 'item-x', note: '', label: null };
+    await updateItemDetails(item, 'Neue Notiz', 'rot');
+
+    expect(db.updateDoc).toHaveBeenCalledWith('item-x', expect.any(Function));
+  });
+
+  it('setzt note und label im item-Objekt nach erfolgreichem Update', async () => {
+    const db = await getMockDb();
+    db.updateDoc.mockResolvedValueOnce({ ok: true, id: 'item-y', rev: '4-upd' });
+    db.getAllDocs.mockResolvedValue([]);
+
+    const { useShoppingList } = await import('../useShoppingList.js');
+    const { updateItemDetails } = useShoppingList();
+
+    const item = { _id: 'item-y', note: '', label: null };
+    await updateItemDetails(item, 'Frisch kaufen', 'grün');
+
+    expect(item.note).toBe('Frisch kaufen');
+    expect(item.label).toBe('grün');
+  });
+
+  it('aktualisiert item._rev nach erfolgreichem Update', async () => {
+    const db = await getMockDb();
+    db.updateDoc.mockResolvedValueOnce({ ok: true, id: 'item-z', rev: '5-xyz' });
+    db.getAllDocs.mockResolvedValue([]);
+
+    const { useShoppingList } = await import('../useShoppingList.js');
+    const { updateItemDetails } = useShoppingList();
+
+    const item = { _id: 'item-z', _rev: '4-old', note: '', label: null };
+    await updateItemDetails(item, 'test', null);
+
+    expect(item._rev).toBe('5-xyz');
+  });
+
+  it('setzt note auf leeren String wenn null übergeben wird', async () => {
+    const db = await getMockDb();
+    db.updateDoc.mockResolvedValueOnce({ ok: true, id: 'item-a', rev: '2-n' });
+    db.getAllDocs.mockResolvedValue([]);
+
+    const { useShoppingList } = await import('../useShoppingList.js');
+    const { updateItemDetails } = useShoppingList();
+
+    const item = { _id: 'item-a', note: 'old', label: 'rot' };
+    await updateItemDetails(item, null, null);
+
+    expect(item.note).toBe('');
+    expect(item.label).toBeNull();
+  });
+
+  it('übergibt lastModifiedBy und updatedAt an updateDoc', async () => {
+    const db = await getMockDb();
+    let capturedTransformer;
+    db.updateDoc.mockImplementationOnce(async (id, fn) => {
+      capturedTransformer = fn;
+      return { ok: true, id, rev: '2-new' };
+    });
+    db.getAllDocs.mockResolvedValue([]);
+
+    const { useShoppingList } = await import('../useShoppingList.js');
+    const { updateItemDetails } = useShoppingList();
+
+    const item = { _id: 'item-b', note: '', label: null };
+    await updateItemDetails(item, 'Notiz', 'blau');
+
+    const result = capturedTransformer({ _id: 'item-b', note: '', label: null });
+    expect(result.lastModifiedBy).toBe('TestUser');
+    expect(result.updatedAt).toBeTruthy();
+    expect(result.note).toBe('Notiz');
+    expect(result.label).toBe('blau');
+  });
+});
+
+// ── U10: addItem mit note/label ───────────────────────────────────────────────
+
+describe('addItem() mit U10-Feldern', () => {
+  async function getMockDb() {
+    return await vi.importMock('../database.js');
+  }
+
+  it('erstellt Artikel mit note: "" standardmäßig', async () => {
+    const db = await getMockDb();
+    let capturedDoc;
+    db.createDoc.mockImplementationOnce(async (doc) => {
+      capturedDoc = doc;
+      return { ok: true };
+    });
+    db.getAllDocs.mockResolvedValue([]);
+
+    const { useShoppingList } = await import('../useShoppingList.js');
+    const { addItem } = useShoppingList();
+
+    await addItem('list-1', 'Butter');
+
+    expect(capturedDoc).toBeDefined();
+    expect(capturedDoc.note).toBe('');
+  });
+
+  it('erstellt Artikel mit label: null standardmäßig', async () => {
+    const db = await getMockDb();
+    let capturedDoc;
+    db.createDoc.mockImplementationOnce(async (doc) => {
+      capturedDoc = doc;
+      return { ok: true };
+    });
+    db.getAllDocs.mockResolvedValue([]);
+
+    const { useShoppingList } = await import('../useShoppingList.js');
+    const { addItem } = useShoppingList();
+
+    await addItem('list-1', 'Eier');
+
+    expect(capturedDoc).toBeDefined();
+    expect(capturedDoc.label).toBeNull();
+  });
+
+  it('behält andere Felder unverändert beim Erstellen', async () => {
+    const db = await getMockDb();
+    let capturedDoc;
+    db.createDoc.mockImplementationOnce(async (doc) => {
+      capturedDoc = doc;
+      return { ok: true };
+    });
+    db.getAllDocs.mockResolvedValue([]);
+
+    const { useShoppingList } = await import('../useShoppingList.js');
+    const { addItem } = useShoppingList();
+
+    await addItem('list-42', 'Joghurt');
+
+    expect(capturedDoc.type).toBe('item');
+    expect(capturedDoc.list_id).toBe('list-42');
+    expect(capturedDoc.name).toBe('Joghurt');
+    expect(capturedDoc.checked).toBe(false);
+    expect(capturedDoc.markedDeleted).toBe(false);
+  });
+});
