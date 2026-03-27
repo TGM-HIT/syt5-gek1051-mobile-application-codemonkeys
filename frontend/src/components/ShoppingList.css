@@ -1250,3 +1250,242 @@ h1 {
   background: #bee3f8;
   color: #2b6cb0;
 }
+
+/* ── U10: Item Label Dot ── */
+.item-label-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 0.35rem;
+  flex-shrink: 0;
+  vertical-align: middle;
+  box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.12);
+  transition: transform 0.15s;
+}
+
+.item-label-dot:hover {
+  transform: scale(1.25);
+}
+
+/* ── U10: Note Icon & Preview ── */
+.item-note-icon {
+  font-size: 0.75rem;
+  margin-left: 0.25rem;
+  opacity: 0.7;
+  cursor: default;
+}
+
+.item-note-preview {
+  display: block;
+  font-size: 0.78rem;
+  color: #718096;
+  margin-top: 0.2rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 280px;
+  font-style: italic;
+}
+
+/* ── U10: Detail Toggle Button ── */
+.item-detail-btn {
+  background: none;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #718096;
+  cursor: pointer;
+  padding: 0.15rem 0.45rem;
+  line-height: 1.2;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
+  letter-spacing: 1px;
+  flex-shrink: 0;
+}
+
+.item-detail-btn:hover {
+  background: #edf2f7;
+  color: #2d3748;
+  border-color: #cbd5e0;
+}
+
+.item-detail-btn.active {
+  background: #ebf8ff;
+  color: #2b6cb0;
+  border-color: #bee3f8;
+}
+
+/* ── U10: Item Detail Panel ── */
+.item-detail-panel {
+  list-style: none;
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  padding: 0.875rem 1.25rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  animation: slideDown 0.2s ease;
+}
+
+.detail-label-text {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #4a5568;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.3rem;
+}
+
+/* Note textarea */
+.detail-textarea {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-family: inherit;
+  color: #2d3748;
+  background: white;
+  resize: vertical;
+  outline: none;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+  box-sizing: border-box;
+  line-height: 1.5;
+}
+
+.detail-textarea:focus {
+  border-color: #e53e3e;
+  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
+}
+
+.detail-textarea::placeholder {
+  color: #a0aec0;
+}
+
+/* Color picker */
+.color-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.color-option {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2.5px solid transparent;
+  cursor: pointer;
+  transition:
+    transform 0.15s,
+    border-color 0.15s,
+    box-shadow 0.15s;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #718096;
+}
+
+.color-option:hover {
+  transform: scale(1.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+.color-option.active {
+  border-color: #2d3748;
+  box-shadow: 0 0 0 3px rgba(45, 55, 72, 0.2);
+  transform: scale(1.15);
+}
+
+.color-none {
+  background: #e2e8f0;
+  color: #718096;
+}
+
+.color-none.active {
+  border-color: #718096;
+  box-shadow: 0 0 0 3px rgba(113, 128, 150, 0.2);
+}
+
+/* Detail action buttons */
+.detail-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  padding-top: 0.25rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.detail-save-btn {
+  padding: 0.4rem 1rem;
+  background: #e53e3e;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.detail-save-btn:hover {
+  background: #c53030;
+}
+
+.detail-cancel-btn {
+  padding: 0.4rem 0.875rem;
+  background: white;
+  color: #718096;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+
+.detail-cancel-btn:hover {
+  background: #f7fafc;
+  border-color: #cbd5e0;
+}
+
+/* Responsive detail panel */
+@media (max-width: 640px) {
+  .item-note-preview {
+    max-width: 180px;
+  }
+
+  .item-detail-btn {
+    font-size: 0.9rem;
+    padding: 0.1rem 0.35rem;
+  }
+
+  .color-option {
+    width: 24px;
+    height: 24px;
+  }
+
+  .detail-actions {
+    flex-direction: column-reverse;
+  }
+
+  .detail-save-btn,
+  .detail-cancel-btn {
+    width: 100%;
+    text-align: center;
+  }
+}
