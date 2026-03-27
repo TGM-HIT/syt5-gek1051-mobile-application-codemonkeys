@@ -1025,6 +1025,26 @@ h1 {
 }
 
 /* Benachrichtigungen erlauben Button (Header) */
+.pwa-install-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.875rem;
+  background: #16a34a;
+  border: 1.5px solid #15803d;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.pwa-install-btn:hover {
+  background: #15803d;
+}
+
 .notif-enable-btn {
   display: flex;
   align-items: center;

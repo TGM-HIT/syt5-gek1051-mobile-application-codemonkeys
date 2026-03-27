@@ -45,6 +45,31 @@ async function enableNotifications() {
   notifPermission.value = result;
 }
 
+// ── PWA Install ──
+const installPrompt = ref(null);
+const installable = ref(false);
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  installPrompt.value = e;
+  installable.value = true;
+});
+
+window.addEventListener('appinstalled', () => {
+  installable.value = false;
+  installPrompt.value = null;
+});
+
+async function installPwa() {
+  if (!installPrompt.value) return;
+  installPrompt.value.prompt();
+  const { outcome } = await installPrompt.value.userChoice;
+  if (outcome === 'accepted') {
+    installable.value = false;
+    installPrompt.value = null;
+  }
+}
+
 onMounted(() => {
   if (typeof Notification !== 'undefined') {
     notifPermission.value = Notification.permission;
@@ -255,6 +280,14 @@ function confirmDeleteList(list) {
           >
             👤 {{ sessionName }}
           </div>
+          <button
+            v-if="installable"
+            class="pwa-install-btn"
+            @click="installPwa"
+            title="App installieren"
+          >
+            📲 App installieren
+          </button>
           <button
             v-if="notifPermission === 'default'"
             class="notif-enable-btn"
