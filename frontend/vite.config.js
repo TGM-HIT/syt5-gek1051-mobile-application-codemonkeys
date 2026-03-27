@@ -8,7 +8,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 // https://vite.dev/config/
 export default defineConfig({
-  envDir: path.resolve(__dirname, '..'), // Lade .env aus dem übergeordneten Verzeichnis
+  envDir: path.resolve(import.meta.dirname, '..'), // Lade .env aus dem übergeordneten Verzeichnis
   plugins: [
     vue(),
     vueDevTools(),

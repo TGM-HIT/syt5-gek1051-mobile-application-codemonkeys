@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useShoppingList } from '@/composables/useShoppingList';
 import { useSession } from '@/composables/useSession';
 import SessionSetup from './SessionSetup.vue';
+import ThemeToggle from './ThemeToggle.vue';
 
 // Alle Logik ist jetzt im Composable ausgelagert
 const {
@@ -286,8 +287,9 @@ function confirmDeleteList(list) {
             @click="installPwa"
             title="App installieren"
           >
-            📲 App installieren
+            📲
           </button>
+          <ThemeToggle />
           <button
             v-if="notifPermission === 'default'"
             class="notif-enable-btn"
@@ -315,7 +317,9 @@ function confirmDeleteList(list) {
 
         <!-- Error -->
         <div v-if="error && !loading" class="message error">
-          {{ error }}
+          <span class="error-icon">⚠️</span>
+          <span class="error-text">{{ error }}</span>
+          <button class="error-close" @click="error = null" title="Schließen">✕</button>
         </div>
 
         <!-- Neue Liste hinzufügen -->

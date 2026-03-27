@@ -161,6 +161,27 @@ export function useShoppingList() {
         (status) => {
           isOnline.value = status.online;
           syncActive.value = status.syncing;
+
+          if (status.error) {
+            switch (status.error) {
+              case 'NETWORK_ERROR':
+                error.value = 'Offline-Modus: Änderungen werden lokal gespeichert und später synchronisiert.';
+                break;
+              case 'AUTH_ERROR':
+                error.value = 'Anmeldefehler beim Server. Bitte Seite neu laden.';
+                break;
+              case 'NOT_FOUND':
+                error.value = 'Datenbank auf dem Server nicht gefunden.';
+                break;
+              default:
+                error.value = 'Synchronisierungsfehler. Wir versuchen es gleich erneut.';
+            }
+          } else if (status.online && error.value && error.value.includes('Synchronisierung')) {
+            // Wenn wieder online, Fehler nach 3s ausblenden
+            setTimeout(() => {
+              if (isOnline.value) error.value = null;
+            }, 3000);
+          }
         },
         // Conflict-Callback – nicht mehr für markedDeleted nötig
         () => {},

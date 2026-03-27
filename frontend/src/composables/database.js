@@ -104,12 +104,21 @@ async function syncInBackground() {
 
     // Server ist erreichbar
     if (syncStatusCallback) {
-      syncStatusCallback({ online: true, syncing: true });
+      syncStatusCallback({ online: true, syncing: true, error: null });
     }
   } catch (err) {
-    // Server nicht erreichbar
+    let errorType = 'SYNC_ERROR';
+    if (err.message === 'Remote not reachable' || err.name === 'TypeError' || !navigator.onLine) {
+      errorType = 'NETWORK_ERROR';
+    } else if (err.message.includes('401') || err.message.includes('403')) {
+      errorType = 'AUTH_ERROR';
+    } else if (err.message.includes('404')) {
+      errorType = 'NOT_FOUND';
+    }
+
+    // Server nicht erreichbar oder Fehler
     if (syncStatusCallback) {
-      syncStatusCallback({ online: false, syncing: false });
+      syncStatusCallback({ online: false, syncing: false, error: errorType });
     }
   }
 }
@@ -125,10 +134,12 @@ async function syncFromRemote() {
   const response = await fetch(`${COUCHDB_URL}/_changes?include_docs=true&since=0`, {
     headers: { Authorization: `Basic ${btoa(`${COUCHDB_USER}:${COUCHDB_PASSWORD}`)}` },
   });
-  if (!response.ok) throw new Error('Remote not reachable');
+  if (!response.ok) {
+    throw new Error(`Remote error: ${response.status}`);
+  }
 
   const data = await response.json();
-  const db = await openDB();
+  const dbInstance = await openDB();
   let updatedCount = 0;
   const changedDocIds = [];
 
@@ -139,14 +150,14 @@ async function syncFromRemote() {
     // Tombstone: Dokument wurde auf Remote gelöscht → lokal auch löschen
     if (row.deleted || remoteDoc._deleted) {
       const localDoc = await new Promise((resolve) => {
-        const tx = db.transaction(STORE_NAME, 'readonly');
+        const tx = dbInstance.transaction(STORE_NAME, 'readonly');
         const req = tx.objectStore(STORE_NAME).get(remoteDoc._id);
         req.onsuccess = () => resolve(req.result);
         req.onerror = () => resolve(null);
       });
       if (localDoc) {
         await new Promise((resolve) => {
-          const tx = db.transaction(STORE_NAME, 'readwrite');
+          const tx = dbInstance.transaction(STORE_NAME, 'readwrite');
           tx.objectStore(STORE_NAME).delete(remoteDoc._id);
           tx.oncomplete = () => resolve();
           tx.onerror = () => resolve();
@@ -167,7 +178,7 @@ async function syncFromRemote() {
 
     if (!localDoc) {
       // Neues Dokument von Remote → als "hinzugefügt" markieren
-      await idbPut(db, {
+      await idbPut(dbInstance, {
         ...remoteDoc,
         _remoteChanged: true,
         _changeType: 'added',
@@ -180,13 +191,13 @@ async function syncFromRemote() {
       // User muss noch entscheiden - nicht überschreiben
     } else if (localDoc._rev !== remoteDoc._rev) {
       if (remoteDoc.markedDeleted === true && !localDoc.markedDeleted) {
-        await idbPut(db, {
+        await idbPut(dbInstance, {
           ...localDoc,
           _rev: remoteDoc._rev,
           _pendingDelete: remoteDoc.lastModifiedBy || 'Unbekannt',
         });
       } else {
-        await idbPut(db, {
+        await idbPut(dbInstance, {
           ...remoteDoc,
           _remoteChanged: true,
           _changeType: remoteDoc.markedDeleted ? 'deleted' : 'modified',
