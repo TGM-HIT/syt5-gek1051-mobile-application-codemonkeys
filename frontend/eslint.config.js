@@ -16,6 +16,10 @@ export default defineConfig([
     files: ['**/*.test.js', '**/__tests__/**/*.js', '*.config.js'],
     languageOptions: { globals: { ...globals.browser, ...globals.node } },
   },
+  {
+    files: ['scripts/**/*.mjs', 'scripts/**/*.js'],
+    languageOptions: { globals: { ...globals.browser, ...globals.node } },
+  },
   pluginVue.configs['flat/essential'],
   configPrettier,
   {
