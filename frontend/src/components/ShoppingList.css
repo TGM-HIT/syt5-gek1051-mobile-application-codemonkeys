@@ -2,13 +2,13 @@
 
 .app {
   min-height: 100vh;
-  background: linear-gradient(to bottom, #f8f9fa 0%, #e9ecef 100%);
+  background: var(--bg-app);
   width: 100%;
 }
 
 .header {
-  background: white;
-  border-bottom: 2px solid #e0e0e0;
+  background: var(--bg-header);
+  border-bottom: 2px solid var(--border-color);
   padding: 1.25rem 0;
   position: sticky;
   top: 0;
@@ -111,7 +111,7 @@ h1 {
   margin: 0;
   font-size: 1.75rem;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--text-primary);
   letter-spacing: -0.5px;
 }
 
@@ -121,12 +121,12 @@ h1 {
 
 .message {
   padding: 1.25rem;
-  background: white;
+  background: var(--bg-card);
   border-radius: 8px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--border-color);
   text-align: center;
-  color: #666;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  color: var(--text-secondary);
+  box-shadow: 0 1px 3px var(--shadow-color);
 }
 
 .message.error {
@@ -142,11 +142,11 @@ h1 {
 }
 
 .list {
-  background: white;
+  background: var(--bg-card);
   border-radius: 12px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--border-color);
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 8px var(--shadow-color);
   transition: all 0.2s;
 }
 
@@ -241,7 +241,7 @@ h1 {
   align-items: center;
   gap: 1rem;
   padding: 1rem 1.75rem;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--border-color);
   transition: background 0.15s;
   cursor: pointer;
   user-select: none;
@@ -252,7 +252,7 @@ h1 {
 }
 
 .item:hover {
-  background: #fafafa;
+  background: var(--bg-item-hover);
 }
 
 .item:active {
@@ -275,7 +275,7 @@ h1 {
 }
 
 .item-name {
-  color: #2d3748;
+  color: var(--text-primary);
   font-size: 1rem;
   line-height: 1.5;
 }
@@ -314,8 +314,8 @@ h1 {
 /* Tabs */
 .tabs {
   display: flex;
-  border-bottom: 2px solid #e0e0e0;
-  background: #fafafa;
+  border-bottom: 2px solid var(--border-color);
+  background: var(--bg-tab);
 }
 
 .tab-btn {
@@ -342,9 +342,9 @@ h1 {
 }
 
 .tab-btn.active {
-  color: #e53e3e;
-  border-bottom-color: #e53e3e;
-  background: white;
+  color: var(--accent-color);
+  border-bottom-color: var(--accent-color);
+  background: var(--bg-card);
 }
 
 .tab-count {
@@ -576,12 +576,13 @@ h1 {
   transition:
     border-color 0.15s,
     box-shadow 0.15s;
-  background: white;
+  background: var(--bg-input);
   box-sizing: border-box;
+  color: var(--text-primary);
 }
 
 .search-input:focus {
-  border-color: #e53e3e;
+  border-color: var(--accent-color);
   box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
 }
 
@@ -634,8 +635,8 @@ h1 {
   display: flex;
   gap: 0.5rem;
   padding: 0.75rem 1.75rem;
-  border-top: 1px solid #e2e8f0;
-  background: #fafafa;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-tab);
 }
 
 .add-input {
@@ -654,7 +655,7 @@ h1 {
 
 .add-btn {
   padding: 0.5rem 1rem;
-  background: #e53e3e;
+  background: var(--accent-color);
   color: white;
   border: none;
   border-radius: 8px;
@@ -666,7 +667,7 @@ h1 {
 }
 
 .add-btn:hover {
-  background: #c53030;
+  background: var(--accent-color-hover);
 }
 
 /* Delete list button */
@@ -692,7 +693,7 @@ h1 {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--bg-modal-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -701,7 +702,7 @@ h1 {
 }
 
 .modal {
-  background: white;
+  background: var(--bg-card);
   border-radius: 14px;
   padding: 1.5rem;
   max-width: 380px;
@@ -715,12 +716,12 @@ h1 {
 .modal-title {
   font-size: 1.05rem;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--text-primary);
 }
 
 .modal-message {
   font-size: 0.9rem;
-  color: #555;
+  color: var(--text-secondary);
   line-height: 1.5;
 }
 
@@ -734,12 +735,12 @@ h1 {
 .modal-btn-cancel {
   padding: 0.5rem 1rem;
   border-radius: 8px;
-  border: 1.5px solid #e2e8f0;
-  background: white;
+  border: 1.5px solid var(--border-color);
+  background: var(--bg-card);
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  color: #555;
+  color: var(--text-secondary);
   transition: background 0.15s;
 }
 
@@ -877,9 +878,9 @@ h1 {
   font-size: 2rem;
   font-weight: 800;
   letter-spacing: 6px;
-  color: #1a1a1a;
-  background: #f7fafc;
-  border: 2px dashed #e2e8f0;
+  color: var(--text-primary);
+  background: var(--bg-tab);
+  border: 2px dashed var(--border-color);
   border-radius: 12px;
   padding: 0.75rem 1.5rem;
   font-family: 'Courier New', monospace;
@@ -887,7 +888,7 @@ h1 {
 
 .share-copy-btn {
   padding: 0.5rem 1.25rem;
-  background: #667eea;
+  background: var(--secondary-color);
   color: white;
   border: none;
   border-radius: 8px;
@@ -898,7 +899,7 @@ h1 {
 }
 
 .share-copy-btn:hover {
-  background: #5a67d8;
+  background: var(--secondary-color-hover);
 }
 
 .share-hint {
@@ -919,17 +920,18 @@ h1 {
 .edit-input {
   flex: 1;
   padding: 0.4rem 0.75rem;
-  border: 2px solid #667eea;
+  border: 2px solid var(--secondary-color);
   border-radius: 6px;
   font-size: 1rem;
   font-weight: 600;
   outline: none;
-  background: white;
+  background: var(--bg-input);
+  color: var(--text-primary);
   transition: border-color 0.2s;
 }
 
 .edit-input:focus {
-  border-color: #5a67d8;
+  border-color: var(--secondary-color-hover);
 }
 
 .edit-save-btn,
@@ -1035,23 +1037,23 @@ h1 {
 
 .load-more-btn {
   padding: 0.6rem 1.25rem;
-  background: white;
-  border: 1.5px solid #e2e8f0;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-color);
   border-radius: 8px;
-  color: #4a5568;
+  color: var(--text-secondary);
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 2px var(--shadow-color);
 }
 
 .load-more-btn:hover {
-  background: #f7fafc;
-  color: #2d3748;
-  border-color: #cbd5e0;
+  background: var(--bg-item-hover);
+  color: var(--text-primary);
+  border-color: var(--border-color-hover);
   transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 4px var(--shadow-color);
 }
 
 .load-more-btn:active {

@@ -38,7 +38,7 @@ function submit() {
 .session-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
+  background: var(--bg-modal-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -47,13 +47,13 @@ function submit() {
 }
 
 .session-modal {
-  background: white;
+  background: var(--bg-card);
   border-radius: 16px;
   padding: 2.5rem 2rem;
   max-width: 380px;
   width: 90%;
   text-align: center;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 60px var(--shadow-color);
 }
 
 .session-icon {
@@ -65,11 +65,11 @@ function submit() {
   margin: 0 0 0.5rem;
   font-size: 1.5rem;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--text-primary);
 }
 
 .session-modal p {
-  color: #666;
+  color: var(--text-secondary);
   font-size: 0.95rem;
   margin: 0 0 1.5rem;
   line-height: 1.5;
@@ -78,7 +78,9 @@ function submit() {
 .session-input {
   width: 100%;
   padding: 0.75rem 1rem;
-  border: 2px solid #e0e0e0;
+  border: 2px solid var(--border-color);
+  background: var(--bg-input);
+  color: var(--text-primary);
   border-radius: 8px;
   font-size: 1rem;
   outline: none;
@@ -88,7 +90,7 @@ function submit() {
 }
 
 .session-input:focus {
-  border-color: #e53e3e;
+  border-color: var(--accent-color);
 }
 
 .session-btn {
