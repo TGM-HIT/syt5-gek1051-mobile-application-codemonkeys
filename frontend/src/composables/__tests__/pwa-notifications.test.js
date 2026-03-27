@@ -97,8 +97,8 @@ vi.mock('../database.js', () => ({
   })),
 }));
 
-vi.mock('../useSession.js', () => ({
-  useSession: () => ({ sessionName: ref('TestUser') }),
+vi.mock('../useAuth.js', () => ({
+  useAuth: () => ({ currentUser: ref({ name: 'TestUser', roles: [] }) }),
 }));
 
 async function getDb() {
@@ -444,9 +444,14 @@ describe('generateNotifications – über Composable-Callback', () => {
     const { composable } = await setupWithChangedItems(
       [
         {
-          _id: 'i1', type: 'item', list_id: 'list1',
-          name: 'Milch', _remoteChanged: true, _changeType: 'added',
-          deleted: false, markedDeleted: false,
+          _id: 'i1',
+          type: 'item',
+          list_id: 'list1',
+          name: 'Milch',
+          _remoteChanged: true,
+          _changeType: 'added',
+          deleted: false,
+          markedDeleted: false,
         },
       ],
       [{ _id: 'list1', type: 'list', name: 'Einkauf', owner: 'TestUser', deleted: false }],
@@ -460,12 +465,24 @@ describe('generateNotifications – über Composable-Callback', () => {
     const { composable } = await setupWithChangedItems(
       [
         {
-          _id: 'i1', type: 'item', list_id: 'list1', name: 'Milch',
-          _remoteChanged: true, _changeType: 'added', deleted: false, markedDeleted: false,
+          _id: 'i1',
+          type: 'item',
+          list_id: 'list1',
+          name: 'Milch',
+          _remoteChanged: true,
+          _changeType: 'added',
+          deleted: false,
+          markedDeleted: false,
         },
         {
-          _id: 'i2', type: 'item', list_id: 'list1', name: 'Brot',
-          _remoteChanged: true, _changeType: 'modified', deleted: false, markedDeleted: false,
+          _id: 'i2',
+          type: 'item',
+          list_id: 'list1',
+          name: 'Brot',
+          _remoteChanged: true,
+          _changeType: 'modified',
+          deleted: false,
+          markedDeleted: false,
         },
       ],
       [{ _id: 'list1', type: 'list', name: 'Einkauf', owner: 'TestUser', deleted: false }],
@@ -480,12 +497,24 @@ describe('generateNotifications – über Composable-Callback', () => {
     const { composable } = await setupWithChangedItems(
       [
         {
-          _id: 'i1', type: 'item', list_id: 'list1', name: 'Milch',
-          _remoteChanged: true, _changeType: 'added', deleted: false, markedDeleted: false,
+          _id: 'i1',
+          type: 'item',
+          list_id: 'list1',
+          name: 'Milch',
+          _remoteChanged: true,
+          _changeType: 'added',
+          deleted: false,
+          markedDeleted: false,
         },
         {
-          _id: 'i2', type: 'item', list_id: 'list2', name: 'Schraube',
-          _remoteChanged: true, _changeType: 'added', deleted: false, markedDeleted: false,
+          _id: 'i2',
+          type: 'item',
+          list_id: 'list2',
+          name: 'Schraube',
+          _remoteChanged: true,
+          _changeType: 'added',
+          deleted: false,
+          markedDeleted: false,
         },
       ],
       [
@@ -504,10 +533,15 @@ describe('generateNotifications – über Composable-Callback', () => {
     const { swNotify } = await setupWithChangedItems(
       [
         {
-          _id: 'i1', type: 'item', list_id: 'list1', name: 'Milch',
-          _remoteChanged: true, _changeType: 'added',
+          _id: 'i1',
+          type: 'item',
+          list_id: 'list1',
+          name: 'Milch',
+          _remoteChanged: true,
+          _changeType: 'added',
           _changeTimestamp: 12345,
-          deleted: false, markedDeleted: false,
+          deleted: false,
+          markedDeleted: false,
         },
       ],
       [{ _id: 'list1', type: 'list', name: 'Einkauf', owner: 'TestUser', deleted: false }],
@@ -520,8 +554,13 @@ describe('generateNotifications – über Composable-Callback', () => {
     const { composable, swNotify } = await setupWithChangedItems(
       [
         {
-          _id: 'i1', type: 'item', list_id: 'list1', name: 'Milch',
-          _remoteChanged: false, deleted: false, markedDeleted: false,
+          _id: 'i1',
+          type: 'item',
+          list_id: 'list1',
+          name: 'Milch',
+          _remoteChanged: false,
+          deleted: false,
+          markedDeleted: false,
         },
       ],
       [{ _id: 'list1', type: 'list', name: 'Einkauf', owner: 'TestUser', deleted: false }],
@@ -535,9 +574,14 @@ describe('generateNotifications – über Composable-Callback', () => {
     const { composable } = await setupWithChangedItems(
       [
         {
-          _id: 'i1', type: 'item', list_id: 'list1', name: 'Eier',
-          _remoteChanged: true, _changeType: 'deleted',
-          deleted: false, markedDeleted: true,
+          _id: 'i1',
+          type: 'item',
+          list_id: 'list1',
+          name: 'Eier',
+          _remoteChanged: true,
+          _changeType: 'deleted',
+          deleted: false,
+          markedDeleted: true,
         },
       ],
       [{ _id: 'list1', type: 'list', name: 'Einkauf', owner: 'TestUser', deleted: false }],
