@@ -112,12 +112,39 @@ export function useShoppingList() {
         name: name.trim(),
         checked: false,
         markedDeleted: false,
+        note: '',
+        label: null,
         lastModifiedBy: sessionName.value || 'Unbekannt',
       });
       await loadData();
     } catch (err) {
       console.error('Fehler beim Hinzufügen des Items:', err);
       error.value = 'Item konnte nicht hinzugefügt werden';
+    }
+  }
+
+  /**
+   * Aktualisiert Notiz und Label eines Artikels
+   * @param {Object} item - Das zu aktualisierende Item
+   * @param {string} note - Die neue Notiz
+   * @param {string|null} label - Das neue Label (Farbname oder null)
+   */
+  async function updateItemDetails(item, note, label) {
+    try {
+      const result = await updateDoc(item._id, (doc) => ({
+        ...doc,
+        note: note ?? '',
+        label: label ?? null,
+        lastModifiedBy: sessionName.value || 'Unbekannt',
+        updatedAt: new Date().toISOString(),
+      }));
+      item._rev = result.rev;
+      item.note = note ?? '';
+      item.label = label ?? null;
+    } catch (err) {
+      console.error('Fehler beim Speichern der Details:', err);
+      error.value = 'Details konnten nicht gespeichert werden';
+      setTimeout(() => (error.value = null), 3000);
     }
   }
 
@@ -661,6 +688,7 @@ export function useShoppingList() {
     deleteList,
     renameList,
     renameItem,
+    updateItemDetails,
     getItemsForList,
     getActiveItemsForList,
     getDeletedItemsForList,
