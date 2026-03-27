@@ -1,59 +1,122 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Session Setup', () => {
+// Hilfsfunktion: localStorage leeren und zur Login-Seite navigieren
+async function goToLogin(page) {
+  await page.goto('/login');
+  await page.evaluate(() => localStorage.clear());
+  await page.reload();
+}
+
+test.describe('Login & Registrierung', () => {
   test.beforeEach(async ({ page }) => {
+    await goToLogin(page);
+  });
+
+  test('leitet unauthentifizierte Nutzer auf /login weiter', async ({ page }) => {
     await page.goto('/');
+    await expect(page).toHaveURL('/login');
+  });
+
+  test('zeigt die Login-Seite mit allen Feldern', async ({ page }) => {
+    await expect(page.locator('#username')).toBeVisible();
+    await expect(page.locator('#password')).toBeVisible();
+    await expect(page.locator('button[type="submit"]')).toBeVisible();
+    await expect(page.locator('a[href="/register"]')).toBeVisible();
+  });
+
+  test('Login-Button ist deaktiviert solange Felder leer sind', async ({ page }) => {
+    await expect(page.locator('button[type="submit"]')).toBeDisabled();
+    await page.fill('#username', 'testuser');
+    await expect(page.locator('button[type="submit"]')).toBeDisabled();
+    await page.fill('#password', 'passwort123');
+    await expect(page.locator('button[type="submit"]')).toBeEnabled();
+  });
+
+  test('zeigt Fehlermeldung bei falschen Credentials', async ({ page }) => {
+    await page.fill('#username', 'nichtexistent');
+    await page.fill('#password', 'falschespasswort');
+    await page.click('button[type="submit"]');
+    await expect(page.locator('.auth-error')).toBeVisible();
+  });
+
+  test('Passwort-Toggle zeigt/versteckt das Passwort', async ({ page }) => {
+    await page.fill('#password', 'meinpasswort');
+    await expect(page.locator('#password')).toHaveAttribute('type', 'password');
+    await page.click('.toggle-password');
+    await expect(page.locator('#password')).toHaveAttribute('type', 'text');
+    await page.click('.toggle-password');
+    await expect(page.locator('#password')).toHaveAttribute('type', 'password');
+  });
+
+  test('Link zur Registrierungsseite funktioniert', async ({ page }) => {
+    await page.click('a[href="/register"]');
+    await expect(page).toHaveURL('/register');
+  });
+});
+
+test.describe('Registrierung', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/register');
     await page.evaluate(() => localStorage.clear());
     await page.reload();
   });
 
-  test('zeigt das Session-Modal beim ersten Besuch', async ({ page }) => {
-    await expect(page.locator('.session-overlay')).toBeVisible();
-    await expect(page.locator('.session-modal h2')).toContainText('Willkommen');
-    await expect(page.locator('.session-input')).toBeVisible();
+  test('zeigt die Registrierungsseite mit allen Feldern', async ({ page }) => {
+    await expect(page.locator('#username')).toBeVisible();
+    await expect(page.locator('#password')).toBeVisible();
+    await expect(page.locator('#password-confirm')).toBeVisible();
+    await expect(page.locator('button[type="submit"]')).toBeVisible();
   });
 
-  test('Button ist deaktiviert solange kein Name eingegeben ist', async ({ page }) => {
-    await expect(page.locator('.session-btn')).toBeDisabled();
-    await page.fill('.session-input', '   ');
-    await expect(page.locator('.session-btn')).toBeDisabled();
+  test('Registrierungs-Button ist deaktiviert solange Felder leer sind', async ({ page }) => {
+    await expect(page.locator('button[type="submit"]')).toBeDisabled();
+    await page.fill('#username', 'neuernutzer');
+    await page.fill('#password', 'passwort123');
+    await expect(page.locator('button[type="submit"]')).toBeDisabled();
+    await page.fill('#password-confirm', 'passwort123');
+    await expect(page.locator('button[type="submit"]')).toBeEnabled();
   });
 
-  test('öffnet die App nach Namenseingabe', async ({ page }) => {
-    await page.fill('.session-input', 'TestUser');
-    await page.click('.session-btn');
-    await expect(page.locator('.session-overlay')).not.toBeVisible();
-    const sessionName = await page.evaluate(() =>
-      localStorage.getItem('einkaufsliste_session_name'),
-    );
-    expect(sessionName).toBe('TestUser');
+  test('zeigt Fehler wenn Passwörter nicht übereinstimmen', async ({ page }) => {
+    await page.fill('#username', 'neuernutzer');
+    await page.fill('#password', 'passwort123');
+    await page.fill('#password-confirm', 'anderes456');
+    await page.click('button[type="submit"]');
+    await expect(page.locator('.auth-error')).toBeVisible();
+    await expect(page.locator('.auth-error')).toContainText('überein');
   });
 
-  test('akzeptiert Enter zum Bestätigen', async ({ page }) => {
-    await page.fill('.session-input', 'EnterUser');
-    await page.press('.session-input', 'Enter');
-    await expect(page.locator('.session-overlay')).not.toBeVisible();
+  test('Link zur Login-Seite funktioniert', async ({ page }) => {
+    await page.click('a[href="/login"]');
+    await expect(page).toHaveURL('/login');
+  });
+});
+
+test.describe('Session-Persistenz', () => {
+  test('eingeloggter Nutzer bleibt nach Reload eingeloggt', async ({ page }) => {
+    // Auth-User in localStorage simulieren
+    await page.goto('/login');
+    await page.evaluate(() => {
+      localStorage.setItem('auth_user', JSON.stringify({ name: 'testuser', roles: [] }));
+    });
+    await page.goto('/');
+    // Sollte NICHT auf /login redirecten (localStorage-Fallback greift)
+    await expect(page).not.toHaveURL('/login');
   });
 
-  test('trimmt Whitespace vom Namen', async ({ page }) => {
-    await page.fill('.session-input', '  TrimUser  ');
-    await page.click('.session-btn');
-    const sessionName = await page.evaluate(() =>
-      localStorage.getItem('einkaufsliste_session_name'),
-    );
-    expect(sessionName).toBe('TrimUser');
+  test('nicht eingeloggter Nutzer wird zu /login geleitet', async ({ page }) => {
+    await page.goto('/login');
+    await page.evaluate(() => localStorage.removeItem('auth_user'));
+    await page.goto('/');
+    await expect(page).toHaveURL('/login');
   });
 
-  test('Session bleibt nach Reload erhalten', async ({ page }) => {
-    await page.fill('.session-input', 'PersistUser');
-    await page.click('.session-btn');
-    await page.reload();
-    await expect(page.locator('.session-overlay')).not.toBeVisible();
-  });
-
-  test('hält maxlength von 30 Zeichen ein', async ({ page }) => {
-    await page.fill('.session-input', 'A'.repeat(50));
-    const value = await page.inputValue('.session-input');
-    expect(value.length).toBeLessThanOrEqual(30);
+  test('eingeloggter Nutzer wird von /login zu / weitergeleitet', async ({ page }) => {
+    await page.goto('/login');
+    await page.evaluate(() => {
+      localStorage.setItem('auth_user', JSON.stringify({ name: 'testuser', roles: [] }));
+    });
+    await page.goto('/login');
+    await expect(page).toHaveURL('/');
   });
 });

@@ -54,10 +54,10 @@ vi.mock('../database.js', () => ({
   })),
 }));
 
-// useSession mocken
-vi.mock('../useSession.js', () => ({
-  useSession: () => ({
-    sessionName: ref('TestUser'),
+// useAuth mocken
+vi.mock('../useAuth.js', () => ({
+  useAuth: () => ({
+    currentUser: ref({ name: 'TestUser', roles: [] }),
   }),
 }));
 

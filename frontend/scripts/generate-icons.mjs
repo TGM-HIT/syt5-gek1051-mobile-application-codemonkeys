@@ -39,7 +39,9 @@ function drawIcon(size) {
   const buf = new Uint8Array(size * size * 4);
 
   // Background color: #16a34a
-  const bgR = 22, bgG = 163, bgB = 74;
+  const bgR = 22,
+    bgG = 163,
+    bgB = 74;
   const cornerRadius = size * 0.15;
 
   for (let y = 0; y < size; y++) {
@@ -47,8 +49,7 @@ function drawIcon(size) {
       // Rounded rectangle check
       const dx = Math.abs(x - (size - 1) / 2) - (size / 2 - cornerRadius);
       const dy = Math.abs(y - (size - 1) / 2) - (size / 2 - cornerRadius);
-      const insideBg =
-        (dx <= 0 || dy <= 0) ? true : dx * dx + dy * dy <= cornerRadius * cornerRadius;
+      const insideBg = dx <= 0 || dy <= 0 ? true : dx * dx + dy * dy <= cornerRadius * cornerRadius;
 
       const idx = (y * size + x) * 4;
       if (!insideBg) {
@@ -58,7 +59,7 @@ function drawIcon(size) {
       }
 
       // Background
-      buf[idx]     = bgR;
+      buf[idx] = bgR;
       buf[idx + 1] = bgG;
       buf[idx + 2] = bgB;
       buf[idx + 3] = 255;
@@ -68,32 +69,30 @@ function drawIcon(size) {
       const ny = y / size;
 
       // Cart trapezoid body: from x=0.28..0.80, top=0.24..0.58 (slanted top)
-      const cartLeft = 0.28, cartRight = 0.80;
-      const cartBottom = 0.60;
+      const cartLeft = 0.28,
+        cartRight = 0.8;
+      const cartBottom = 0.6;
       // Top edge: slanted from y=0.30 at left to y=0.24 at right
-      const cartTopAtX = 0.30 - (nx - cartLeft) * 0.075;
-      const inCart =
-        nx >= cartLeft && nx <= cartRight &&
-        ny >= cartTopAtX && ny <= cartBottom;
+      const cartTopAtX = 0.3 - (nx - cartLeft) * 0.075;
+      const inCart = nx >= cartLeft && nx <= cartRight && ny >= cartTopAtX && ny <= cartBottom;
 
       // Handle: vertical bar at left x=0.18..0.24, y=0.15..0.32
-      const inHandle =
-        nx >= 0.17 && nx <= 0.26 &&
-        ny >= 0.14 && ny <= 0.34;
+      const inHandle = nx >= 0.17 && nx <= 0.26 && ny >= 0.14 && ny <= 0.34;
 
       // Horizontal connector: y=0.28..0.34, x=0.17..0.32
-      const inConnector =
-        nx >= 0.17 && nx <= 0.32 &&
-        ny >= 0.27 && ny <= 0.34;
+      const inConnector = nx >= 0.17 && nx <= 0.32 && ny >= 0.27 && ny <= 0.34;
 
       // Wheels: two circles at bottom
-      const w1cx = 0.38, w1cy = 0.74, wr = 0.075;
-      const w2cx = 0.68, w2cy = 0.74;
+      const w1cx = 0.38,
+        w1cy = 0.74,
+        wr = 0.075;
+      const w2cx = 0.68,
+        w2cy = 0.74;
       const inWheel1 = (nx - w1cx) ** 2 + (ny - w1cy) ** 2 <= wr ** 2;
       const inWheel2 = (nx - w2cx) ** 2 + (ny - w2cy) ** 2 <= wr ** 2;
 
       if (inCart || inHandle || inConnector || inWheel1 || inWheel2) {
-        buf[idx]     = 255;
+        buf[idx] = 255;
         buf[idx + 1] = 255;
         buf[idx + 2] = 255;
         buf[idx + 3] = 255;
@@ -113,7 +112,7 @@ async function encodePNG(size, pixels) {
     for (let x = 0; x < size; x++) {
       const src = (y * size + x) * 4;
       const dst = y * (1 + size * 4) + 1 + x * 4;
-      raw[dst]     = pixels[src];
+      raw[dst] = pixels[src];
       raw[dst + 1] = pixels[src + 1];
       raw[dst + 2] = pixels[src + 2];
       raw[dst + 3] = pixels[src + 3];
@@ -136,9 +135,11 @@ async function encodePNG(size, pixels) {
   const ihdr = Buffer.alloc(13);
   ihdr.writeUInt32BE(size, 0);
   ihdr.writeUInt32BE(size, 4);
-  ihdr[8] = 8;  // bit depth
-  ihdr[9] = 6;  // RGBA
-  ihdr[10] = 0; ihdr[11] = 0; ihdr[12] = 0;
+  ihdr[8] = 8; // bit depth
+  ihdr[9] = 6; // RGBA
+  ihdr[10] = 0;
+  ihdr[11] = 0;
+  ihdr[12] = 0;
 
   return Buffer.concat([
     sig,
