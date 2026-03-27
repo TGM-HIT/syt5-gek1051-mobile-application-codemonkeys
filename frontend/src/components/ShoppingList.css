@@ -1084,8 +1084,13 @@ h1 {
 }
 
 @keyframes pulse-yellow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.4); }
-  50% { box-shadow: 0 0 0 6px rgba(255, 193, 7, 0); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(255, 193, 7, 0);
+  }
 }
 
 .notif-denied-hint {
@@ -1113,8 +1118,14 @@ h1 {
 }
 
 @keyframes slideDown {
-  from { opacity: 0; transform: translateY(-8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .notif-header {
@@ -1142,7 +1153,9 @@ h1 {
   padding: 0.1rem 0.35rem;
   border-radius: 4px;
   line-height: 1;
-  transition: color 0.15s, background 0.15s;
+  transition:
+    color 0.15s,
+    background 0.15s;
   flex-shrink: 0;
 }
 
@@ -1176,9 +1189,15 @@ h1 {
   color: #4a5568;
 }
 
-.notif-modified .notif-label { color: #2b6cb0; }
-.notif-added   .notif-label { color: #276749; }
-.notif-deleted .notif-label { color: #c53030; }
+.notif-modified .notif-label {
+  color: #2b6cb0;
+}
+.notif-added .notif-label {
+  color: #276749;
+}
+.notif-deleted .notif-label {
+  color: #c53030;
+}
 
 /* Filter-Leiste */
 .filter-bar {

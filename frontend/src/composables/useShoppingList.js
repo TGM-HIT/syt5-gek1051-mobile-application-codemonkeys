@@ -10,13 +10,21 @@ import {
   findListByShareCode,
   fetchItemsForListFromRemote,
 } from './database';
-import { useSession } from './useSession';
+import { useAuth } from './useAuth';
 
 /**
  * Composable für die Einkaufslisten-Logik mit PouchDB Offline-First
  */
 export function useShoppingList() {
-  const { sessionName } = useSession();
+  const { currentUser } = useAuth();
+  const sessionName = { value: currentUser.value?.name || '' };
+
+  // sessionName reaktiv halten
+  Object.defineProperty(sessionName, 'value', {
+    get: () => currentUser.value?.name || '',
+    enumerable: true,
+    configurable: true,
+  });
 
   // State
   const lists = ref([]);
@@ -455,9 +463,9 @@ export function useShoppingList() {
           id: item.list_id,
           listId: item.list_id,
           listName: list.name,
-          modified: [],  // geänderte Items
-          added: [],     // neu hinzugefügte Items
-          deleted: [],   // als gelöscht markierte Items
+          modified: [], // geänderte Items
+          added: [], // neu hinzugefügte Items
+          deleted: [], // als gelöscht markierte Items
           maxTimestamp: 0,
         };
       }

@@ -46,7 +46,9 @@ const {
 } = useShoppingList();
 
 // ── Benachrichtigungsberechtigung ──
-const notifPermission = ref(typeof Notification !== 'undefined' ? Notification.permission : 'unsupported');
+const notifPermission = ref(
+  typeof Notification !== 'undefined' ? Notification.permission : 'unsupported',
+);
 
 async function enableNotifications() {
   const result = await requestNotificationPermission();
@@ -95,7 +97,6 @@ function getDisplayItems(listId) {
 }
 
 const totalChangedCount = computed(() => items.value.filter((i) => i._remoteChanged).length);
-
 
 // ── Inline Editing ──
 const editingListId = ref(null);
@@ -296,7 +297,11 @@ function confirmDeleteList(list) {
           >
             🔔 Benachrichtigungen erlauben
           </button>
-          <span v-else-if="notifPermission === 'denied'" class="notif-denied-hint" title="In den Browser-Einstellungen aktivieren">
+          <span
+            v-else-if="notifPermission === 'denied'"
+            class="notif-denied-hint"
+            title="In den Browser-Einstellungen aktivieren"
+          >
             🔕 Benachrichtigungen blockiert
           </span>
           <div class="status-indicator" :class="{ online: isOnline, offline: !isOnline }">
@@ -367,7 +372,13 @@ function confirmDeleteList(list) {
           <div v-for="notif in notifications" :key="notif.id" class="notification-banner">
             <div class="notif-header">
               <span class="notif-list-name">🛒 {{ notif.listName }}</span>
-              <button class="notification-dismiss" @click="dismissNotification(notif.id)" title="Schließen">✕</button>
+              <button
+                class="notification-dismiss"
+                @click="dismissNotification(notif.id)"
+                title="Schließen"
+              >
+                ✕
+              </button>
             </div>
             <div class="notif-body">
               <div v-if="notif.modified.length > 0" class="notif-row notif-modified">
@@ -594,10 +605,17 @@ function confirmDeleteList(list) {
             </template>
 
             <div
-              v-if="(showOnlyChanged || getTab(list._id) === 'active') && getDisplayItems(list._id).length === 0"
+              v-if="
+                (showOnlyChanged || getTab(list._id) === 'active') &&
+                getDisplayItems(list._id).length === 0
+              "
               class="empty-list"
             >
-              {{ showOnlyChanged ? 'Keine geänderten Artikel in dieser Liste' : 'Keine aktiven Artikel in dieser Liste' }}
+              {{
+                showOnlyChanged
+                  ? 'Keine geänderten Artikel in dieser Liste'
+                  : 'Keine aktiven Artikel in dieser Liste'
+              }}
             </div>
 
             <!-- Artikel hinzufügen (nur wenn kein Filter aktiv) -->
@@ -611,7 +629,11 @@ function confirmDeleteList(list) {
               <button class="add-btn" @click="submitNewItem(list._id)">+</button>
             </div>
             <div
-              v-if="!showOnlyChanged && getTab(list._id) === 'deleted' && getDeletedItemsForList(list._id).length === 0"
+              v-if="
+                !showOnlyChanged &&
+                getTab(list._id) === 'deleted' &&
+                getDeletedItemsForList(list._id).length === 0
+              "
               class="empty-list"
             >
               Keine gelöschten Artikel
