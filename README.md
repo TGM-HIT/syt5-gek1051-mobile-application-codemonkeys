@@ -21,7 +21,7 @@ Die App ist also besonders nützlich für Situationen mit schlechtem Netz und f�
 
 Technisch basiert die Anwendung auf **Vue 3** (Benutzeroberfläche) sowie **PouchDB/CouchDB** (Datenspeicherung und Synchronisation).
 
-Live-Demo: [http://51.11.225.25/](https://www.vwlsgmbh.me/)
+Live-Demo: [Unsere Coole Seite oder so](https://www.vwlsgmbh.me/)
 
 ## Inhaltsverzeichnis
 
