@@ -19,21 +19,20 @@ This guide explains how to set up and run all tests for the shopping list applic
 ```
 frontend/
 ├── e2e/                               # End-to-End tests
-│   ├── session-setup.spec.js         # Session functionality tests
+│   ├── session-setup.spec.js         # Login & Register E2E tests
 │   ├── shopping-list.spec.js         # CRUD operation tests
 │   ├── offline-mode.spec.js          # Offline functionality tests
 │   ├── sharing.spec.js               # Share code tests
 │   └── synchronization.spec.js       # Data sync tests
 │
 └── src/
-    ├── components/
-    │   └── __tests__/
-    │       └── SessionSetup.test.js  # Component tests
     └── composables/
         └── __tests__/
-            ├── database.test.js      # Database tests
-            ├── useSession.test.js    # Session composable tests
-            └── useShoppingList.test.js # Shopping list composable tests
+            ├── database.test.js          # Database tests
+            ├── useAuth.test.js           # Authentication composable tests
+            ├── useShoppingList.test.js   # Shopping list composable tests
+            ├── pwa-notifications.test.js # PWA notification tests
+            └── search.test.js            # Search composable tests
 ```
 
 ## Running Tests
@@ -53,7 +52,7 @@ npm run test:watch
 npm run test:coverage
 
 # Run specific test file
-npx vitest run src/composables/__tests__/useSession.test.js
+npx vitest run src/composables/__tests__/useAuth.test.js
 ```
 
 ### E2E Tests
@@ -91,32 +90,37 @@ npm run test:all
 ### Current Unit Test Coverage
 
 The unit tests cover:
-- ✅ Session management (useSession composable)
+- ✅ Authentication (useAuth composable: register, login, logout, checkSession)
 - ✅ Shopping list operations (useShoppingList composable)
 - ✅ Database operations (database.js)
-- ✅ UI components (SessionSetup.vue)
+- ✅ PWA notifications (pwa-notifications composable)
+- ✅ Search functionality (search composable)
 
 ### Current E2E Test Coverage
 
 The E2E tests cover:
-- ✅ Session setup flow
+- ✅ Login page visibility and form validation
+- ✅ Registration page and password mismatch errors
+- ✅ Auth redirect guards (protected routes require login)
+- ✅ Session persistence after page reload
 - ✅ List and item CRUD operations
 - ✅ Offline mode functionality
 - ✅ Share code generation and joining
 - ✅ Data synchronization
 - ✅ Search functionality
-- ✅ Progress tracking
 - ✅ Error handling
 
 ## Test Enhancements Added
 
-### Enhanced Unit Tests
+### Auth Unit Tests (useAuth.test.js)
 
-**useSession.test.js:**
-- ✅ Undefined/null input handling
-- ✅ Very long name handling
-- ✅ Idempotent operations
-- ✅ Special character support
+- ✅ Register: success, duplicate user error, network error
+- ✅ Login: success with session persistence, wrong credentials error
+- ✅ Logout: session cleared from localStorage
+- ✅ checkSession: active session, expired session, offline fallback
+- ✅ clearError: resets authError state
+
+### Enhanced Unit Tests
 
 **useShoppingList.test.js:**
 - ✅ Edge cases (empty IDs, rapid toggles)
@@ -125,12 +129,6 @@ The E2E tests cover:
 - ✅ Empty list handling
 - ✅ Database error handling
 - ✅ Error propagation
-
-**Component Tests:**
-- ✅ SessionSetup.vue full component coverage
-- ✅ User interaction testing
-- ✅ Form validation
-- ✅ Keyboard shortcuts
 
 ## CI/CD Integration
 

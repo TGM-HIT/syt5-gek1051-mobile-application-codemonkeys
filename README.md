@@ -42,6 +42,8 @@ Live-Demo: [Unsere Coole Seite oder so](https://www.vwlsgmbh.me/)
 
 - Offline-First Einkaufslistenverwaltung
 - Bidirektionale Synchronisation zwischen lokalem Speicher und Backend
+- Login & Registrierung (CouchDB-basierte Authentifizierung)
+- Listen teilen per Share-Code
 - Moderne Vue-3-Frontend-Architektur
 - Unit- und E2E-Testabdeckung mit CI-Integration
 
@@ -87,14 +89,26 @@ docker compose up -d
 
 CouchDB ist danach erreichbar unter: `http://localhost:5984`
 
-### 3. Frontend starten
+### 3. Umgebungsvariablen konfigurieren
+
+Eine `.env`-Datei im **Root-Verzeichnis** des Projekts anlegen (nicht in `frontend/`):
+
+```env
+VITE_COUCHDB_URL=http://localhost:5984
+VITE_COUCHDB_USER=<couchdb-admin-user>
+VITE_COUCHDB_PASSWORD=<couchdb-admin-password>
+```
+
+Die CouchDB-Zugangsdaten sind in `docker-compose.yml` unter `COUCHDB_USER` und `COUCHDB_PASSWORD` definiert.
+
+### 4. Frontend starten
 
 ```bash
 cd frontend
 npm run dev
 ```
 
-Die App ist dann unter `http://localhost:5173` erreichbar.
+Die App ist dann unter `http://localhost:5173` erreichbar. Bei der ersten Nutzung muss ein Benutzeraccount über `/register` erstellt werden.
 
 ## Verfügbare Skripte
 
