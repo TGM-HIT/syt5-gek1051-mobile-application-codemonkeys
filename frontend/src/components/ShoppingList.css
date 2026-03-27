@@ -35,6 +35,7 @@ h1 {
   font-size: 1.5rem;
   font-weight: 800;
   background: var(--accent-gradient);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin: 0;
@@ -197,8 +198,9 @@ h1 {
 
 .list-header {
   padding: 1.5rem;
-  background: var(--accent-gradient);
-  color: white;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -222,11 +224,65 @@ h1 {
 }
 
 .progress-text {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--bg-app);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
   padding: 0.25rem 0.75rem;
   border-radius: 20px;
   font-size: 0.85rem;
   font-weight: 700;
+}
+
+/* Filter Bar */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.filter-changed-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: var(--shadow-sm);
+}
+
+.filter-changed-btn:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.filter-changed-btn.active {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: white;
+}
+
+.filter-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  background: var(--bg-app);
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.filter-changed-btn.active .filter-badge {
+  color: var(--accent-color);
+  background: white;
 }
 
 /* Tabs */
@@ -375,7 +431,7 @@ h1 {
 .notif-body { padding: 0.75rem 1rem; }
 
 /* PWA & Notif Buttons in Header */
-.pwa-install-btn, .notif-enable-btn {
+.pwa-install-btn {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   width: 42px;
@@ -388,9 +444,40 @@ h1 {
   transition: all 0.2s;
 }
 
-.pwa-install-btn:hover, .notif-enable-btn:hover {
+.notif-enable-btn {
+  background: var(--status-sync);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pwa-install-btn:hover {
   background: var(--item-hover-bg);
   border-color: var(--accent-color);
+}
+
+.notif-enable-btn:hover {
+  filter: brightness(1.1);
+}
+
+.notif-denied-hint {
+  font-size: 0.8rem;
+  color: var(--status-offline);
+  background: var(--status-offline-bg);
+  padding: 0.4rem 0.875rem;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
 }
 
 /* Modals */
