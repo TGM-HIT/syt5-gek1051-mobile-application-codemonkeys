@@ -21,61 +21,87 @@
   --vt-c-text-dark-2: rgba(235, 235, 235, 0.64);
 
   /* Semantic Variables (Light - Default) */
-  --bg-app: linear-gradient(to bottom, #f8f9fa 0%, #e9ecef 100%);
-  --bg-header: #ffffff;
+  --bg-app: #f8fafc;
+  --bg-header: rgba(255, 255, 255, 0.82);
   --bg-card: #ffffff;
   --bg-input: #ffffff;
-  --bg-tab: #fafafa;
-  --bg-item-hover: #fafafa;
-  --bg-item-active: #f0f0f0;
+  --bg-tab: #f1f5f9;
+  --bg-item-hover: #f8fafc;
+  --bg-item-active: #f1f5f9;
   --bg-modal: #ffffff;
-  --bg-modal-overlay: rgba(0, 0, 0, 0.45);
+  --bg-modal-overlay: rgba(15, 23, 42, 0.4);
 
-  --text-primary: #1a1a1a;
-  --text-secondary: #4a5568;
-  --text-muted: #a0aec0;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
   --text-inverse: #ffffff;
 
-  --border-color: #e0e0e0;
+  --border-color: #e2e8f0;
   --border-color-hover: #cbd5e0;
-  --shadow-color: rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 
-  --accent-color: #e53e3e;
-  --accent-color-hover: #c53030;
-  --secondary-color: #667eea;
-  --secondary-color-hover: #5a67d8;
+  --accent-color: #ef4444;
+  --accent-color-hover: #dc2626;
+  --secondary-color: #6366f1;
+  --secondary-color-hover: #4f46e5;
+
+  /* Badges & Indicators */
+  --badge-session-bg: #fef3c7;
+  --badge-session-text: #92400e;
+  --badge-session-border: #fcd34d;
+
+  --status-online-bg: #dcfce7;
+  --status-online-text: #166534;
+  --status-offline-bg: #fee2e2;
+  --status-offline-text: #991b1b;
 
   /* Legacy for compatibility */
-  --color-background: white;
+  --color-background: var(--bg-app);
   --color-text: var(--text-primary);
   --section-gap: 160px;
 }
 
 .dark-theme {
-  --bg-app: #121212;
-  --bg-header: #1e1e1e;
-  --bg-card: #1e1e1e;
-  --bg-input: #2d3748;
-  --bg-tab: #2d3748;
-  --bg-item-hover: #2d3748;
-  --bg-item-active: #1a202c;
-  --bg-modal: #2d3748;
-  --bg-modal-overlay: rgba(0, 0, 0, 0.7);
+  --bg-app: #0f172a;
+  --bg-header: rgba(30, 41, 59, 0.85);
+  --bg-card: #1e293b;
+  --bg-input: #0f172a;
+  --bg-tab: #0f172a;
+  --bg-item-hover: #334155;
+  --bg-item-active: #0f172a;
+  --bg-modal: #1e293b;
+  --bg-modal-overlay: rgba(0, 0, 0, 0.75);
 
-  --text-primary: #f7fafc;
-  --text-secondary: #e2e8f0;
-  --text-muted: #718096;
-  --text-inverse: #1a1a1a;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e0;
+  --text-muted: #64748b;
+  --text-inverse: #0f172a;
 
-  --border-color: #4a5568;
-  --border-color-hover: #718096;
-  --shadow-color: rgba(0, 0, 0, 0.3);
+  --border-color: #334155;
+  --border-color-hover: #475569;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.7);
 
-  --accent-color: #f56565;
-  --accent-color-hover: #feb2b2;
+  --accent-color: #f87171;
+  --accent-color-hover: #fca5a5;
+  --secondary-color: #818cf8;
+  --secondary-color-hover: #a5b4fc;
+
+  /* Badges & Indicators */
+  --badge-session-bg: #334155;
+  --badge-session-text: #fbbf24;
+  --badge-session-border: #475569;
+
+  --status-online-bg: #064e3b;
+  --status-online-text: #6ee7b7;
+  --status-offline-bg: #7f1d1d;
+  --status-offline-text: #fca5a5;
 
   /* Legacy overrides */
-  --color-background: #121212;
+  --color-background: var(--bg-app);
   --color-text: var(--text-primary);
 }
 

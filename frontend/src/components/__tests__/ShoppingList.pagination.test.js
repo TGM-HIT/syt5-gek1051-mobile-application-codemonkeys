@@ -101,7 +101,8 @@ describe('ShoppingList - Pagination', () => {
     wrapper = mount(ShoppingList, {
       global: {
         stubs: {
-          SessionSetup: true
+          SessionSetup: true,
+          ThemeToggle: true
         }
       }
     })

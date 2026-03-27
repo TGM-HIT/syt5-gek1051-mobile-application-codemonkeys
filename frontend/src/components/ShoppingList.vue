@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import { useShoppingList } from '@/composables/useShoppingList';
 import { useSession } from '@/composables/useSession';
 import SessionSetup from './SessionSetup.vue';
+import ThemeToggle from './ThemeToggle.vue';
 
 // Alle Logik ist jetzt im Composable ausgelagert
 const {
@@ -262,6 +263,7 @@ function loadMoreItems(listId, tab) {
             <span class="status-text">{{ isOnline ? 'Online' : 'Offline' }}</span>
             <span v-if="syncActive && isOnline" class="sync-text">• Sync aktiv</span>
           </div>
+          <ThemeToggle />
         </div>
       </div>
     </header>
