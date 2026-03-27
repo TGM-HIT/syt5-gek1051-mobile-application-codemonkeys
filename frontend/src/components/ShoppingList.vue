@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import { useShoppingList } from '@/composables/useShoppingList';
 import { useAuth } from '@/composables/useAuth';
 import { useItemDetails, LABEL_COLORS, getLabelColor } from '@/composables/useItemDetails';
+import LabelFilterBar from '@/components/LabelFilterBar.vue';
 
 const router = useRouter();
 const { currentUser, logout: authLogout } = useAuth();
@@ -272,6 +273,34 @@ function confirmDeleteList(list) {
   );
 }
 
+// ── Label-Filter ──
+const activeLabelFilter = ref(null);
+
+/**
+ * Zählt Artikel pro Label für eine Liste (für LabelFilterBar).
+ */
+function getLabelCounts(listId) {
+  const listItems = getActiveItemsForList(listId);
+  const counts = {};
+  for (const item of listItems) {
+    if (item.label) {
+      counts[item.label] = (counts[item.label] || 0) + 1;
+    }
+  }
+  return counts;
+}
+
+/**
+ * Gibt die anzuzeigenden Artikel zurück – berücksichtigt showOnlyChanged UND activeLabelFilter.
+ */
+function getFilteredItems(listId) {
+  let result = getDisplayItems(listId);
+  if (activeLabelFilter.value) {
+    result = result.filter((item) => item.label === activeLabelFilter.value);
+  }
+  return result;
+}
+
 // ── Labels / Details (via useItemDetails) ──
 const {
   expandedItemId,
@@ -506,6 +535,14 @@ async function saveItemDetails(item) {
               <div class="progress-fill" :style="{ width: getProgress(list._id) + '%' }"></div>
             </div>
 
+            <!-- Label-Filter-Leiste -->
+            <LabelFilterBar
+              v-if="!showOnlyChanged && getTab(list._id) === 'active'"
+              :active-label="activeLabelFilter"
+              :counts="getLabelCounts(list._id)"
+              @update:activeLabel="activeLabelFilter = $event"
+            />
+
             <!-- Tabs (ausgeblendet wenn nur geänderte angezeigt werden) -->
             <div v-if="!showOnlyChanged" class="tabs">
               <button
@@ -528,7 +565,7 @@ async function saveItemDetails(item) {
 
             <!-- Tab: Aktive Artikel / Geänderte Artikel -->
             <ul v-if="showOnlyChanged || getTab(list._id) === 'active'" class="items">
-              <template v-for="item in getDisplayItems(list._id)" :key="item._id">
+              <template v-for="item in getFilteredItems(list._id)" :key="item._id">
                 <li
                   :class="{
                     checked: item.checked,
@@ -702,14 +739,16 @@ async function saveItemDetails(item) {
             <div
               v-if="
                 (showOnlyChanged || getTab(list._id) === 'active') &&
-                getDisplayItems(list._id).length === 0
+                getFilteredItems(list._id).length === 0
               "
               class="empty-list"
             >
               {{
                 showOnlyChanged
                   ? 'Keine geänderten Artikel in dieser Liste'
-                  : 'Keine aktiven Artikel in dieser Liste'
+                  : activeLabelFilter
+                    ? `Keine Artikel mit Label „${activeLabelFilter}"`
+                    : 'Keine aktiven Artikel in dieser Liste'
               }}
             </div>
 
