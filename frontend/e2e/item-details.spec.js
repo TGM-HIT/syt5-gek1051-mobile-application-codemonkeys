@@ -19,15 +19,12 @@ import { test, expect } from '@playwright/test';
 async function setupAuthSession(page, username = 'E2EUser') {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
 
-  await page.evaluate(
-    (name) => {
-      localStorage.clear();
-      sessionStorage.clear();
-      // Auth-Session simulieren
-      localStorage.setItem('auth_user', JSON.stringify({ name, roles: [] }));
-    },
-    username,
-  );
+  await page.evaluate((name) => {
+    localStorage.clear();
+    sessionStorage.clear();
+    // Auth-Session simulieren
+    localStorage.setItem('auth_user', JSON.stringify({ name, roles: [] }));
+  }, username);
 
   // IndexedDB zurücksetzen
   await page.evaluate(async () => {

@@ -307,7 +307,6 @@ const {
   detailNote,
   detailLabel,
   isExpanded,
-  openDetail,
   closeDetail,
   toggleDetail,
   getDetailValues,
@@ -572,7 +571,9 @@ async function saveItemDetails(item) {
                     'search-dimmed': searchQuery && !isSearchMatch(item),
                   }"
                   class="item"
-                  :style="item.label ? { borderLeft: `4px solid ${getLabelColor(item.label)}` } : {}"
+                  :style="
+                    item.label ? { borderLeft: `4px solid ${getLabelColor(item.label)}` } : {}
+                  "
                 >
                   <input
                     type="checkbox"

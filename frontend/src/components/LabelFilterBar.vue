@@ -93,17 +93,13 @@ function clearFilter() {
       :style="{
         '--label-color': getLabelColor(color.name),
         borderColor: activeLabel === color.name ? getLabelColor(color.name) : undefined,
-        backgroundColor:
-          activeLabel === color.name ? getLabelColor(color.name) + '22' : undefined,
+        backgroundColor: activeLabel === color.name ? getLabelColor(color.name) + '22' : undefined,
       }"
       @click="selectLabel(color.name)"
       :title="`Nur ${color.label} anzeigen`"
       :aria-pressed="activeLabel === color.name"
     >
-      <span
-        class="label-dot-small"
-        :style="{ background: getLabelColor(color.name) }"
-      ></span>
+      <span class="label-dot-small" :style="{ background: getLabelColor(color.name) }"></span>
       {{ color.label }}
       <span class="label-count">{{ counts[color.name] ?? 0 }}</span>
     </button>

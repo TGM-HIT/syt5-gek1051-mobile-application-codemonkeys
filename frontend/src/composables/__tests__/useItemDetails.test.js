@@ -15,12 +15,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import {
-  useItemDetails,
-  LABEL_COLORS,
-  getLabelColor,
-  getLabelObject,
-} from '../useItemDetails.js';
+import { useItemDetails, LABEL_COLORS, getLabelColor, getLabelObject } from '../useItemDetails.js';
 
 // ── Test-Fixtures ─────────────────────────────────────────────────────────────
 
