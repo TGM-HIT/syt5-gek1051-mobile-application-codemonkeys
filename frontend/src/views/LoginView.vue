@@ -84,7 +84,7 @@ async function handleLogin() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  background: linear-gradient(to bottom, #f8f9fa 0%, #e9ecef 100%);
   padding: 1rem;
 }
 
@@ -106,7 +106,7 @@ async function handleLogin() {
 .auth-title {
   font-size: 1.75rem;
   font-weight: 800;
-  color: #15803d;
+  color: #1a1a1a;
   margin: 0 0 0.25rem;
 }
 
@@ -147,7 +147,7 @@ async function handleLogin() {
 }
 
 .form-group input:focus {
-  border-color: #16a34a;
+  border-color: #ff0000;
 }
 
 .form-group input:disabled {
@@ -189,7 +189,7 @@ async function handleLogin() {
 .auth-btn {
   width: 100%;
   padding: 0.875rem;
-  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  background: linear-gradient(135deg, #ff0000 0%, #ffde00 100%);
   border: none;
   border-radius: 10px;
   color: white;
@@ -219,7 +219,7 @@ async function handleLogin() {
 }
 
 .auth-switch a {
-  color: #16a34a;
+  color: #cc0000;
   font-weight: 600;
   text-decoration: none;
 }
