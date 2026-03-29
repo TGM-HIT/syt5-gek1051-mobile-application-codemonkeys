@@ -37,6 +37,53 @@ export function useShoppingList() {
   const notifications = ref([]); // Benachrichtigungen für Remote-Änderungen
   const shownNotificationIds = new Set(); // Verhindert doppelte OS-Benachrichtigungen
 
+  /**
+   * Gibt eine verständliche, deutsche Fehlermeldung zurück
+   * @param {Error|unknown} err - Der technische Fehler
+   * @returns {string} Benutzerfreundliche Fehlermeldung
+   */
+  function getErrorMessage(err) {
+    const msg = err?.message || '';
+    const status = err?.status || err?.statusCode || 0;
+
+    // Netzwerkfehler / Offline
+    if (
+      err instanceof TypeError ||
+      msg.includes('Failed to fetch') ||
+      msg.includes('Network') ||
+      msg.includes('offline') ||
+      msg.includes('not reachable') ||
+      msg.includes('ECONNREFUSED')
+    ) {
+      return 'Offline-Modus: Änderungen werden lokal gespeichert und synchronisiert, sobald du wieder online bist.';
+    }
+
+    // Authentifizierungsfehler
+    if (
+      status === 401 ||
+      status === 403 ||
+      msg.includes('401') ||
+      msg.includes('403') ||
+      msg.includes('auth') ||
+      msg.includes('Unauthorized')
+    ) {
+      return 'Sitzung abgelaufen oder ungültige Zugangsdaten. Bitte melde dich erneut an.';
+    }
+
+    // Nicht gefunden
+    if (
+      status === 404 ||
+      msg.includes('404') ||
+      msg.includes('not found') ||
+      msg.includes('Document not found')
+    ) {
+      return 'Die angeforderten Daten wurden nicht gefunden.';
+    }
+
+    // Sonstige Fehler
+    return 'Ein Fehler ist aufgetreten. Bitte versuche es erneut.';
+  }
+
   // ── Joined Lists (localStorage) ──
   function getJoinedListIds() {
     try {
@@ -86,7 +133,7 @@ export function useShoppingList() {
       error.value = null;
     } catch (err) {
       console.error('Fehler beim Laden:', err);
-      error.value = 'Fehler beim Laden der lokalen Daten';
+      error.value = getErrorMessage(err);
     } finally {
       loading.value = false;
     }
@@ -196,18 +243,23 @@ export function useShoppingList() {
         (status) => {
           isOnline.value = status.online;
           syncActive.value = status.syncing;
+          // Wenn wieder online: Offline-Fehlermeldung ausblenden
+          if (status.online && error.value?.includes('Offline')) {
+            error.value = null;
+          }
         },
-        // Conflict-Callback – nicht mehr für markedDeleted nötig
+        // Conflict-Callback
         () => {},
         // Data-Change-Callback
         async () => {
-          await loadData(); // UI neu laden bei Remote-Änderungen
-          generateNotifications(); // Benachrichtigungen erzeugen
+          await loadData();
+          generateNotifications();
         },
       );
       syncActive.value = true;
     } catch (err) {
       console.error('Sync initialization failed:', err);
+      error.value = getErrorMessage(err);
     }
   }
 

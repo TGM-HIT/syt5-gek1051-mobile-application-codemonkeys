@@ -6,6 +6,7 @@ import { useAuth } from '@/composables/useAuth';
 import { useItemDetails, LABEL_COLORS, getLabelColor } from '@/composables/useItemDetails';
 import { useLabelFilter } from '@/composables/useLabelFilter';
 import LabelFilterBar from '@/components/LabelFilterBar.vue';
+import ThemeToggle from '@/components/ThemeToggle.vue';
 
 const router = useRouter();
 const { currentUser, logout: authLogout } = useAuth();
@@ -337,6 +338,7 @@ async function saveItemDetails(item) {
           <div class="session-badge" v-if="currentUser" title="Eingeloggt als">
             👤 {{ currentUser.name }}
           </div>
+          <ThemeToggle />
           <button class="logout-btn" @click="handleLogout" title="Abmelden">Abmelden</button>
           <button
             v-if="installable"
