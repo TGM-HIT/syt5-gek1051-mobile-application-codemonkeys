@@ -377,9 +377,23 @@ async function saveItemDetails(item) {
         <!-- Loading -->
         <div v-if="loading" class="message">Daten werden geladen...</div>
 
-        <!-- Error -->
-        <div v-if="error && !loading" class="message error">
-          {{ error }}
+        <!-- Error Banner -->
+        <div
+          v-if="error && !loading"
+          class="error-banner"
+          :class="{ warning: error.includes('Offline') }"
+          role="alert"
+        >
+          <span class="error-banner-icon">{{ error.includes('Offline') ? '📶' : '⚠️' }}</span>
+          <span class="error-banner-text">{{ error }}</span>
+          <button
+            class="error-banner-close"
+            @click="error = null"
+            title="Schließen"
+            aria-label="Fehlermeldung schließen"
+          >
+            ✕
+          </button>
         </div>
 
         <!-- Neue Liste hinzufügen -->
