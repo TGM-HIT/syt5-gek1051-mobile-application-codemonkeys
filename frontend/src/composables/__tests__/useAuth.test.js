@@ -195,3 +195,111 @@ describe('useAuth – clearError', () => {
     expect(authError.value).toBeNull();
   });
 });
+
+describe('useAuth – changePassword', () => {
+  it('gibt Fehler zurück wenn aktuelles Passwort fehlt', async () => {
+    const { changePassword, authError, currentUser } = useAuth();
+    currentUser.value = { name: 'testuser', roles: [] };
+    const result = await changePassword('', 'neupasswort', 'neupasswort');
+    expect(result.success).toBe(false);
+    expect(authError.value).toContain('leer');
+  });
+
+  it('gibt Fehler zurück wenn neues Passwort zu kurz ist', async () => {
+    const { changePassword, authError, currentUser } = useAuth();
+    currentUser.value = { name: 'testuser', roles: [] };
+    const result = await changePassword('altpass', '123', '123');
+    expect(result.success).toBe(false);
+    expect(authError.value).toContain('6 Zeichen');
+  });
+
+  it('gibt Fehler zurück wenn Passwörter nicht übereinstimmen', async () => {
+    const { changePassword, authError, currentUser } = useAuth();
+    currentUser.value = { name: 'testuser', roles: [] };
+    const result = await changePassword('altpass', 'neupass123', 'anderes456');
+    expect(result.success).toBe(false);
+    expect(authError.value).toContain('überein');
+  });
+
+  it('gibt Fehler zurück wenn kein Benutzer eingeloggt ist', async () => {
+    const { changePassword, authError, currentUser } = useAuth();
+    currentUser.value = null;
+    const result = await changePassword('altpass', 'neupass123', 'neupass123');
+    expect(result.success).toBe(false);
+    expect(authError.value).toContain('eingeloggt');
+  });
+
+  it('gibt Fehler zurück wenn aktuelles Passwort falsch ist', async () => {
+    // POST /_session → schlägt fehl
+    global.fetch.mockResolvedValueOnce({
+      ok: false,
+      json: async () => ({ error: 'unauthorized' }),
+    });
+
+    const { changePassword, authError, currentUser } = useAuth();
+    currentUser.value = { name: 'testuser', roles: [] };
+    const result = await changePassword('falsches-pw', 'neupass123', 'neupass123');
+    expect(result.success).toBe(false);
+    expect(authError.value).toContain('falsch');
+  });
+
+  it('gibt Fehler zurück wenn Benutzerdaten nicht geladen werden können', async () => {
+    // POST /_session → ok
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ ok: true, name: 'testuser', roles: [] }),
+    });
+    // GET /_users → schlägt fehl
+    global.fetch.mockResolvedValueOnce({
+      ok: false,
+      json: async () => ({ error: 'not_found' }),
+    });
+
+    const { changePassword, authError, currentUser } = useAuth();
+    currentUser.value = { name: 'testuser', roles: [] };
+    const result = await changePassword('altpass', 'neupass123', 'neupass123');
+    expect(result.success).toBe(false);
+    expect(authError.value).toContain('geladen');
+  });
+
+  it('ändert das Passwort erfolgreich', async () => {
+    // POST /_session → ok
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ ok: true, name: 'testuser', roles: [] }),
+    });
+    // GET /_users → gibt user-Dokument zurück
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        _id: 'org.couchdb.user:testuser',
+        _rev: '1-abc',
+        name: 'testuser',
+        roles: [],
+        type: 'user',
+      }),
+    });
+    // PUT /_users → ok
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ ok: true }),
+    });
+
+    const { changePassword, authError, currentUser } = useAuth();
+    currentUser.value = { name: 'testuser', roles: [] };
+    const result = await changePassword('altpass', 'neupass123', 'neupass123');
+    expect(result.success).toBe(true);
+    expect(authError.value).toBeNull();
+  });
+
+  it('gibt Fehler zurück bei Netzwerkproblem', async () => {
+    global.fetch.mockRejectedValueOnce(new Error('Network error'));
+
+    const { changePassword, authError, currentUser } = useAuth();
+    currentUser.value = { name: 'testuser', roles: [] };
+    const result = await changePassword('altpass', 'neupass123', 'neupass123');
+    expect(result.success).toBe(false);
+    expect(authError.value).toContain('Verbindung');
+  });
+});
+
