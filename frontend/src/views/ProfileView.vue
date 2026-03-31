@@ -9,7 +9,9 @@ const { currentUser, changePassword, logout, authError, authLoading, clearError 
 const currentPassword = ref('');
 const newPassword = ref('');
 const confirmPassword = ref('');
-const showPasswords = ref(false);
+const showCurrentPw = ref(false);
+const showNewPw = ref(false);
+const showConfirmPw = ref(false);
 const successMessage = ref('');
 
 async function handleChangePassword() {
@@ -48,7 +50,7 @@ async function handleLogout() {
       <section class="profile-section" aria-labelledby="pw-section-title">
         <h2 id="pw-section-title" class="section-title">Passwort ändern</h2>
 
-        <form @submit.prevent="handleChangePassword" class="auth-form" id="change-password-form">
+        <form @submit.prevent="handleChangePassword" class="auth-form" id="change-password-form" novalidate>
           <!-- Aktuelles Passwort -->
           <div class="form-group">
             <label for="current-password">Aktuelles Passwort</label>
@@ -56,7 +58,7 @@ async function handleLogout() {
               <input
                 id="current-password"
                 v-model="currentPassword"
-                :type="showPasswords ? 'text' : 'password'"
+                :type="showCurrentPw ? 'text' : 'password'"
                 placeholder="••••••••"
                 autocomplete="current-password"
                 :disabled="authLoading"
@@ -64,11 +66,11 @@ async function handleLogout() {
               <button
                 type="button"
                 class="toggle-password"
-                @click="showPasswords = !showPasswords"
+                @click="showCurrentPw = !showCurrentPw"
                 tabindex="-1"
-                aria-label="Passwort anzeigen/verstecken"
+                :aria-label="showCurrentPw ? 'Passwort verstecken' : 'Passwort anzeigen'"
               >
-                {{ showPasswords ? '🙈' : '👁️' }}
+                {{ showCurrentPw ? '🙈' : '👁️' }}
               </button>
             </div>
           </div>
@@ -80,11 +82,20 @@ async function handleLogout() {
               <input
                 id="new-password"
                 v-model="newPassword"
-                :type="showPasswords ? 'text' : 'password'"
+                :type="showNewPw ? 'text' : 'password'"
                 placeholder="Mindestens 6 Zeichen"
                 autocomplete="new-password"
                 :disabled="authLoading"
               />
+              <button
+                type="button"
+                class="toggle-password"
+                @click="showNewPw = !showNewPw"
+                tabindex="-1"
+                :aria-label="showNewPw ? 'Passwort verstecken' : 'Passwort anzeigen'"
+              >
+                {{ showNewPw ? '🙈' : '👁️' }}
+              </button>
             </div>
           </div>
 
@@ -95,11 +106,20 @@ async function handleLogout() {
               <input
                 id="confirm-password"
                 v-model="confirmPassword"
-                :type="showPasswords ? 'text' : 'password'"
+                :type="showConfirmPw ? 'text' : 'password'"
                 placeholder="Passwort wiederholen"
                 autocomplete="new-password"
                 :disabled="authLoading"
               />
+              <button
+                type="button"
+                class="toggle-password"
+                @click="showConfirmPw = !showConfirmPw"
+                tabindex="-1"
+                :aria-label="showConfirmPw ? 'Passwort verstecken' : 'Passwort anzeigen'"
+              >
+                {{ showConfirmPw ? '🙈' : '👁️' }}
+              </button>
             </div>
           </div>
 
@@ -234,9 +254,21 @@ async function handleLogout() {
   transition: border-color 0.2s;
   width: 100%;
   box-sizing: border-box;
+  /* Browser-eigene Validierungsränder deaktivieren */
+  box-shadow: none;
 }
 
 .form-group input:focus {
+  border-color: #ff0000;
+}
+
+/* Browser :invalid Stile neutralisieren – wir machen eigene Validierung */
+.form-group input:invalid {
+  border-color: #e5e7eb;
+  box-shadow: none;
+}
+
+.form-group input:focus:invalid {
   border-color: #ff0000;
 }
 
