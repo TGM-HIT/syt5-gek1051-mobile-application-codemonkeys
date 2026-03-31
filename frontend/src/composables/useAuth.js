@@ -108,6 +108,93 @@ export function useAuth() {
   }
 
   /**
+   * Ändert das Passwort des aktuell eingeloggten Nutzers.
+   * Prüft zuerst das aktuelle Passwort per Login-Versuch, dann aktualisiert es den _users-Eintrag.
+   */
+  async function changePassword(currentPassword, newPassword, confirmPassword) {
+    if (!currentPassword) {
+      authError.value = 'Aktuelles Passwort darf nicht leer sein.';
+      return { success: false };
+    }
+    if (!newPassword || newPassword.length < 6) {
+      authError.value = 'Neues Passwort muss mindestens 6 Zeichen lang sein.';
+      return { success: false };
+    }
+    if (newPassword !== confirmPassword) {
+      authError.value = 'Passwörter stimmen nicht überein.';
+      return { success: false };
+    }
+    if (!currentUser.value) {
+      authError.value = 'Nicht eingeloggt.';
+      return { success: false };
+    }
+
+    authLoading.value = true;
+    authError.value = null;
+
+    try {
+      const username = currentUser.value.name;
+
+      // 1) Aktuelles Passwort prüfen
+      const sessionRes = await fetch(`${COUCHDB_BASE}/_session`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ name: username, password: currentPassword }),
+      });
+      const sessionData = await sessionRes.json();
+      if (!sessionRes.ok || !sessionData.ok) {
+        authError.value = 'Aktuelles Passwort ist falsch.';
+        return { success: false };
+      }
+
+      // 2) Aktuellen _users-Eintrag holen um die _rev zu bekommen
+      const userRes = await fetch(
+        `${COUCHDB_BASE}/_users/org.couchdb.user:${username}`,
+        {
+          headers: {
+            Authorization: `Basic ${btoa(`${COUCHDB_USER}:${COUCHDB_PASSWORD}`)}`,
+          },
+        },
+      );
+      if (!userRes.ok) {
+        authError.value = 'Benutzerdaten konnten nicht geladen werden.';
+        return { success: false };
+      }
+      const userData = await userRes.json();
+
+      // 3) Passwort aktualisieren
+      const updateRes = await fetch(
+        `${COUCHDB_BASE}/_users/org.couchdb.user:${username}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Basic ${btoa(`${COUCHDB_USER}:${COUCHDB_PASSWORD}`)}`,
+          },
+          body: JSON.stringify({
+            ...userData,
+            password: newPassword,
+          }),
+        },
+      );
+
+      if (updateRes.ok) {
+        return { success: true };
+      } else {
+        const body = await updateRes.json();
+        authError.value = body.reason || 'Passwort konnte nicht geändert werden.';
+        return { success: false };
+      }
+    } catch {
+      authError.value = 'Verbindung zum Server fehlgeschlagen.';
+      return { success: false };
+    } finally {
+      authLoading.value = false;
+    }
+  }
+
+  /**
    * Meldet den Nutzer ab und löscht die lokale Session.
    */
   async function logout() {
@@ -162,6 +249,7 @@ export function useAuth() {
     register,
     login,
     logout,
+    changePassword,
     checkSession,
     clearError,
   };
