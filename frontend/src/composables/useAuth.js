@@ -109,7 +109,7 @@ export function useAuth() {
 
   /**
    * Ändert das Passwort des aktuell eingeloggten Nutzers.
-   * Prüft zuerst das aktuelle Passwort per Login-Versuch, dann aktualisiert es den _users-Eintrag.
+   * Verwendet die eigenen Credentials des Nutzers (CouchDB erlaubt Nutzern ihr eigenes Dokument zu ändern).
    */
   async function changePassword(currentPassword, newPassword, confirmPassword) {
     if (!currentPassword) {
@@ -148,12 +148,13 @@ export function useAuth() {
         return { success: false };
       }
 
-      // 2) Aktuellen _users-Eintrag holen um die _rev zu bekommen
+      // 2) Aktuellen _users-Eintrag holen – mit eigenen Credentials des Nutzers.
+      //    CouchDB erlaubt authentifizierten Nutzern Zugriff auf ihr eigenes Dokument.
       const userRes = await fetch(
         `${COUCHDB_BASE}/_users/org.couchdb.user:${username}`,
         {
           headers: {
-            Authorization: `Basic ${btoa(`${COUCHDB_USER}:${COUCHDB_PASSWORD}`)}`,
+            Authorization: `Basic ${btoa(`${username}:${currentPassword}`)}`,
           },
         },
       );
@@ -163,14 +164,14 @@ export function useAuth() {
       }
       const userData = await userRes.json();
 
-      // 3) Passwort aktualisieren
+      // 3) Passwort aktualisieren – eigene Credentials verwenden
       const updateRes = await fetch(
         `${COUCHDB_BASE}/_users/org.couchdb.user:${username}`,
         {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Basic ${btoa(`${COUCHDB_USER}:${COUCHDB_PASSWORD}`)}`,
+            Authorization: `Basic ${btoa(`${username}:${currentPassword}`)}`,
           },
           body: JSON.stringify({
             ...userData,
