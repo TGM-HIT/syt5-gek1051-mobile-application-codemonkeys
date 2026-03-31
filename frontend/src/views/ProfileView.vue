@@ -59,8 +59,8 @@ async function handleLogout() {
                 id="current-password"
                 v-model="currentPassword"
                 :type="showCurrentPw ? 'text' : 'password'"
-                placeholder="••••••••"
-                autocomplete="current-password"
+                placeholder="Aktuelles Passwort eingeben"
+                autocomplete="off"
                 :disabled="authLoading"
               />
               <button
