@@ -336,7 +336,9 @@ async function saveItemDetails(item) {
         <h1>Einkaufslisten</h1>
         <div class="header-actions">
           <div class="session-badge" v-if="currentUser" title="Eingeloggt als">
-            👤 {{ currentUser.name }}
+            <router-link to="/profile" class="session-badge-link">
+              👤 {{ currentUser.name }}
+            </router-link>
           </div>
           <ThemeToggle />
           <button class="logout-btn" @click="handleLogout" title="Abmelden">Abmelden</button>
