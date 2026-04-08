@@ -124,6 +124,7 @@ export function stopSync() {
 async function syncFromRemote() {
   const response = await fetch(`${COUCHDB_URL}/_changes?include_docs=true&since=0`, {
     headers: { Authorization: `Basic ${btoa(`${COUCHDB_USER}:${COUCHDB_PASSWORD}`)}` },
+    credentials: 'omit',
   });
   if (!response.ok) throw new Error('Remote not reachable');
 
@@ -334,6 +335,7 @@ async function syncToRemote(doc) {
       headers: {
         Authorization: `Basic ${btoa(`${COUCHDB_USER}:${COUCHDB_PASSWORD}`)}`,
       },
+      credentials: 'omit',
     });
 
     let remoteDoc = null;
@@ -351,6 +353,7 @@ async function syncToRemote(doc) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(docToUpload),
+      credentials: 'omit',
     });
 
     if (response.ok) {
@@ -394,6 +397,7 @@ async function resolveConflict(localDoc, _remoteDoc) {
   try {
     const getResponse = await fetch(`${COUCHDB_URL}/${localDoc._id}`, {
       headers: { Authorization: `Basic ${btoa(`${COUCHDB_USER}:${COUCHDB_PASSWORD}`)}` },
+      credentials: 'omit',
     });
     if (!getResponse.ok) return false;
     const currentRemote = await getResponse.json();
@@ -422,6 +426,7 @@ async function resolveConflict(localDoc, _remoteDoc) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(docToUpload),
+        credentials: 'omit',
       });
       if (resp.ok) {
         const result = await resp.json();
@@ -463,6 +468,7 @@ async function resolveConflict(localDoc, _remoteDoc) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(prepareForUpload(mergedDoc)),
+      credentials: 'omit',
     });
     if (uploadResp.ok) {
       const result = await uploadResp.json();
@@ -487,6 +493,7 @@ export async function applyConflictResolution(docId, chosenDoc) {
       headers: {
         Authorization: `Basic ${btoa(`${COUCHDB_USER}:${COUCHDB_PASSWORD}`)}`,
       },
+      credentials: 'omit',
     });
 
     let serverRev = chosenDoc._rev;
@@ -504,6 +511,7 @@ export async function applyConflictResolution(docId, chosenDoc) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(docToUpload),
+      credentials: 'omit',
     });
 
     if (response.ok) {
@@ -628,12 +636,14 @@ export async function hardDeleteDoc(id) {
     try {
       const getResp = await fetch(`${COUCHDB_URL}/${id}`, {
         headers: { Authorization: `Basic ${btoa(`${COUCHDB_USER}:${COUCHDB_PASSWORD}`)}` },
+        credentials: 'omit',
       });
       if (getResp.ok) {
         const remoteDoc = await getResp.json();
         await fetch(`${COUCHDB_URL}/${id}?rev=${remoteDoc._rev}`, {
           method: 'DELETE',
           headers: { Authorization: `Basic ${btoa(`${COUCHDB_USER}:${COUCHDB_PASSWORD}`)}` },
+          credentials: 'omit',
         });
       }
     } catch (err) {
@@ -664,6 +674,7 @@ export async function findListByShareCode(code) {
         },
         limit: 1,
       }),
+      credentials: 'omit',
     });
 
     if (!response.ok) return null;
@@ -695,6 +706,7 @@ export async function fetchItemsForListFromRemote(listId) {
         },
         limit: 1000,
       }),
+      credentials: 'omit',
     });
 
     if (!response.ok) return [];

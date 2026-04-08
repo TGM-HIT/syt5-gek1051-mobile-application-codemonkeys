@@ -58,7 +58,7 @@ export default defineConfig({
         // CouchDB-API-Calls NICHT cachen (immer Network-First)
         runtimeCaching: [
           {
-            urlPattern: ({ url }) => url.port === '5984',
+            urlPattern: ({ url }) => url.port === '5984' || url.pathname.startsWith('/db/'),
             handler: 'NetworkOnly',
             options: {
               cacheName: 'couchdb-api',
