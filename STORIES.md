@@ -37,11 +37,6 @@
 | **U14** | **Filter & Sortierung:** Als Benutzer möchte ich Listen nach Status (offen/erledigt) filtern oder sortieren. | 3 | VW | N2H | [🟢 Open](https://github.com/TGM-HIT/syt5-gek1051-mobile-application-codemonkeys/issues/36) |
 | **U15** | **Barrierefreiheit (A11y):** Als Benutzer mit Einschränkungen möchte ich die App via Screenreader bedienen können. | 6 | AY | N2H | [🟢 Open](https://github.com/TGM-HIT/syt5-gek1051-mobile-application-codemonkeys/issues/37) |
 
-#Kundenwunsch
-
-| **U16** | **Kundenwunsch – PWA & Push-Benachrichtigungen:** Als Benutzer möchte ich die App als PWA installieren und Push-Benachrichtigungen erhalten, um über Änderungen an geteilten Listen informiert zu werden, auch wenn die App im Hintergrund läuft. | 8 | AY | N2H | [🟢 Open](https://github.com/TGM-HIT/syt5-gek1051-mobile-application-codemonkeys/issues/38) |
-
-
 ## Zusammenfassung der Verantwortlichkeiten
 
 Jeder Teilnehmer hat exakt **24 Story Points**.
