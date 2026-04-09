@@ -145,6 +145,17 @@ async function saveEditItem(item) {
   editingItemName.value = '';
 }
 
+// ── Listen auf-/zuklappen ──
+const collapsedLists = ref({});
+
+function isCollapsed(listId) {
+  return !!collapsedLists.value[listId];
+}
+
+function toggleCollapse(listId) {
+  collapsedLists.value[listId] = !collapsedLists.value[listId];
+}
+
 // ── Suche ──
 const searchQuery = ref('');
 function clearSearch() {
@@ -340,37 +351,43 @@ async function saveItemDetails(item) {
           </div>
           <ThemeToggle />
           <button class="logout-btn" @click="handleLogout" title="Abmelden">Abmelden</button>
-          <button
-            v-if="installable"
-            class="pwa-install-btn"
-            @click="installPwa"
-            title="App installieren"
-          >
-            📲 App installieren
-          </button>
-          <button
-            v-if="notifPermission === 'default'"
-            class="notif-enable-btn"
-            @click="enableNotifications"
-            title="Benachrichtigungen aktivieren"
-          >
-            🔔 Benachrichtigungen erlauben
-          </button>
-          <span
-            v-else-if="notifPermission === 'denied'"
-            class="notif-denied-hint"
-            title="In den Browser-Einstellungen aktivieren"
-          >
-            🔕 Benachrichtigungen blockiert
-          </span>
-          <div class="status-indicator" :class="{ online: isOnline, offline: !isOnline }">
-            <span class="status-dot"></span>
-            <span class="status-text">{{ isOnline ? 'Online' : 'Offline' }}</span>
-            <span v-if="syncActive && isOnline" class="sync-text">• Sync aktiv</span>
-          </div>
         </div>
       </div>
     </header>
+
+    <!-- Toolbar unterhalb des Headers -->
+    <div class="toolbar">
+      <div class="container toolbar-row">
+        <div class="status-indicator" :class="{ online: isOnline, offline: !isOnline }">
+          <span class="status-dot"></span>
+          <span class="status-text">{{ isOnline ? 'Online' : 'Offline' }}</span>
+          <span v-if="syncActive && isOnline" class="sync-text">• Sync</span>
+        </div>
+        <button
+          v-if="installable"
+          class="toolbar-btn pwa-install-btn"
+          @click="installPwa"
+          title="App installieren"
+        >
+          📲 Installieren
+        </button>
+        <button
+          v-if="notifPermission === 'default'"
+          class="toolbar-btn notif-enable-btn"
+          @click="enableNotifications"
+          title="Benachrichtigungen aktivieren"
+        >
+          🔔 Benachrichtigungen
+        </button>
+        <span
+          v-else-if="notifPermission === 'denied'"
+          class="notif-denied-hint"
+          title="In den Browser-Einstellungen aktivieren"
+        >
+          🔕 Blockiert
+        </span>
+      </div>
+    </div>
 
     <main class="main">
       <div class="container">
@@ -487,19 +504,20 @@ async function saveItemDetails(item) {
         <!-- Listen -->
         <div v-if="!loading && !error" class="lists">
           <div v-for="list in lists" :key="list._id" class="list">
-            <div class="list-header">
+            <div class="list-header" @click="toggleCollapse(list._id)">
               <div class="list-title">
                 <div v-if="editingListId !== list._id" class="list-name-display">
+                  <span class="collapse-arrow" :class="{ collapsed: isCollapsed(list._id) }">▼</span>
                   <h2>{{ list.name }}</h2>
                   <button
                     class="edit-list-btn"
-                    @click="startEditList(list)"
+                    @click.stop="startEditList(list)"
                     title="Liste umbenennen"
                   >
                     ✏️
                   </button>
                 </div>
-                <div v-else class="edit-list-form">
+                <div v-else class="edit-list-form" @click.stop>
                   <input
                     v-model="editingListName"
                     class="edit-input"
@@ -523,20 +541,20 @@ async function saveItemDetails(item) {
               <div class="list-stats">
                 <button
                   v-if="hasChangedItems(list._id)"
-                  @click="clearListChanges(list._id)"
+                  @click.stop="clearListChanges(list._id)"
                   class="clear-changes-btn"
                   title="Änderungshinweise entfernen"
                 >
                   ✓ Gesehen
                 </button>
                 <span class="progress-text">{{ getProgress(list._id) }}%</span>
-                <button class="share-list-btn" title="Liste teilen" @click="openShareDialog(list)">
+                <button class="share-list-btn" title="Liste teilen" @click.stop="openShareDialog(list)">
                   🔗
                 </button>
                 <button
                   class="delete-list-btn"
                   title="Liste löschen"
-                  @click="confirmDeleteList(list)"
+                  @click.stop="confirmDeleteList(list)"
                 >
                   🗑️
                 </button>
@@ -547,6 +565,7 @@ async function saveItemDetails(item) {
               <div class="progress-fill" :style="{ width: getProgress(list._id) + '%' }"></div>
             </div>
 
+            <div class="list-body" v-show="!isCollapsed(list._id)">
             <!-- Label-Filter-Leiste -->
             <LabelFilterBar
               v-if="!showOnlyChanged && getTab(list._id) === 'active'"
@@ -786,6 +805,7 @@ async function saveItemDetails(item) {
             >
               Keine gelöschten Artikel
             </div>
+            </div><!-- /list-body -->
           </div>
 
           <div v-if="lists.length === 0" class="message">Keine Listen vorhanden</div>
