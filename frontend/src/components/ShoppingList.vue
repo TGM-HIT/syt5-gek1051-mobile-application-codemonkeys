@@ -734,7 +734,9 @@ watch(
             <div class="list-header" @click="toggleCollapse(list._id)">
               <div class="list-title">
                 <div v-if="editingListId !== list._id" class="list-name-display">
-                  <span class="collapse-arrow" :class="{ collapsed: isCollapsed(list._id) }">▼</span>
+                  <span class="collapse-arrow" :class="{ collapsed: isCollapsed(list._id) }"
+                    >▼</span
+                  >
                   <h2>{{ list.name }}</h2>
                   <button
                     type="button"
@@ -825,329 +827,336 @@ watch(
             </div>
 
             <div class="list-body" v-show="!isCollapsed(list._id)">
-            <!-- Label-Filter-Leiste -->
-            <LabelFilterBar
-              v-if="!showOnlyChanged && getTab(list._id) === 'active'"
-              :active-label="activeLabelFilter"
-              :counts="getLabelCounts(list._id)"
-              @update:activeLabel="setLabelFilter($event)"
-            />
+              <!-- Label-Filter-Leiste -->
+              <LabelFilterBar
+                v-if="!showOnlyChanged && getTab(list._id) === 'active'"
+                :active-label="activeLabelFilter"
+                :counts="getLabelCounts(list._id)"
+                @update:activeLabel="setLabelFilter($event)"
+              />
 
-            <!-- Tabs (ausgeblendet wenn nur geänderte angezeigt werden) -->
-            <div v-if="!showOnlyChanged" class="tabs">
-              <button
-                type="button"
-                class="tab-btn"
-                :class="{ active: getTab(list._id) === 'active' }"
-                @click="setTab(list._id, 'active')"
-                :aria-pressed="getTab(list._id) === 'active'"
-                :aria-label="`Aktive Artikel in Liste ${list.name}`"
-              >
-                Aktiv
-                <span class="tab-count" aria-hidden="true">{{
-                  getActiveItemsForList(list._id).length
-                }}</span>
-              </button>
-              <button
-                type="button"
-                class="tab-btn"
-                :class="{ active: getTab(list._id) === 'deleted' }"
-                @click="setTab(list._id, 'deleted')"
-                :aria-pressed="getTab(list._id) === 'deleted'"
-                :aria-label="`Gelöschte Artikel in Liste ${list.name}`"
-              >
-                Gelöscht
-                <span class="tab-count" aria-hidden="true">{{
-                  getDeletedItemsForList(list._id).length
-                }}</span>
-              </button>
-            </div>
-
-            <!-- Tab: Aktive Artikel / Geänderte Artikel -->
-            <ul v-if="showOnlyChanged || getTab(list._id) === 'active'" class="items">
-              <template v-for="item in getFilteredItems(list._id)" :key="item._id">
-                <li
-                  :class="{
-                    checked: item.checked,
-                    'search-dimmed': searchQuery && !isSearchMatch(item),
-                  }"
-                  class="item"
-                  :style="
-                    item.label ? { borderLeft: `4px solid ${getLabelColor(item.label)}` } : {}
-                  "
-                >
-                  <input
-                    type="checkbox"
-                    :checked="item.checked"
-                    @click.stop="toggleItem(item)"
-                    class="checkbox"
-                    :aria-label="getToggleItemLabel(item)"
-                  />
-                  <div class="item-content" @click="toggleItem(item)">
-                    <div v-if="editingItemId !== item._id" class="item-name-display">
-                      <span
-                        v-if="item.label"
-                        class="item-label-dot"
-                        :style="{ background: getLabelColor(item.label) }"
-                        :title="`Label: ${getLabelDisplay(item.label)}`"
-                        aria-hidden="true"
-                      ></span>
-                      <span v-if="item.label" class="item-label-text">
-                        {{ getLabelDisplay(item.label) }}
-                      </span>
-                      <span class="item-name">{{ item.name }}</span>
-                      <span
-                        v-if="item.note"
-                        class="item-note-icon"
-                        title="Hat eine Notiz"
-                        aria-label="Hat eine Notiz"
-                      >
-                        📝
-                      </span>
-                      <button
-                        type="button"
-                        class="edit-item-btn"
-                        @click.stop="startEditItem(item)"
-                        title="Artikel umbenennen"
-                        :aria-label="`Artikel ${item.name} umbenennen`"
-                      >
-                        ✏️
-                      </button>
-                    </div>
-                    <div v-else class="edit-item-form" @click.stop>
-                      <input
-                        v-model="editingItemName"
-                        class="edit-input"
-                        @keyup.enter="saveEditItem(item)"
-                        @keyup.esc="cancelEditItem"
-                        @click.stop
-                        autofocus
-                        :aria-label="`Neuer Name für Artikel ${item.name}`"
-                      />
-                      <button
-                        type="button"
-                        class="edit-save-btn"
-                        @click.stop="saveEditItem(item)"
-                        title="Speichern"
-                        :aria-label="`Neuen Namen für Artikel ${item.name} speichern`"
-                      >
-                        ✓
-                      </button>
-                      <button
-                        type="button"
-                        class="edit-cancel-btn"
-                        @click.stop="cancelEditItem"
-                        title="Abbrechen"
-                        aria-label="Umbenennen abbrechen"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                    <span
-                      v-if="
-                        item._remoteChanged && !item._pendingDelete && editingItemId !== item._id
-                      "
-                      class="item-changed-hint"
-                    >
-                      ✏️ Geändert von {{ item.lastModifiedBy || 'Unbekannt' }}
-                    </span>
-                    <span v-if="item.note && expandedItemId !== item._id" class="item-note-preview">
-                      {{ item.note }}
-                    </span>
-                  </div>
-                  <button
-                    v-if="editingItemId !== item._id"
-                    type="button"
-                    class="item-detail-btn"
-                    :class="{ active: expandedItemId === item._id }"
-                    title="Details / Notiz"
-                    @click.stop="toggleItemDetail(item)"
-                    :aria-label="getDetailToggleLabel(item)"
-                    :aria-expanded="expandedItemId === item._id"
-                  >
-                    ⋯
-                  </button>
-                  <button
-                    v-if="editingItemId !== item._id"
-                    type="button"
-                    class="delete-item-btn"
-                    title="Als gelöscht markieren"
-                    @click.stop="markItemDeleted(item)"
-                    :aria-label="`Artikel ${item.name} als gelöscht markieren`"
-                  >
-                    🗑️
-                  </button>
-                </li>
-                <!-- Detail-Panel: Notiz + Label -->
-                <li v-if="expandedItemId === item._id" class="item-detail-panel">
-                  <div class="detail-note-section">
-                    <label class="detail-label-text">Notiz:</label>
-                    <textarea
-                      v-model="detailNote"
-                      class="detail-textarea"
-                      placeholder="Notiz hinzufügen…"
-                      rows="2"
-                      @click.stop
-                      :aria-label="`Notiz für Artikel ${item.name}`"
-                    ></textarea>
-                  </div>
-                  <div class="detail-color-section">
-                    <label class="detail-label-text">Label:</label>
-                    <div class="color-picker">
-                      <button
-                        type="button"
-                        class="color-option color-none"
-                        :class="{ active: detailLabel === null }"
-                        @click.stop="detailLabel = null"
-                        title="Kein Label"
-                        :aria-pressed="detailLabel === null"
-                        aria-label="Kein Label"
-                      >
-                        ✕
-                      </button>
-                      <button
-                        v-for="c in LABEL_COLORS"
-                        :key="c.name"
-                        type="button"
-                        class="color-option"
-                        :class="{ active: detailLabel === c.name }"
-                        :style="{ background: c.hex }"
-                        @click.stop="detailLabel = c.name"
-                        :title="`Label: ${c.label}`"
-                        :aria-pressed="detailLabel === c.name"
-                        :aria-label="`Label ${c.label} auswählen`"
-                      ></button>
-                    </div>
-                    <p class="detail-label-selected">
-                      Aktuell: <strong>{{ getLabelDisplay(detailLabel) }}</strong>
-                    </p>
-                  </div>
-                  <div class="detail-actions">
-                    <button
-                      type="button"
-                      class="detail-save-btn"
-                      @click.stop="saveItemDetails(item)"
-                      :aria-label="`Details für Artikel ${item.name} speichern`"
-                    >
-                      ✓ Speichern
-                    </button>
-                    <button
-                      type="button"
-                      class="detail-cancel-btn"
-                      @click.stop="closeItemDetail"
-                      aria-label="Details schließen ohne Speichern"
-                    >
-                      Abbrechen
-                    </button>
-                  </div>
-                </li>
-                <!-- Inline Lösch-Banner (jemand anderes hat gelöscht) -->
-                <li v-if="item._pendingDelete" class="conflict-banner">
-                  <div class="conflict-banner-text">
-                    🗑️ <strong>{{ item._pendingDelete }}</strong> hat diesen Artikel gelöscht.
-                  </div>
-                  <div class="conflict-banner-btns">
-                    <button
-                      type="button"
-                      class="cbtn-keep-remote"
-                      @click="acceptDelete(item)"
-                      :aria-label="`Löschung von Artikel ${item.name} akzeptieren`"
-                    >
-                      Ja
-                    </button>
-                    <button
-                      type="button"
-                      class="cbtn-keep-local"
-                      @click="rejectDelete(item)"
-                      :aria-label="`Löschung von Artikel ${item.name} ablehnen`"
-                    >
-                      Nein
-                    </button>
-                  </div>
-                </li>
-              </template>
-            </ul>
-
-            <!-- Tab: Gelöschte Artikel (nur wenn kein Filter aktiv) -->
-            <template v-if="!showOnlyChanged && getTab(list._id) === 'deleted'">
-              <div v-if="getDeletedItemsForList(list._id).length > 0" class="permanent-delete-bar">
+              <!-- Tabs (ausgeblendet wenn nur geänderte angezeigt werden) -->
+              <div v-if="!showOnlyChanged" class="tabs">
                 <button
                   type="button"
-                  class="permanent-delete-btn"
-                  @click="confirmPermanentDelete(list._id)"
-                  :aria-label="`Alle gelöschten Artikel aus Liste ${list.name} endgültig löschen`"
+                  class="tab-btn"
+                  :class="{ active: getTab(list._id) === 'active' }"
+                  @click="setTab(list._id, 'active')"
+                  :aria-pressed="getTab(list._id) === 'active'"
+                  :aria-label="`Aktive Artikel in Liste ${list.name}`"
                 >
-                  🗑️ Alle endgültig löschen
+                  Aktiv
+                  <span class="tab-count" aria-hidden="true">{{
+                    getActiveItemsForList(list._id).length
+                  }}</span>
+                </button>
+                <button
+                  type="button"
+                  class="tab-btn"
+                  :class="{ active: getTab(list._id) === 'deleted' }"
+                  @click="setTab(list._id, 'deleted')"
+                  :aria-pressed="getTab(list._id) === 'deleted'"
+                  :aria-label="`Gelöschte Artikel in Liste ${list.name}`"
+                >
+                  Gelöscht
+                  <span class="tab-count" aria-hidden="true">{{
+                    getDeletedItemsForList(list._id).length
+                  }}</span>
                 </button>
               </div>
-              <ul class="items">
-                <template v-for="item in getDeletedItemsForList(list._id)" :key="item._id">
+
+              <!-- Tab: Aktive Artikel / Geänderte Artikel -->
+              <ul v-if="showOnlyChanged || getTab(list._id) === 'active'" class="items">
+                <template v-for="item in getFilteredItems(list._id)" :key="item._id">
                   <li
-                    :class="{ 'search-dimmed': searchQuery && !isSearchMatch(item) }"
-                    class="item item-deleted"
+                    :class="{
+                      checked: item.checked,
+                      'search-dimmed': searchQuery && !isSearchMatch(item),
+                    }"
+                    class="item"
+                    :style="
+                      item.label ? { borderLeft: `4px solid ${getLabelColor(item.label)}` } : {}
+                    "
                   >
-                    <div class="item-content">
-                      <span class="item-name">{{ item.name }}</span>
+                    <input
+                      type="checkbox"
+                      :checked="item.checked"
+                      @click.stop="toggleItem(item)"
+                      class="checkbox"
+                      :aria-label="getToggleItemLabel(item)"
+                    />
+                    <div class="item-content" @click="toggleItem(item)">
+                      <div v-if="editingItemId !== item._id" class="item-name-display">
+                        <span
+                          v-if="item.label"
+                          class="item-label-dot"
+                          :style="{ background: getLabelColor(item.label) }"
+                          :title="`Label: ${getLabelDisplay(item.label)}`"
+                          aria-hidden="true"
+                        ></span>
+                        <span v-if="item.label" class="item-label-text">
+                          {{ getLabelDisplay(item.label) }}
+                        </span>
+                        <span class="item-name">{{ item.name }}</span>
+                        <span
+                          v-if="item.note"
+                          class="item-note-icon"
+                          title="Hat eine Notiz"
+                          aria-label="Hat eine Notiz"
+                        >
+                          📝
+                        </span>
+                        <button
+                          type="button"
+                          class="edit-item-btn"
+                          @click.stop="startEditItem(item)"
+                          title="Artikel umbenennen"
+                          :aria-label="`Artikel ${item.name} umbenennen`"
+                        >
+                          ✏️
+                        </button>
+                      </div>
+                      <div v-else class="edit-item-form" @click.stop>
+                        <input
+                          v-model="editingItemName"
+                          class="edit-input"
+                          @keyup.enter="saveEditItem(item)"
+                          @keyup.esc="cancelEditItem"
+                          @click.stop
+                          autofocus
+                          :aria-label="`Neuer Name für Artikel ${item.name}`"
+                        />
+                        <button
+                          type="button"
+                          class="edit-save-btn"
+                          @click.stop="saveEditItem(item)"
+                          title="Speichern"
+                          :aria-label="`Neuen Namen für Artikel ${item.name} speichern`"
+                        >
+                          ✓
+                        </button>
+                        <button
+                          type="button"
+                          class="edit-cancel-btn"
+                          @click.stop="cancelEditItem"
+                          title="Abbrechen"
+                          aria-label="Umbenennen abbrechen"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                      <span
+                        v-if="
+                          item._remoteChanged && !item._pendingDelete && editingItemId !== item._id
+                        "
+                        class="item-changed-hint"
+                      >
+                        ✏️ Geändert von {{ item.lastModifiedBy || 'Unbekannt' }}
+                      </span>
+                      <span
+                        v-if="item.note && expandedItemId !== item._id"
+                        class="item-note-preview"
+                      >
+                        {{ item.note }}
+                      </span>
                     </div>
                     <button
+                      v-if="editingItemId !== item._id"
                       type="button"
-                      class="restore-item-btn"
-                      title="Wiederherstellen"
-                      @click.stop="restoreItem(item)"
-                      :aria-label="`Artikel ${item.name} wiederherstellen`"
+                      class="item-detail-btn"
+                      :class="{ active: expandedItemId === item._id }"
+                      title="Details / Notiz"
+                      @click.stop="toggleItemDetail(item)"
+                      :aria-label="getDetailToggleLabel(item)"
+                      :aria-expanded="expandedItemId === item._id"
                     >
-                      ↩️
+                      ⋯
                     </button>
+                    <button
+                      v-if="editingItemId !== item._id"
+                      type="button"
+                      class="delete-item-btn"
+                      title="Als gelöscht markieren"
+                      @click.stop="markItemDeleted(item)"
+                      :aria-label="`Artikel ${item.name} als gelöscht markieren`"
+                    >
+                      🗑️
+                    </button>
+                  </li>
+                  <!-- Detail-Panel: Notiz + Label -->
+                  <li v-if="expandedItemId === item._id" class="item-detail-panel">
+                    <div class="detail-note-section">
+                      <label class="detail-label-text">Notiz:</label>
+                      <textarea
+                        v-model="detailNote"
+                        class="detail-textarea"
+                        placeholder="Notiz hinzufügen…"
+                        rows="2"
+                        @click.stop
+                        :aria-label="`Notiz für Artikel ${item.name}`"
+                      ></textarea>
+                    </div>
+                    <div class="detail-color-section">
+                      <label class="detail-label-text">Label:</label>
+                      <div class="color-picker">
+                        <button
+                          type="button"
+                          class="color-option color-none"
+                          :class="{ active: detailLabel === null }"
+                          @click.stop="detailLabel = null"
+                          title="Kein Label"
+                          :aria-pressed="detailLabel === null"
+                          aria-label="Kein Label"
+                        >
+                          ✕
+                        </button>
+                        <button
+                          v-for="c in LABEL_COLORS"
+                          :key="c.name"
+                          type="button"
+                          class="color-option"
+                          :class="{ active: detailLabel === c.name }"
+                          :style="{ background: c.hex }"
+                          @click.stop="detailLabel = c.name"
+                          :title="`Label: ${c.label}`"
+                          :aria-pressed="detailLabel === c.name"
+                          :aria-label="`Label ${c.label} auswählen`"
+                        ></button>
+                      </div>
+                      <p class="detail-label-selected">
+                        Aktuell: <strong>{{ getLabelDisplay(detailLabel) }}</strong>
+                      </p>
+                    </div>
+                    <div class="detail-actions">
+                      <button
+                        type="button"
+                        class="detail-save-btn"
+                        @click.stop="saveItemDetails(item)"
+                        :aria-label="`Details für Artikel ${item.name} speichern`"
+                      >
+                        ✓ Speichern
+                      </button>
+                      <button
+                        type="button"
+                        class="detail-cancel-btn"
+                        @click.stop="closeItemDetail"
+                        aria-label="Details schließen ohne Speichern"
+                      >
+                        Abbrechen
+                      </button>
+                    </div>
+                  </li>
+                  <!-- Inline Lösch-Banner (jemand anderes hat gelöscht) -->
+                  <li v-if="item._pendingDelete" class="conflict-banner">
+                    <div class="conflict-banner-text">
+                      🗑️ <strong>{{ item._pendingDelete }}</strong> hat diesen Artikel gelöscht.
+                    </div>
+                    <div class="conflict-banner-btns">
+                      <button
+                        type="button"
+                        class="cbtn-keep-remote"
+                        @click="acceptDelete(item)"
+                        :aria-label="`Löschung von Artikel ${item.name} akzeptieren`"
+                      >
+                        Ja
+                      </button>
+                      <button
+                        type="button"
+                        class="cbtn-keep-local"
+                        @click="rejectDelete(item)"
+                        :aria-label="`Löschung von Artikel ${item.name} ablehnen`"
+                      >
+                        Nein
+                      </button>
+                    </div>
                   </li>
                 </template>
               </ul>
-            </template>
 
-            <div
-              v-if="
-                (showOnlyChanged || getTab(list._id) === 'active') &&
-                getFilteredItems(list._id).length === 0
-              "
-              class="empty-list"
-            >
-              {{
-                showOnlyChanged
-                  ? 'Keine geänderten Artikel in dieser Liste'
-                  : activeLabelFilter
-                    ? `Keine Artikel mit Label „${activeLabelFilter}"`
-                    : 'Keine aktiven Artikel in dieser Liste'
-              }}
-            </div>
+              <!-- Tab: Gelöschte Artikel (nur wenn kein Filter aktiv) -->
+              <template v-if="!showOnlyChanged && getTab(list._id) === 'deleted'">
+                <div
+                  v-if="getDeletedItemsForList(list._id).length > 0"
+                  class="permanent-delete-bar"
+                >
+                  <button
+                    type="button"
+                    class="permanent-delete-btn"
+                    @click="confirmPermanentDelete(list._id)"
+                    :aria-label="`Alle gelöschten Artikel aus Liste ${list.name} endgültig löschen`"
+                  >
+                    🗑️ Alle endgültig löschen
+                  </button>
+                </div>
+                <ul class="items">
+                  <template v-for="item in getDeletedItemsForList(list._id)" :key="item._id">
+                    <li
+                      :class="{ 'search-dimmed': searchQuery && !isSearchMatch(item) }"
+                      class="item item-deleted"
+                    >
+                      <div class="item-content">
+                        <span class="item-name">{{ item.name }}</span>
+                      </div>
+                      <button
+                        type="button"
+                        class="restore-item-btn"
+                        title="Wiederherstellen"
+                        @click.stop="restoreItem(item)"
+                        :aria-label="`Artikel ${item.name} wiederherstellen`"
+                      >
+                        ↩️
+                      </button>
+                    </li>
+                  </template>
+                </ul>
+              </template>
 
-            <!-- Artikel hinzufügen (nur wenn kein Filter aktiv) -->
-            <div v-if="!showOnlyChanged && getTab(list._id) === 'active'" class="add-item-form">
-              <input
-                v-model="newItemNames[list._id]"
-                class="add-input"
-                placeholder="Neuer Artikel..."
-                @keyup.enter="submitNewItem(list._id)"
-                :aria-label="`Neuen Artikel zu Liste ${list.name} hinzufügen`"
-              />
-              <button
-                type="button"
-                class="add-btn"
-                @click="submitNewItem(list._id)"
-                :aria-label="`Artikel zu Liste ${list.name} hinzufügen`"
+              <div
+                v-if="
+                  (showOnlyChanged || getTab(list._id) === 'active') &&
+                  getFilteredItems(list._id).length === 0
+                "
+                class="empty-list"
               >
-                +
-              </button>
+                {{
+                  showOnlyChanged
+                    ? 'Keine geänderten Artikel in dieser Liste'
+                    : activeLabelFilter
+                      ? `Keine Artikel mit Label „${activeLabelFilter}"`
+                      : 'Keine aktiven Artikel in dieser Liste'
+                }}
+              </div>
+
+              <!-- Artikel hinzufügen (nur wenn kein Filter aktiv) -->
+              <div v-if="!showOnlyChanged && getTab(list._id) === 'active'" class="add-item-form">
+                <input
+                  v-model="newItemNames[list._id]"
+                  class="add-input"
+                  placeholder="Neuer Artikel..."
+                  @keyup.enter="submitNewItem(list._id)"
+                  :aria-label="`Neuen Artikel zu Liste ${list.name} hinzufügen`"
+                />
+                <button
+                  type="button"
+                  class="add-btn"
+                  @click="submitNewItem(list._id)"
+                  :aria-label="`Artikel zu Liste ${list.name} hinzufügen`"
+                >
+                  +
+                </button>
+              </div>
+              <div
+                v-if="
+                  !showOnlyChanged &&
+                  getTab(list._id) === 'deleted' &&
+                  getDeletedItemsForList(list._id).length === 0
+                "
+                class="empty-list"
+              >
+                Keine gelöschten Artikel
+              </div>
             </div>
-            <div
-              v-if="
-                !showOnlyChanged &&
-                getTab(list._id) === 'deleted' &&
-                getDeletedItemsForList(list._id).length === 0
-              "
-              class="empty-list"
-            >
-              Keine gelöschten Artikel
-            </div>
-            </div><!-- /list-body -->
+            <!-- /list-body -->
           </div>
 
           <div v-if="lists.length === 0" class="message">Keine Listen vorhanden</div>
