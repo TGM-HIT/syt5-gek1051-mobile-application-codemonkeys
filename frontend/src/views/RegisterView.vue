@@ -26,8 +26,6 @@ async function handleRegister() {
     router.push('/');
   }
 }
-
-const errorMessage = () => localError.value || authError.value;
 </script>
 
 <template>
@@ -49,8 +47,15 @@ const errorMessage = () => localError.value || authError.value;
             autofocus
             :disabled="authLoading"
             maxlength="50"
+            :aria-invalid="Boolean(authError)"
+            :aria-describedby="
+              authError ? 'register-username-hint register-auth-error' : 'register-username-hint'
+            "
+            required
           />
-          <span class="form-hint">Nur Kleinbuchstaben, Zahlen und Bindestriche</span>
+          <span id="register-username-hint" class="form-hint"
+            >Nur Kleinbuchstaben, Zahlen und Bindestriche</span
+          >
         </div>
 
         <div class="form-group">
@@ -63,12 +68,18 @@ const errorMessage = () => localError.value || authError.value;
               placeholder="Mindestens 6 Zeichen"
               autocomplete="new-password"
               :disabled="authLoading"
+              :aria-invalid="Boolean(authError)"
+              :aria-describedby="authError ? 'register-auth-error' : undefined"
+              required
             />
             <button
               type="button"
               class="toggle-password"
               @click="showPassword = !showPassword"
-              tabindex="-1"
+              :disabled="authLoading"
+              :aria-label="showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'"
+              :aria-pressed="showPassword"
+              aria-controls="password password-confirm"
             >
               {{ showPassword ? '🙈' : '👁️' }}
             </button>
@@ -84,10 +95,31 @@ const errorMessage = () => localError.value || authError.value;
             placeholder="Passwort wiederholen"
             autocomplete="new-password"
             :disabled="authLoading"
+            :aria-invalid="Boolean(localError)"
+            :aria-describedby="localError ? 'register-local-error' : undefined"
+            required
           />
         </div>
 
-        <p v-if="errorMessage()" class="auth-error">{{ errorMessage() }}</p>
+        <p
+          v-if="localError"
+          id="register-local-error"
+          class="auth-error"
+          role="alert"
+          aria-live="assertive"
+        >
+          {{ localError }}
+        </p>
+
+        <p
+          v-if="authError"
+          id="register-auth-error"
+          class="auth-error"
+          role="alert"
+          aria-live="assertive"
+        >
+          {{ authError }}
+        </p>
 
         <button
           type="submit"

@@ -37,6 +37,9 @@ async function handleLogin() {
             autocomplete="username"
             autofocus
             :disabled="authLoading"
+            :aria-invalid="Boolean(authError)"
+            :aria-describedby="authError ? 'login-auth-error' : undefined"
+            required
           />
         </div>
 
@@ -50,19 +53,33 @@ async function handleLogin() {
               placeholder="••••••••"
               autocomplete="current-password"
               :disabled="authLoading"
+              :aria-invalid="Boolean(authError)"
+              :aria-describedby="authError ? 'login-auth-error' : undefined"
+              required
             />
             <button
               type="button"
               class="toggle-password"
               @click="showPassword = !showPassword"
-              tabindex="-1"
+              :disabled="authLoading"
+              :aria-label="showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'"
+              :aria-pressed="showPassword"
+              aria-controls="password"
             >
               {{ showPassword ? '🙈' : '👁️' }}
             </button>
           </div>
         </div>
 
-        <p v-if="authError" class="auth-error">{{ authError }}</p>
+        <p
+          v-if="authError"
+          id="login-auth-error"
+          class="auth-error"
+          role="alert"
+          aria-live="assertive"
+        >
+          {{ authError }}
+        </p>
 
         <button type="submit" class="auth-btn" :disabled="authLoading || !username || !password">
           <span v-if="authLoading">Bitte warten…</span>
