@@ -41,7 +41,7 @@
 
 | ID | Description (User Value) | SP | HEAD | Prio | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **U16** | **Kundenwunsch – PWA & Push-Benachrichtigungen:** Als Benutzer möchte ich die App als PWA installieren und Push-Benachrichtigungen erhalten, um über Änderungen an geteilten Listen informiert zu werden, auch wenn die App im Hintergrund läuft. | 8 | LS | N2H | [🟢 Open](https://github.com/TGM-HIT/syt5-gek1051-mobile-application-codemonkeys/issues/138) |
+| **U16** | **Kundenwunsch – PWA & Push-Benachrichtigungen:** Als Benutzer möchte ich die App als PWA installieren und Push-Benachrichtigungen erhalten, um über Änderungen an geteilten Listen informiert zu werden, auch wenn die App im Hintergrund läuft. | 5 | LS | N2H | [🟢 Open](https://github.com/TGM-HIT/syt5-gek1051-mobile-application-codemonkeys/issues/138) |
 
 
 ## Zusammenfassung der Verantwortlichkeiten
