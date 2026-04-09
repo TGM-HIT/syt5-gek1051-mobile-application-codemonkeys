@@ -150,6 +150,17 @@ async function saveEditItem(item) {
   editingItemName.value = '';
 }
 
+// ── Listen auf-/zuklappen ──
+const collapsedLists = ref({});
+
+function isCollapsed(listId) {
+  return !!collapsedLists.value[listId];
+}
+
+function toggleCollapse(listId) {
+  collapsedLists.value[listId] = !collapsedLists.value[listId];
+}
+
 // ── Suche ──
 const searchQuery = ref('');
 function clearSearch() {
@@ -530,6 +541,40 @@ watch(
       </div>
     </header>
 
+    <!-- Toolbar unterhalb des Headers -->
+    <div class="toolbar">
+      <div class="container toolbar-row">
+        <div class="status-indicator" :class="{ online: isOnline, offline: !isOnline }">
+          <span class="status-dot"></span>
+          <span class="status-text">{{ isOnline ? 'Online' : 'Offline' }}</span>
+          <span v-if="syncActive && isOnline" class="sync-text">• Sync</span>
+        </div>
+        <button
+          v-if="installable"
+          class="toolbar-btn pwa-install-btn"
+          @click="installPwa"
+          title="App installieren"
+        >
+          📲 Installieren
+        </button>
+        <button
+          v-if="notifPermission === 'default'"
+          class="toolbar-btn notif-enable-btn"
+          @click="enableNotifications"
+          title="Benachrichtigungen aktivieren"
+        >
+          🔔 Benachrichtigungen
+        </button>
+        <span
+          v-else-if="notifPermission === 'denied'"
+          class="notif-denied-hint"
+          title="In den Browser-Einstellungen aktivieren"
+        >
+          🔕 Blockiert
+        </span>
+      </div>
+    </div>
+
     <main class="main">
       <div class="container">
         <!-- Loading -->
@@ -686,21 +731,22 @@ watch(
         <!-- Listen -->
         <div v-if="!loading && !error" class="lists">
           <div v-for="list in lists" :key="list._id" class="list">
-            <div class="list-header">
+            <div class="list-header" @click="toggleCollapse(list._id)">
               <div class="list-title">
                 <div v-if="editingListId !== list._id" class="list-name-display">
+                  <span class="collapse-arrow" :class="{ collapsed: isCollapsed(list._id) }">▼</span>
                   <h2>{{ list.name }}</h2>
                   <button
                     type="button"
                     class="edit-list-btn"
-                    @click="startEditList(list)"
+                    @click.stop="startEditList(list)"
                     title="Liste umbenennen"
                     :aria-label="`Liste ${list.name} umbenennen`"
                   >
                     ✏️
                   </button>
                 </div>
-                <div v-else class="edit-list-form">
+                <div v-else class="edit-list-form" @click.stop>
                   <input
                     v-model="editingListName"
                     class="edit-input"
@@ -778,6 +824,7 @@ watch(
               <div class="progress-fill" :style="{ width: getProgress(list._id) + '%' }"></div>
             </div>
 
+            <div class="list-body" v-show="!isCollapsed(list._id)">
             <!-- Label-Filter-Leiste -->
             <LabelFilterBar
               v-if="!showOnlyChanged && getTab(list._id) === 'active'"
@@ -1100,6 +1147,7 @@ watch(
             >
               Keine gelöschten Artikel
             </div>
+            </div><!-- /list-body -->
           </div>
 
           <div v-if="lists.length === 0" class="message">Keine Listen vorhanden</div>
