@@ -407,14 +407,14 @@ test.describe('U7: Liste löschen', () => {
     await setupSession(page);
     await page.fill('.add-list-form .add-input', 'WirdGelöscht');
     await page.click('.add-list-form .add-btn');
-    const list = page.locator('.list').last();
+    const list = page.locator('.list').filter({ hasText: 'WirdGelöscht' });
     await expect(list.locator('h2')).toContainText('WirdGelöscht');
     await list.locator('.delete-list-btn').click();
     // Schritt 1: Weiter
     await page.locator('.modal-btn-confirm').click();
     // Schritt 2: Ja, löschen
     await page.locator('.modal-btn-confirm').click();
-    await expect(page.locator('.list').last().locator('h2')).not.toContainText('WirdGelöscht');
+    await expect(list).not.toBeVisible();
   });
 });
 
