@@ -158,13 +158,21 @@ async function handleLogin() {
   border-radius: 10px;
   font-size: 1rem;
   outline: none;
-  transition: border-color 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
   width: 100%;
   box-sizing: border-box;
 }
 
 .form-group input:focus {
   border-color: #ff0000;
+}
+
+.form-group input:focus-visible {
+  outline: 3px solid rgba(255, 0, 0, 0.28);
+  outline-offset: 1px;
+  box-shadow: 0 0 0 4px rgba(255, 0, 0, 0.12);
 }
 
 .form-group input:disabled {
@@ -191,6 +199,14 @@ async function handleLogin() {
   font-size: 1rem;
   padding: 0;
   line-height: 1;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.toggle-password:focus-visible {
+  outline: 3px solid #ff0000;
+  outline-offset: 2px;
+  background: rgba(255, 0, 0, 0.08);
 }
 
 .auth-error {
@@ -215,7 +231,8 @@ async function handleLogin() {
   cursor: pointer;
   transition:
     opacity 0.2s,
-    transform 0.1s;
+    transform 0.1s,
+    box-shadow 0.2s;
   margin-top: 0.25rem;
 }
 
@@ -227,6 +244,12 @@ async function handleLogin() {
 .auth-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+.auth-btn:focus-visible {
+  outline: 3px solid #b91c1c;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(255, 0, 0, 0.2);
 }
 
 .auth-switch {
@@ -242,6 +265,13 @@ async function handleLogin() {
 }
 
 .auth-switch a:hover {
+  text-decoration: underline;
+}
+
+.auth-switch a:focus-visible {
+  outline: 3px solid #ff0000;
+  outline-offset: 2px;
+  border-radius: 4px;
   text-decoration: underline;
 }
 </style>
