@@ -74,20 +74,23 @@ function clearFilter() {
 
     <!-- "Alle" Button -->
     <button
+      type="button"
       class="label-filter-btn label-filter-all"
       :class="{ active: activeLabel === null }"
       @click="clearFilter"
       title="Alle Artikel anzeigen"
       aria-pressed="activeLabel === null"
+      :aria-label="`Alle Labels anzeigen (${totalLabeledCount} Artikel)`"
     >
       Alle
-      <span class="label-count">{{ totalLabeledCount }}</span>
+      <span class="label-count" aria-hidden="true">{{ totalLabeledCount }}</span>
     </button>
 
     <!-- Label-Schaltflächen -->
     <button
       v-for="color in visibleLabels"
       :key="color.name"
+      type="button"
       class="label-filter-btn"
       :class="{ active: activeLabel === color.name }"
       :style="{
@@ -98,10 +101,15 @@ function clearFilter() {
       @click="selectLabel(color.name)"
       :title="`Nur ${color.label} anzeigen`"
       :aria-pressed="activeLabel === color.name"
+      :aria-label="`${color.label}: ${counts[color.name] ?? 0} Artikel`"
     >
-      <span class="label-dot-small" :style="{ background: getLabelColor(color.name) }"></span>
+      <span
+        class="label-dot-small"
+        :style="{ background: getLabelColor(color.name) }"
+        aria-hidden="true"
+      ></span>
       {{ color.label }}
-      <span class="label-count">{{ counts[color.name] ?? 0 }}</span>
+      <span class="label-count" aria-hidden="true">{{ counts[color.name] ?? 0 }}</span>
     </button>
   </div>
 </template>

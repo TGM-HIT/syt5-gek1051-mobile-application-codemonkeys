@@ -35,7 +35,14 @@
 | **U12** | **Backup & Export:** Als Benutzer möchte ich meine Listen als JSON-Datei exportieren, um eine lokale Sicherung zu haben. | 5 | LS | N2H | [🔴 Closed](https://github.com/TGM-HIT/syt5-gek1051-mobile-application-codemonkeys/issues/34) |
 | **U13** | **Suche:** Als Benutzer möchte ich in meinen Listen nach spezifischen Artikeln suchen, um Zeit zu sparen. | 3 | NS | N2H | [🔴 Closed](https://github.com/TGM-HIT/syt5-gek1051-mobile-application-codemonkeys/issues/35) |
 | **U14** | **Filter & Sortierung:** Als Benutzer möchte ich Listen nach Status (offen/erledigt) filtern oder sortieren. | 3 | VW | N2H | [🟢 Open](https://github.com/TGM-HIT/syt5-gek1051-mobile-application-codemonkeys/issues/36) |
-| **U15** | **Barrierefreiheit (A11y):** Als Benutzer mit Einschränkungen möchte ich die App via Screenreader bedienen können. | 6 | AY | N2H | [🟢 Open](https://github.com/TGM-HIT/syt5-gek1051-mobile-application-codemonkeys/issues/37) |
+| **U15** | **Barrierefreiheit (A11y):** Als Benutzer mit Einschränkungen möchte ich die App via Screenreader bedienen können. | 6 | VW | N2H | [🟢 Open](https://github.com/TGM-HIT/syt5-gek1051-mobile-application-codemonkeys/issues/37) |
+
+# Kundenwunsch
+
+| ID | Description (User Value) | SP | HEAD | Prio | Status |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **U16** | **Kundenwunsch – PWA & Push-Benachrichtigungen:** Als Benutzer möchte ich die App als PWA installieren und Push-Benachrichtigungen erhalten, um über Änderungen an geteilten Listen informiert zu werden, auch wenn die App im Hintergrund läuft. | 5 | LS | N2H | [🟢 Open](https://github.com/TGM-HIT/syt5-gek1051-mobile-application-codemonkeys/issues/138) |
+
 
 ## Zusammenfassung der Verantwortlichkeiten
 

@@ -26,8 +26,6 @@ async function handleRegister() {
     router.push('/');
   }
 }
-
-const errorMessage = () => localError.value || authError.value;
 </script>
 
 <template>
@@ -49,8 +47,15 @@ const errorMessage = () => localError.value || authError.value;
             autofocus
             :disabled="authLoading"
             maxlength="50"
+            :aria-invalid="Boolean(authError)"
+            :aria-describedby="
+              authError ? 'register-username-hint register-auth-error' : 'register-username-hint'
+            "
+            required
           />
-          <span class="form-hint">Nur Kleinbuchstaben, Zahlen und Bindestriche</span>
+          <span id="register-username-hint" class="form-hint"
+            >Nur Kleinbuchstaben, Zahlen und Bindestriche</span
+          >
         </div>
 
         <div class="form-group">
@@ -63,12 +68,18 @@ const errorMessage = () => localError.value || authError.value;
               placeholder="Mindestens 6 Zeichen"
               autocomplete="new-password"
               :disabled="authLoading"
+              :aria-invalid="Boolean(authError)"
+              :aria-describedby="authError ? 'register-auth-error' : undefined"
+              required
             />
             <button
               type="button"
               class="toggle-password"
               @click="showPassword = !showPassword"
-              tabindex="-1"
+              :disabled="authLoading"
+              :aria-label="showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'"
+              :aria-pressed="showPassword"
+              aria-controls="password password-confirm"
             >
               {{ showPassword ? '🙈' : '👁️' }}
             </button>
@@ -84,10 +95,31 @@ const errorMessage = () => localError.value || authError.value;
             placeholder="Passwort wiederholen"
             autocomplete="new-password"
             :disabled="authLoading"
+            :aria-invalid="Boolean(localError)"
+            :aria-describedby="localError ? 'register-local-error' : undefined"
+            required
           />
         </div>
 
-        <p v-if="errorMessage()" class="auth-error">{{ errorMessage() }}</p>
+        <p
+          v-if="localError"
+          id="register-local-error"
+          class="auth-error"
+          role="alert"
+          aria-live="assertive"
+        >
+          {{ localError }}
+        </p>
+
+        <p
+          v-if="authError"
+          id="register-auth-error"
+          class="auth-error"
+          role="alert"
+          aria-live="assertive"
+        >
+          {{ authError }}
+        </p>
 
         <button
           type="submit"
@@ -170,13 +202,21 @@ const errorMessage = () => localError.value || authError.value;
   border-radius: 10px;
   font-size: 1rem;
   outline: none;
-  transition: border-color 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
   width: 100%;
   box-sizing: border-box;
 }
 
 .form-group input:focus {
   border-color: #ff0000;
+}
+
+.form-group input:focus-visible {
+  outline: 3px solid rgba(255, 0, 0, 0.28);
+  outline-offset: 1px;
+  box-shadow: 0 0 0 4px rgba(255, 0, 0, 0.12);
 }
 
 .form-group input:disabled {
@@ -208,6 +248,14 @@ const errorMessage = () => localError.value || authError.value;
   font-size: 1rem;
   padding: 0;
   line-height: 1;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.toggle-password:focus-visible {
+  outline: 3px solid #ff0000;
+  outline-offset: 2px;
+  background: rgba(255, 0, 0, 0.08);
 }
 
 .auth-error {
@@ -232,7 +280,8 @@ const errorMessage = () => localError.value || authError.value;
   cursor: pointer;
   transition:
     opacity 0.2s,
-    transform 0.1s;
+    transform 0.1s,
+    box-shadow 0.2s;
   margin-top: 0.25rem;
 }
 
@@ -244,6 +293,12 @@ const errorMessage = () => localError.value || authError.value;
 .auth-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+.auth-btn:focus-visible {
+  outline: 3px solid #b91c1c;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(255, 0, 0, 0.2);
 }
 
 .auth-switch {
@@ -259,6 +314,13 @@ const errorMessage = () => localError.value || authError.value;
 }
 
 .auth-switch a:hover {
+  text-decoration: underline;
+}
+
+.auth-switch a:focus-visible {
+  outline: 3px solid #ff0000;
+  outline-offset: 2px;
+  border-radius: 4px;
   text-decoration: underline;
 }
 </style>

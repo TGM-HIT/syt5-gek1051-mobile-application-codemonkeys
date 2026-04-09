@@ -3,11 +3,11 @@ import { test, expect } from '@playwright/test';
 async function setupSession(page, name = 'ShareUser') {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
 
-  // Clear storage
-  await page.evaluate(() => {
+  await page.evaluate((username) => {
     localStorage.clear();
     sessionStorage.clear();
-  });
+    localStorage.setItem('auth_user', JSON.stringify({ name: username, roles: [] }));
+  }, name);
 
   // Delete IndexedDB with timeout
   await page.evaluate(async () => {
@@ -27,7 +27,7 @@ async function setupSession(page, name = 'ShareUser') {
           clearTimeout(timeout);
           resolve();
         };
-      } catch (e) {
+      } catch {
         clearTimeout(timeout);
         resolve();
       }
@@ -35,11 +35,7 @@ async function setupSession(page, name = 'ShareUser') {
   });
 
   await page.reload({ waitUntil: 'domcontentloaded' });
-  await page.waitForTimeout(500); // Small delay for app to initialize
-
-  await page.fill('.session-input', name);
-  await page.click('.session-btn');
-  await page.waitForSelector('.session-overlay', { state: 'hidden', timeout: 5000 });
+  await page.waitForTimeout(500);
 }
 
 test.describe('Liste teilen', () => {
