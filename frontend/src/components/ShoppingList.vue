@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, watch, nextTick, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useShoppingList } from '@/composables/useShoppingList';
 import { useAuth } from '@/composables/useAuth';
@@ -188,8 +188,83 @@ const joinMessageRole = computed(() => (joinMessage.value.type === 'error' ? 'al
 const joinMessageLive = computed(() =>
   joinMessage.value.type === 'error' ? 'assertive' : 'polite',
 );
+const confirmModalRef = ref(null);
+const shareModalRef = ref(null);
+const modalFocusReturnTarget = ref(null);
+
+const FOCUSABLE_SELECTOR = [
+  'a[href]',
+  'button:not([disabled])',
+  'input:not([disabled])',
+  'select:not([disabled])',
+  'textarea:not([disabled])',
+  '[tabindex]:not([tabindex="-1"])',
+].join(',');
+
+function saveModalFocusTarget() {
+  if (typeof document === 'undefined') return;
+  const activeElement = document.activeElement;
+  if (activeElement instanceof HTMLElement) {
+    modalFocusReturnTarget.value = activeElement;
+  }
+}
+
+function restoreModalFocusTarget() {
+  const target = modalFocusReturnTarget.value;
+  modalFocusReturnTarget.value = null;
+  if (target && target.isConnected) {
+    nextTick(() => target.focus());
+  }
+}
+
+function getFocusableElements(container) {
+  if (!container) return [];
+  return Array.from(container.querySelectorAll(FOCUSABLE_SELECTOR)).filter(
+    (element) =>
+      !element.hasAttribute('disabled') && element.getAttribute('aria-hidden') !== 'true',
+  );
+}
+
+function focusFirstModalControl(container) {
+  const [firstFocusable] = getFocusableElements(container);
+  if (firstFocusable) {
+    firstFocusable.focus();
+    return;
+  }
+  if (container && typeof container.focus === 'function') {
+    container.focus();
+  }
+}
+
+function trapModalFocus(event, container) {
+  if (event.key !== 'Tab' || !container || typeof document === 'undefined') return;
+  const focusableElements = getFocusableElements(container);
+  if (focusableElements.length === 0) {
+    event.preventDefault();
+    return;
+  }
+
+  const firstFocusable = focusableElements[0];
+  const lastFocusable = focusableElements[focusableElements.length - 1];
+  const activeElement = document.activeElement;
+  const isInsideModal = activeElement ? container.contains(activeElement) : false;
+
+  if (event.shiftKey) {
+    if (!isInsideModal || activeElement === firstFocusable) {
+      event.preventDefault();
+      lastFocusable.focus();
+    }
+    return;
+  }
+
+  if (!isInsideModal || activeElement === lastFocusable) {
+    event.preventDefault();
+    firstFocusable.focus();
+  }
+}
 
 async function openShareDialog(list) {
+  saveModalFocusTarget();
   shareModal.value = { show: true, listId: list._id, code: list.shareCode || null, loading: false };
   // Falls noch kein Code existiert, gleich generieren
   if (!list.shareCode) {
@@ -202,6 +277,7 @@ async function openShareDialog(list) {
 
 function closeShareDialog() {
   shareModal.value = { show: false, listId: null, code: null, loading: false };
+  restoreModalFocusTarget();
 }
 
 async function copyShareCode() {
@@ -237,6 +313,7 @@ const confirmModal = ref({
 });
 
 function showConfirm(title, message, action) {
+  saveModalFocusTarget();
   confirmModal.value = { show: true, title, message, step: 1, action };
 }
 
@@ -248,12 +325,31 @@ function confirmStep1() {
 
 function confirmStep2() {
   const action = confirmModal.value.action;
-  confirmModal.value = { show: false };
+  closeConfirm();
   if (action) action();
 }
 
 function closeConfirm() {
   confirmModal.value = { show: false };
+  restoreModalFocusTarget();
+}
+
+function handleConfirmModalKeydown(event) {
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    closeConfirm();
+    return;
+  }
+  trapModalFocus(event, confirmModalRef.value);
+}
+
+function handleShareModalKeydown(event) {
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    closeShareDialog();
+    return;
+  }
+  trapModalFocus(event, shareModalRef.value);
 }
 
 function confirmPermanentDelete(listId) {
@@ -343,6 +439,24 @@ function getDetailToggleLabel(item) {
     ? `Details für ${item.name} schließen`
     : `Details für ${item.name} öffnen`;
 }
+
+watch(
+  () => confirmModal.value.show,
+  (isOpen) => {
+    if (isOpen) {
+      nextTick(() => focusFirstModalControl(confirmModalRef.value));
+    }
+  },
+);
+
+watch(
+  () => shareModal.value.show,
+  (isOpen) => {
+    if (isOpen) {
+      nextTick(() => focusFirstModalControl(shareModalRef.value));
+    }
+  },
+);
 </script>
 
 <template>
@@ -981,9 +1095,18 @@ function getDetailToggleLabel(item) {
 
     <!-- Custom Confirm Modal -->
     <div v-if="confirmModal.show" class="modal-overlay" @click.self="closeConfirm">
-      <div class="modal">
-        <div class="modal-title">{{ confirmModal.title }}</div>
-        <div class="modal-message">{{ confirmModal.message }}</div>
+      <div
+        ref="confirmModalRef"
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirm-modal-title"
+        aria-describedby="confirm-modal-message"
+        tabindex="-1"
+        @keydown="handleConfirmModalKeydown"
+      >
+        <div id="confirm-modal-title" class="modal-title">{{ confirmModal.title }}</div>
+        <div id="confirm-modal-message" class="modal-message">{{ confirmModal.message }}</div>
         <div class="modal-btns">
           <button type="button" class="modal-btn-cancel" @click="closeConfirm">
             {{ confirmModal.action ? 'Abbrechen' : 'OK' }}
@@ -1010,10 +1133,21 @@ function getDetailToggleLabel(item) {
 
     <!-- Share Code Modal -->
     <div v-if="shareModal.show" class="modal-overlay" @click.self="closeShareDialog">
-      <div class="modal share-modal">
-        <div class="modal-title">🔗 Liste teilen</div>
-        <div v-if="shareModal.loading" class="modal-message">Code wird generiert...</div>
-        <div v-else class="share-code-display">
+      <div
+        ref="shareModalRef"
+        class="modal share-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="share-modal-title"
+        aria-describedby="share-modal-message"
+        tabindex="-1"
+        @keydown="handleShareModalKeydown"
+      >
+        <div id="share-modal-title" class="modal-title">🔗 Liste teilen</div>
+        <div v-if="shareModal.loading" id="share-modal-message" class="modal-message">
+          Code wird generiert...
+        </div>
+        <div v-else id="share-modal-message" class="share-code-display">
           <div class="share-code-label">Dein Share-Code:</div>
           <div class="share-code">{{ shareModal.code }}</div>
           <button
