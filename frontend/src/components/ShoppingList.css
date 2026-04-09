@@ -38,6 +38,43 @@
   flex-wrap: wrap;
 }
 
+/* Keyboard focus styles */
+:where(
+  .logout-btn,
+  .pwa-install-btn,
+  .notif-enable-btn,
+  .error-banner-close,
+  .search-clear-btn,
+  .add-btn,
+  .join-btn,
+  .tab-btn,
+  .clear-changes-btn,
+  .share-list-btn,
+  .delete-list-btn,
+  .edit-list-btn,
+  .edit-item-btn,
+  .item-detail-btn,
+  .delete-item-btn,
+  .restore-item-btn,
+  .permanent-delete-btn,
+  .notification-dismiss,
+  .filter-changed-btn,
+  .edit-save-btn,
+  .edit-cancel-btn,
+  .detail-save-btn,
+  .detail-cancel-btn,
+  .color-option,
+  .cbtn-keep-local,
+  .cbtn-keep-remote,
+  .modal-btn-cancel,
+  .modal-btn-confirm,
+  .share-copy-btn
+):focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.18);
+}
+
 .session-badge {
   display: flex;
   align-items: center;
@@ -335,6 +372,10 @@ h1 {
   background: var(--color-surface-hover);
 }
 
+.item:focus-within {
+  box-shadow: inset 0 0 0 2px rgba(99, 102, 241, 0.18);
+}
+
 .item:active {
   background: var(--color-bg-mute);
 }
@@ -345,6 +386,12 @@ h1 {
   cursor: pointer;
   flex-shrink: 0;
   accent-color: var(--color-primary);
+}
+
+.checkbox:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 .item-content {
@@ -683,6 +730,11 @@ h1 {
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
 }
 
+.search-input:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
 .search-input::placeholder {
   color: var(--color-text-faint);
 }
@@ -745,6 +797,11 @@ h1 {
 
 .add-input:focus {
   border-color: var(--color-primary);
+}
+
+.add-input:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 1px;
 }
 
 .add-input::placeholder {
@@ -810,6 +867,11 @@ h1 {
   flex-direction: column;
   gap: 0.75rem;
   border: 1px solid var(--color-border);
+}
+
+.modal:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 .modal-title {
@@ -895,6 +957,11 @@ h1 {
 
 .join-input:focus {
   border-color: var(--color-primary);
+}
+
+.join-input:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 1px;
 }
 
 .join-input::placeholder {
@@ -1038,6 +1105,11 @@ h1 {
 
 .edit-input:focus {
   border-color: var(--color-primary-hover);
+}
+
+.edit-input:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 1px;
 }
 
 .edit-save-btn,
@@ -1345,6 +1417,19 @@ h1 {
   transform: scale(1.25);
 }
 
+.item-label-text {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.45rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  letter-spacing: 0.01em;
+  background: var(--color-bg-soft);
+}
+
 /* ── U10: Note Icon & Preview ── */
 .item-note-icon {
   font-size: 0.75rem;
@@ -1444,6 +1529,11 @@ h1 {
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
 }
 
+.detail-textarea:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
 .detail-textarea::placeholder {
   color: var(--color-text-faint);
 }
@@ -1454,6 +1544,12 @@ h1 {
   align-items: center;
   gap: 0.45rem;
   flex-wrap: wrap;
+}
+
+.detail-label-selected {
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
 }
 
 .color-option {

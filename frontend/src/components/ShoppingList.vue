@@ -1,9 +1,14 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, watch, nextTick, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useShoppingList } from '@/composables/useShoppingList';
 import { useAuth } from '@/composables/useAuth';
-import { useItemDetails, LABEL_COLORS, getLabelColor } from '@/composables/useItemDetails';
+import {
+  useItemDetails,
+  LABEL_COLORS,
+  getLabelColor,
+  getLabelObject,
+} from '@/composables/useItemDetails';
 import { useLabelFilter } from '@/composables/useLabelFilter';
 import LabelFilterBar from '@/components/LabelFilterBar.vue';
 import ThemeToggle from '@/components/ThemeToggle.vue';
@@ -184,8 +189,87 @@ function setTab(listId, tab) {
 const shareModal = ref({ show: false, listId: null, code: null, loading: false });
 const joinCode = ref('');
 const joinMessage = ref({ text: '', type: '' });
+const joinMessageRole = computed(() => (joinMessage.value.type === 'error' ? 'alert' : 'status'));
+const joinMessageLive = computed(() =>
+  joinMessage.value.type === 'error' ? 'assertive' : 'polite',
+);
+const confirmModalRef = ref(null);
+const shareModalRef = ref(null);
+const modalFocusReturnTarget = ref(null);
+
+const FOCUSABLE_SELECTOR = [
+  'a[href]',
+  'button:not([disabled])',
+  'input:not([disabled])',
+  'select:not([disabled])',
+  'textarea:not([disabled])',
+  '[tabindex]:not([tabindex="-1"])',
+].join(',');
+
+function saveModalFocusTarget() {
+  if (typeof document === 'undefined') return;
+  const activeElement = document.activeElement;
+  if (activeElement instanceof HTMLElement) {
+    modalFocusReturnTarget.value = activeElement;
+  }
+}
+
+function restoreModalFocusTarget() {
+  const target = modalFocusReturnTarget.value;
+  modalFocusReturnTarget.value = null;
+  if (target && target.isConnected) {
+    nextTick(() => target.focus());
+  }
+}
+
+function getFocusableElements(container) {
+  if (!container) return [];
+  return Array.from(container.querySelectorAll(FOCUSABLE_SELECTOR)).filter(
+    (element) =>
+      !element.hasAttribute('disabled') && element.getAttribute('aria-hidden') !== 'true',
+  );
+}
+
+function focusFirstModalControl(container) {
+  const [firstFocusable] = getFocusableElements(container);
+  if (firstFocusable) {
+    firstFocusable.focus();
+    return;
+  }
+  if (container && typeof container.focus === 'function') {
+    container.focus();
+  }
+}
+
+function trapModalFocus(event, container) {
+  if (event.key !== 'Tab' || !container || typeof document === 'undefined') return;
+  const focusableElements = getFocusableElements(container);
+  if (focusableElements.length === 0) {
+    event.preventDefault();
+    return;
+  }
+
+  const firstFocusable = focusableElements[0];
+  const lastFocusable = focusableElements[focusableElements.length - 1];
+  const activeElement = document.activeElement;
+  const isInsideModal = activeElement ? container.contains(activeElement) : false;
+
+  if (event.shiftKey) {
+    if (!isInsideModal || activeElement === firstFocusable) {
+      event.preventDefault();
+      lastFocusable.focus();
+    }
+    return;
+  }
+
+  if (!isInsideModal || activeElement === lastFocusable) {
+    event.preventDefault();
+    firstFocusable.focus();
+  }
+}
 
 async function openShareDialog(list) {
+  saveModalFocusTarget();
   shareModal.value = { show: true, listId: list._id, code: list.shareCode || null, loading: false };
   // Falls noch kein Code existiert, gleich generieren
   if (!list.shareCode) {
@@ -198,6 +282,7 @@ async function openShareDialog(list) {
 
 function closeShareDialog() {
   shareModal.value = { show: false, listId: null, code: null, loading: false };
+  restoreModalFocusTarget();
 }
 
 async function copyShareCode() {
@@ -233,6 +318,7 @@ const confirmModal = ref({
 });
 
 function showConfirm(title, message, action) {
+  saveModalFocusTarget();
   confirmModal.value = { show: true, title, message, step: 1, action };
 }
 
@@ -244,12 +330,31 @@ function confirmStep1() {
 
 function confirmStep2() {
   const action = confirmModal.value.action;
-  confirmModal.value = { show: false };
+  closeConfirm();
   if (action) action();
 }
 
 function closeConfirm() {
   confirmModal.value = { show: false };
+  restoreModalFocusTarget();
+}
+
+function handleConfirmModalKeydown(event) {
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    closeConfirm();
+    return;
+  }
+  trapModalFocus(event, confirmModalRef.value);
+}
+
+function handleShareModalKeydown(event) {
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    closeShareDialog();
+    return;
+  }
+  trapModalFocus(event, shareModalRef.value);
 }
 
 function confirmPermanentDelete(listId) {
@@ -327,6 +432,41 @@ async function saveItemDetails(item) {
   await updateItemDetails(item, note, label);
   closeDetail();
 }
+
+function getToggleItemLabel(item) {
+  return item.checked
+    ? `Artikel ${item.name} als offen markieren`
+    : `Artikel ${item.name} als erledigt markieren`;
+}
+
+function getDetailToggleLabel(item) {
+  return expandedItemId.value === item._id
+    ? `Details für ${item.name} schließen`
+    : `Details für ${item.name} öffnen`;
+}
+
+function getLabelDisplay(labelName) {
+  if (!labelName) return 'Kein Label';
+  return getLabelObject(labelName)?.label ?? labelName;
+}
+
+watch(
+  () => confirmModal.value.show,
+  (isOpen) => {
+    if (isOpen) {
+      nextTick(() => focusFirstModalControl(confirmModalRef.value));
+    }
+  },
+);
+
+watch(
+  () => shareModal.value.show,
+  (isOpen) => {
+    if (isOpen) {
+      nextTick(() => focusFirstModalControl(shareModalRef.value));
+    }
+  },
+);
 </script>
 
 <template>
@@ -339,20 +479,32 @@ async function saveItemDetails(item) {
             👤 {{ currentUser.name }}
           </div>
           <ThemeToggle />
-          <button class="logout-btn" @click="handleLogout" title="Abmelden">Abmelden</button>
+          <button
+            type="button"
+            class="logout-btn"
+            @click="handleLogout"
+            title="Abmelden"
+            aria-label="Abmelden"
+          >
+            Abmelden
+          </button>
           <button
             v-if="installable"
+            type="button"
             class="pwa-install-btn"
             @click="installPwa"
             title="App installieren"
+            aria-label="App installieren"
           >
             📲 App installieren
           </button>
           <button
             v-if="notifPermission === 'default'"
+            type="button"
             class="notif-enable-btn"
             @click="enableNotifications"
             title="Benachrichtigungen aktivieren"
+            aria-label="Benachrichtigungen im Browser erlauben"
           >
             🔔 Benachrichtigungen erlauben
           </button>
@@ -363,8 +515,14 @@ async function saveItemDetails(item) {
           >
             🔕 Benachrichtigungen blockiert
           </span>
-          <div class="status-indicator" :class="{ online: isOnline, offline: !isOnline }">
-            <span class="status-dot"></span>
+          <div
+            class="status-indicator"
+            :class="{ online: isOnline, offline: !isOnline }"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            <span class="status-dot" aria-hidden="true"></span>
             <span class="status-text">{{ isOnline ? 'Online' : 'Offline' }}</span>
             <span v-if="syncActive && isOnline" class="sync-text">• Sync aktiv</span>
           </div>
@@ -403,8 +561,11 @@ async function saveItemDetails(item) {
             class="add-input"
             placeholder="Neue Liste..."
             @keyup.enter="submitNewList"
+            aria-label="Name für neue Liste"
           />
-          <button class="add-btn" @click="submitNewList">+ Liste</button>
+          <button type="button" class="add-btn" @click="submitNewList" aria-label="Liste erstellen">
+            + Liste
+          </button>
         </div>
 
         <!-- Liste beitreten -->
@@ -415,10 +576,25 @@ async function saveItemDetails(item) {
             placeholder="Share-Code eingeben..."
             maxlength="6"
             @keyup.enter="submitJoinCode"
+            aria-label="Share-Code eingeben"
           />
-          <button class="join-btn" @click="submitJoinCode">🔗 Beitreten</button>
+          <button
+            type="button"
+            class="join-btn"
+            @click="submitJoinCode"
+            aria-label="Liste beitreten"
+          >
+            🔗 Beitreten
+          </button>
         </div>
-        <div v-if="joinMessage.text" class="join-message" :class="joinMessage.type">
+        <div
+          v-if="joinMessage.text"
+          class="join-message"
+          :class="joinMessage.type"
+          :role="joinMessageRole"
+          :aria-live="joinMessageLive"
+          aria-atomic="true"
+        >
           {{ joinMessage.text }}
         </div>
 
@@ -429,26 +605,42 @@ async function saveItemDetails(item) {
             class="search-input"
             type="text"
             placeholder="Artikel suchen…"
+            aria-label="Artikel suchen"
           />
           <button
             v-if="searchQuery"
+            type="button"
             class="search-clear-btn"
             @click="clearSearch"
             title="Suche zurücksetzen"
+            aria-label="Suche zurücksetzen"
           >
             ✕
           </button>
         </div>
 
         <!-- Benachrichtigungen -->
-        <div v-if="notifications.length > 0" class="notifications">
-          <div v-for="notif in notifications" :key="notif.id" class="notification-banner">
+        <div
+          v-if="notifications.length > 0"
+          class="notifications"
+          role="region"
+          aria-label="Änderungsbenachrichtigungen"
+          aria-live="polite"
+        >
+          <div
+            v-for="notif in notifications"
+            :key="notif.id"
+            class="notification-banner"
+            role="status"
+          >
             <div class="notif-header">
               <span class="notif-list-name">🛒 {{ notif.listName }}</span>
               <button
+                type="button"
                 class="notification-dismiss"
                 @click="dismissNotification(notif.id)"
                 title="Schließen"
+                :aria-label="`Benachrichtigung für Liste ${notif.listName} schließen`"
               >
                 ✕
               </button>
@@ -473,12 +665,19 @@ async function saveItemDetails(item) {
         <!-- Filter: Nur geänderte Artikel -->
         <div class="filter-bar">
           <button
+            type="button"
             class="filter-changed-btn"
             :class="{ active: showOnlyChanged }"
             @click="showOnlyChanged = !showOnlyChanged"
+            :aria-pressed="showOnlyChanged"
+            :aria-label="`Nur geänderte Artikel anzeigen (${totalChangedCount})`"
           >
             {{ showOnlyChanged ? '✓ Nur geänderte' : 'Nur geänderte' }}
-            <span class="filter-badge" :class="{ 'filter-badge-active': showOnlyChanged }">
+            <span
+              class="filter-badge"
+              :class="{ 'filter-badge-active': showOnlyChanged }"
+              aria-hidden="true"
+            >
               {{ totalChangedCount }}
             </span>
           </button>
@@ -492,9 +691,11 @@ async function saveItemDetails(item) {
                 <div v-if="editingListId !== list._id" class="list-name-display">
                   <h2>{{ list.name }}</h2>
                   <button
+                    type="button"
                     class="edit-list-btn"
                     @click="startEditList(list)"
                     title="Liste umbenennen"
+                    :aria-label="`Liste ${list.name} umbenennen`"
                   >
                     ✏️
                   </button>
@@ -507,11 +708,24 @@ async function saveItemDetails(item) {
                     @keyup.esc="cancelEditList"
                     ref="editListInput"
                     autofocus
+                    :aria-label="`Neuer Name für Liste ${list.name}`"
                   />
-                  <button class="edit-save-btn" @click="saveEditList(list._id)" title="Speichern">
+                  <button
+                    type="button"
+                    class="edit-save-btn"
+                    @click="saveEditList(list._id)"
+                    title="Speichern"
+                    :aria-label="`Neuen Namen für Liste ${list.name} speichern`"
+                  >
                     ✓
                   </button>
-                  <button class="edit-cancel-btn" @click="cancelEditList" title="Abbrechen">
+                  <button
+                    type="button"
+                    class="edit-cancel-btn"
+                    @click="cancelEditList"
+                    title="Abbrechen"
+                    aria-label="Umbenennen abbrechen"
+                  >
                     ✕
                   </button>
                 </div>
@@ -523,27 +737,44 @@ async function saveItemDetails(item) {
               <div class="list-stats">
                 <button
                   v-if="hasChangedItems(list._id)"
+                  type="button"
                   @click="clearListChanges(list._id)"
                   class="clear-changes-btn"
                   title="Änderungshinweise entfernen"
+                  :aria-label="`Änderungshinweise für Liste ${list.name} entfernen`"
                 >
                   ✓ Gesehen
                 </button>
                 <span class="progress-text">{{ getProgress(list._id) }}%</span>
-                <button class="share-list-btn" title="Liste teilen" @click="openShareDialog(list)">
+                <button
+                  type="button"
+                  class="share-list-btn"
+                  title="Liste teilen"
+                  @click="openShareDialog(list)"
+                  :aria-label="`Liste ${list.name} teilen`"
+                >
                   🔗
                 </button>
                 <button
+                  type="button"
                   class="delete-list-btn"
                   title="Liste löschen"
                   @click="confirmDeleteList(list)"
+                  :aria-label="`Liste ${list.name} löschen`"
                 >
                   🗑️
                 </button>
               </div>
             </div>
 
-            <div class="progress-bar">
+            <div
+              class="progress-bar"
+              role="progressbar"
+              :aria-label="`Fortschritt für Liste ${list.name}`"
+              :aria-valuenow="getProgress(list._id)"
+              aria-valuemin="0"
+              aria-valuemax="100"
+            >
               <div class="progress-fill" :style="{ width: getProgress(list._id) + '%' }"></div>
             </div>
 
@@ -558,20 +789,30 @@ async function saveItemDetails(item) {
             <!-- Tabs (ausgeblendet wenn nur geänderte angezeigt werden) -->
             <div v-if="!showOnlyChanged" class="tabs">
               <button
+                type="button"
                 class="tab-btn"
                 :class="{ active: getTab(list._id) === 'active' }"
                 @click="setTab(list._id, 'active')"
+                :aria-pressed="getTab(list._id) === 'active'"
+                :aria-label="`Aktive Artikel in Liste ${list.name}`"
               >
                 Aktiv
-                <span class="tab-count">{{ getActiveItemsForList(list._id).length }}</span>
+                <span class="tab-count" aria-hidden="true">{{
+                  getActiveItemsForList(list._id).length
+                }}</span>
               </button>
               <button
+                type="button"
                 class="tab-btn"
                 :class="{ active: getTab(list._id) === 'deleted' }"
                 @click="setTab(list._id, 'deleted')"
+                :aria-pressed="getTab(list._id) === 'deleted'"
+                :aria-label="`Gelöschte Artikel in Liste ${list.name}`"
               >
                 Gelöscht
-                <span class="tab-count">{{ getDeletedItemsForList(list._id).length }}</span>
+                <span class="tab-count" aria-hidden="true">{{
+                  getDeletedItemsForList(list._id).length
+                }}</span>
               </button>
             </div>
 
@@ -593,6 +834,7 @@ async function saveItemDetails(item) {
                     :checked="item.checked"
                     @click.stop="toggleItem(item)"
                     class="checkbox"
+                    :aria-label="getToggleItemLabel(item)"
                   />
                   <div class="item-content" @click="toggleItem(item)">
                     <div v-if="editingItemId !== item._id" class="item-name-display">
@@ -600,14 +842,27 @@ async function saveItemDetails(item) {
                         v-if="item.label"
                         class="item-label-dot"
                         :style="{ background: getLabelColor(item.label) }"
-                        :title="item.label"
+                        :title="`Label: ${getLabelDisplay(item.label)}`"
+                        aria-hidden="true"
                       ></span>
+                      <span v-if="item.label" class="item-label-text">
+                        {{ getLabelDisplay(item.label) }}
+                      </span>
                       <span class="item-name">{{ item.name }}</span>
-                      <span v-if="item.note" class="item-note-icon" title="Hat eine Notiz">📝</span>
+                      <span
+                        v-if="item.note"
+                        class="item-note-icon"
+                        title="Hat eine Notiz"
+                        aria-label="Hat eine Notiz"
+                      >
+                        📝
+                      </span>
                       <button
+                        type="button"
                         class="edit-item-btn"
                         @click.stop="startEditItem(item)"
                         title="Artikel umbenennen"
+                        :aria-label="`Artikel ${item.name} umbenennen`"
                       >
                         ✏️
                       </button>
@@ -620,18 +875,23 @@ async function saveItemDetails(item) {
                         @keyup.esc="cancelEditItem"
                         @click.stop
                         autofocus
+                        :aria-label="`Neuer Name für Artikel ${item.name}`"
                       />
                       <button
+                        type="button"
                         class="edit-save-btn"
                         @click.stop="saveEditItem(item)"
                         title="Speichern"
+                        :aria-label="`Neuen Namen für Artikel ${item.name} speichern`"
                       >
                         ✓
                       </button>
                       <button
+                        type="button"
                         class="edit-cancel-btn"
                         @click.stop="cancelEditItem"
                         title="Abbrechen"
+                        aria-label="Umbenennen abbrechen"
                       >
                         ✕
                       </button>
@@ -650,18 +910,23 @@ async function saveItemDetails(item) {
                   </div>
                   <button
                     v-if="editingItemId !== item._id"
+                    type="button"
                     class="item-detail-btn"
                     :class="{ active: expandedItemId === item._id }"
                     title="Details / Notiz"
                     @click.stop="toggleItemDetail(item)"
+                    :aria-label="getDetailToggleLabel(item)"
+                    :aria-expanded="expandedItemId === item._id"
                   >
                     ⋯
                   </button>
                   <button
                     v-if="editingItemId !== item._id"
+                    type="button"
                     class="delete-item-btn"
                     title="Als gelöscht markieren"
                     @click.stop="markItemDeleted(item)"
+                    :aria-label="`Artikel ${item.name} als gelöscht markieren`"
                   >
                     🗑️
                   </button>
@@ -676,35 +941,55 @@ async function saveItemDetails(item) {
                       placeholder="Notiz hinzufügen…"
                       rows="2"
                       @click.stop
+                      :aria-label="`Notiz für Artikel ${item.name}`"
                     ></textarea>
                   </div>
                   <div class="detail-color-section">
                     <label class="detail-label-text">Label:</label>
                     <div class="color-picker">
                       <button
+                        type="button"
                         class="color-option color-none"
                         :class="{ active: detailLabel === null }"
                         @click.stop="detailLabel = null"
                         title="Kein Label"
+                        :aria-pressed="detailLabel === null"
+                        aria-label="Kein Label"
                       >
                         ✕
                       </button>
                       <button
                         v-for="c in LABEL_COLORS"
                         :key="c.name"
+                        type="button"
                         class="color-option"
                         :class="{ active: detailLabel === c.name }"
                         :style="{ background: c.hex }"
                         @click.stop="detailLabel = c.name"
-                        :title="c.name"
+                        :title="`Label: ${c.label}`"
+                        :aria-pressed="detailLabel === c.name"
+                        :aria-label="`Label ${c.label} auswählen`"
                       ></button>
                     </div>
+                    <p class="detail-label-selected">
+                      Aktuell: <strong>{{ getLabelDisplay(detailLabel) }}</strong>
+                    </p>
                   </div>
                   <div class="detail-actions">
-                    <button class="detail-save-btn" @click.stop="saveItemDetails(item)">
+                    <button
+                      type="button"
+                      class="detail-save-btn"
+                      @click.stop="saveItemDetails(item)"
+                      :aria-label="`Details für Artikel ${item.name} speichern`"
+                    >
                       ✓ Speichern
                     </button>
-                    <button class="detail-cancel-btn" @click.stop="closeItemDetail">
+                    <button
+                      type="button"
+                      class="detail-cancel-btn"
+                      @click.stop="closeItemDetail"
+                      aria-label="Details schließen ohne Speichern"
+                    >
                       Abbrechen
                     </button>
                   </div>
@@ -715,8 +1000,22 @@ async function saveItemDetails(item) {
                     🗑️ <strong>{{ item._pendingDelete }}</strong> hat diesen Artikel gelöscht.
                   </div>
                   <div class="conflict-banner-btns">
-                    <button class="cbtn-keep-remote" @click="acceptDelete(item)">Ja</button>
-                    <button class="cbtn-keep-local" @click="rejectDelete(item)">Nein</button>
+                    <button
+                      type="button"
+                      class="cbtn-keep-remote"
+                      @click="acceptDelete(item)"
+                      :aria-label="`Löschung von Artikel ${item.name} akzeptieren`"
+                    >
+                      Ja
+                    </button>
+                    <button
+                      type="button"
+                      class="cbtn-keep-local"
+                      @click="rejectDelete(item)"
+                      :aria-label="`Löschung von Artikel ${item.name} ablehnen`"
+                    >
+                      Nein
+                    </button>
                   </div>
                 </li>
               </template>
@@ -725,7 +1024,12 @@ async function saveItemDetails(item) {
             <!-- Tab: Gelöschte Artikel (nur wenn kein Filter aktiv) -->
             <template v-if="!showOnlyChanged && getTab(list._id) === 'deleted'">
               <div v-if="getDeletedItemsForList(list._id).length > 0" class="permanent-delete-bar">
-                <button class="permanent-delete-btn" @click="confirmPermanentDelete(list._id)">
+                <button
+                  type="button"
+                  class="permanent-delete-btn"
+                  @click="confirmPermanentDelete(list._id)"
+                  :aria-label="`Alle gelöschten Artikel aus Liste ${list.name} endgültig löschen`"
+                >
                   🗑️ Alle endgültig löschen
                 </button>
               </div>
@@ -739,9 +1043,11 @@ async function saveItemDetails(item) {
                       <span class="item-name">{{ item.name }}</span>
                     </div>
                     <button
+                      type="button"
                       class="restore-item-btn"
                       title="Wiederherstellen"
                       @click.stop="restoreItem(item)"
+                      :aria-label="`Artikel ${item.name} wiederherstellen`"
                     >
                       ↩️
                     </button>
@@ -773,8 +1079,16 @@ async function saveItemDetails(item) {
                 class="add-input"
                 placeholder="Neuer Artikel..."
                 @keyup.enter="submitNewItem(list._id)"
+                :aria-label="`Neuen Artikel zu Liste ${list.name} hinzufügen`"
               />
-              <button class="add-btn" @click="submitNewItem(list._id)">+</button>
+              <button
+                type="button"
+                class="add-btn"
+                @click="submitNewItem(list._id)"
+                :aria-label="`Artikel zu Liste ${list.name} hinzufügen`"
+              >
+                +
+              </button>
             </div>
             <div
               v-if="
@@ -797,15 +1111,25 @@ async function saveItemDetails(item) {
 
     <!-- Custom Confirm Modal -->
     <div v-if="confirmModal.show" class="modal-overlay" @click.self="closeConfirm">
-      <div class="modal">
-        <div class="modal-title">{{ confirmModal.title }}</div>
-        <div class="modal-message">{{ confirmModal.message }}</div>
+      <div
+        ref="confirmModalRef"
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirm-modal-title"
+        aria-describedby="confirm-modal-message"
+        tabindex="-1"
+        @keydown="handleConfirmModalKeydown"
+      >
+        <div id="confirm-modal-title" class="modal-title">{{ confirmModal.title }}</div>
+        <div id="confirm-modal-message" class="modal-message">{{ confirmModal.message }}</div>
         <div class="modal-btns">
-          <button class="modal-btn-cancel" @click="closeConfirm">
+          <button type="button" class="modal-btn-cancel" @click="closeConfirm">
             {{ confirmModal.action ? 'Abbrechen' : 'OK' }}
           </button>
           <button
             v-if="confirmModal.action && confirmModal.step === 1"
+            type="button"
             class="modal-btn-confirm"
             @click="confirmStep1"
           >
@@ -813,6 +1137,7 @@ async function saveItemDetails(item) {
           </button>
           <button
             v-else-if="confirmModal.action && confirmModal.step === 2"
+            type="button"
             class="modal-btn-confirm modal-btn-danger"
             @click="confirmStep2"
           >
@@ -824,17 +1149,37 @@ async function saveItemDetails(item) {
 
     <!-- Share Code Modal -->
     <div v-if="shareModal.show" class="modal-overlay" @click.self="closeShareDialog">
-      <div class="modal share-modal">
-        <div class="modal-title">🔗 Liste teilen</div>
-        <div v-if="shareModal.loading" class="modal-message">Code wird generiert...</div>
-        <div v-else class="share-code-display">
+      <div
+        ref="shareModalRef"
+        class="modal share-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="share-modal-title"
+        aria-describedby="share-modal-message"
+        tabindex="-1"
+        @keydown="handleShareModalKeydown"
+      >
+        <div id="share-modal-title" class="modal-title">🔗 Liste teilen</div>
+        <div v-if="shareModal.loading" id="share-modal-message" class="modal-message">
+          Code wird generiert...
+        </div>
+        <div v-else id="share-modal-message" class="share-code-display">
           <div class="share-code-label">Dein Share-Code:</div>
           <div class="share-code">{{ shareModal.code }}</div>
-          <button class="share-copy-btn" @click="copyShareCode">📋 Code kopieren</button>
+          <button
+            type="button"
+            class="share-copy-btn"
+            @click="copyShareCode"
+            aria-label="Share-Code kopieren"
+          >
+            📋 Code kopieren
+          </button>
           <p class="share-hint">Teile diesen Code, damit andere der Liste beitreten können.</p>
         </div>
         <div class="modal-btns">
-          <button class="modal-btn-cancel" @click="closeShareDialog">Schließen</button>
+          <button type="button" class="modal-btn-cancel" @click="closeShareDialog">
+            Schließen
+          </button>
         </div>
       </div>
     </div>
