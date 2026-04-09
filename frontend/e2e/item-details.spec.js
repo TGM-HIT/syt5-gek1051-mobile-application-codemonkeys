@@ -17,7 +17,11 @@ import { test, expect } from '@playwright/test';
  * einen eingeloggten User direkt via localStorage (für schnelle Tests).
  */
 async function setupAuthSession(page, username = 'E2EUser') {
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  // Navigate to /login and wait for the form to render so the async
+  // checkSession() in the router guard has fully completed and can no
+  // longer overwrite localStorage.
+  await page.goto('/login', { waitUntil: 'domcontentloaded' });
+  await page.waitForSelector('#username', { timeout: 10000 });
 
   await page.evaluate((name) => {
     localStorage.clear();
@@ -51,8 +55,10 @@ async function setupAuthSession(page, username = 'E2EUser') {
     });
   });
 
-  await page.reload({ waitUntil: 'domcontentloaded' });
-  await page.waitForTimeout(500);
+  // Fresh navigation — app reads auth_user from localStorage on init,
+  // finds a valid user, skips checkSession(), and renders ShoppingList.
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await page.waitForSelector('.add-list-form', { timeout: 10000 });
 }
 
 /**
@@ -65,13 +71,38 @@ async function createListAndItem(page, listName = 'Testliste', itemName = 'Milch
   await page.click('.add-list-form .add-btn');
   await page.waitForTimeout(300);
 
-  // Artikel hinzufügen
-  await page.fill('.add-item-form .add-input', itemName);
-  await page.click('.add-item-form .add-btn');
+  // Artikel hinzufügen (letztes Formular = neu erstellte Liste)
+  await page.locator('.add-item-form .add-input').last().fill(itemName);
+  await page.locator('.add-item-form .add-btn').last().click();
   await page.waitForTimeout(300);
 
   // Artikel-Element zurückgeben
   return page.locator('.item').filter({ hasText: itemName }).first();
+}
+
+/**
+ * Erstellt eine Liste mit einzigartigem Namen und fügt einen Artikel hinzu.
+ * Gibt { list, item } zurück – beide auf die konkrete Liste gescopet.
+ * Für Tests die prüfen müssen, was *innerhalb* einer bestimmten Liste passiert.
+ */
+async function createScopedListAndItem(page, itemName = 'Milch') {
+  const listName = `E2E-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+
+  await page.fill('.add-list-form .add-input', listName);
+  await page.click('.add-list-form .add-btn');
+
+  const list = page
+    .locator('.list')
+    .filter({ has: page.getByRole('heading', { name: listName, exact: true }) });
+  await expect(list).toBeVisible();
+
+  await list.locator('.add-item-form .add-input').fill(itemName);
+  await list.locator('.add-item-form .add-btn').click();
+
+  const item = list.locator('.item').filter({ hasText: itemName }).first();
+  await expect(item).toBeVisible();
+
+  return { list, item };
 }
 
 // ── Test Suite: Detail-Panel öffnen/schließen ─────────────────────────────────
@@ -339,32 +370,32 @@ test.describe('U10: Label-Filter-Leiste', () => {
   });
 
   test('Label-Filterleiste ist nicht sichtbar wenn keine Labels vergeben', async ({ page }) => {
-    await createListAndItem(page, 'Liste', 'Artikel ohne Label');
-    await expect(page.locator('.label-filter-bar')).not.toBeVisible();
+    const { list } = await createScopedListAndItem(page, 'Artikel ohne Label');
+    await expect(list.locator('.label-filter-bar')).not.toBeVisible();
   });
 
   test('Label-Filterleiste erscheint wenn ein Label vergeben wird', async ({ page }) => {
-    const item = await createListAndItem(page, 'Liste', 'Artikel mit Label');
+    const { list, item } = await createScopedListAndItem(page, 'Artikel mit Label');
     await item.locator('.item-detail-btn').click();
     await page.locator('.color-option:not(.color-none)').first().click();
     await page.locator('.detail-save-btn').click();
     await page.waitForTimeout(300);
 
-    await expect(page.locator('.label-filter-bar')).toBeVisible();
+    await expect(list.locator('.label-filter-bar')).toBeVisible();
   });
 
   test('"Alle"-Button ist in der Filterleiste sichtbar', async ({ page }) => {
-    const item = await createListAndItem(page, 'Liste', 'Artikel');
+    const { list, item } = await createScopedListAndItem(page, 'Artikel');
     await item.locator('.item-detail-btn').click();
     await page.locator('.color-option:not(.color-none)').first().click();
     await page.locator('.detail-save-btn').click();
     await page.waitForTimeout(300);
 
-    await expect(page.locator('.label-filter-all')).toBeVisible();
+    await expect(list.locator('.label-filter-all')).toBeVisible();
   });
 
   test('Filterleiste zeigt nur Labels mit mindestens einem Artikel', async ({ page }) => {
-    const item = await createListAndItem(page, 'Liste', 'Artikel');
+    const { list, item } = await createScopedListAndItem(page, 'Artikel');
     await item.locator('.item-detail-btn').click();
     // Erste Farbe (rot) auswählen
     await page.locator('.color-option:not(.color-none)').first().click();
@@ -372,7 +403,7 @@ test.describe('U10: Label-Filter-Leiste', () => {
     await page.waitForTimeout(300);
 
     // Nur 1 Label-Button + "Alle"-Button = 2
-    const filterBtns = page.locator('.label-filter-btn');
+    const filterBtns = list.locator('.label-filter-btn');
     await expect(filterBtns).toHaveCount(2);
   });
 });

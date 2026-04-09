@@ -1,7 +1,11 @@
 import { test, expect } from '@playwright/test';
 
 async function resetAppState(page, authUserName = null) {
+  // Wait for the login form to render so the async checkSession() in
+  // the router guard has fully completed and can no longer overwrite
+  // localStorage.
   await page.goto('/login', { waitUntil: 'domcontentloaded' });
+  await page.waitForSelector('#username', { timeout: 10000 });
 
   await page.evaluate(async (name) => {
     localStorage.clear();
@@ -43,7 +47,7 @@ async function setupGuestPage(page, path = '/login') {
 async function setupAuthenticatedPage(page, username = 'A11yUser') {
   await resetAppState(page, username);
   await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await page.waitForTimeout(300);
+  await page.waitForSelector('.add-list-form', { timeout: 10000 });
 }
 
 async function createList(page, listName) {
@@ -63,7 +67,7 @@ async function addItemToList(page, listName, itemName) {
   await expect(page.locator('.item').filter({ hasText: itemName }).first()).toBeVisible();
 }
 
-test.describe('A11y: Auth Views', () => {
+test.describe('U15: A11y – Auth Views', () => {
   test('Login controls are reachable by role and accessible name', async ({ page }) => {
     await setupGuestPage(page, '/login');
 
@@ -90,7 +94,7 @@ test.describe('A11y: Auth Views', () => {
   });
 });
 
-test.describe('A11y: Shopping List Views', () => {
+test.describe('U15: A11y – Shopping List Views', () => {
   test('Header and list controls expose semantic roles/names', async ({ page }) => {
     await setupAuthenticatedPage(page);
     const listName = `A11y-Liste-${Date.now()}`;

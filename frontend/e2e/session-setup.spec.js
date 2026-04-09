@@ -7,7 +7,7 @@ async function goToLogin(page) {
   await page.reload();
 }
 
-test.describe('Login & Registrierung', () => {
+test.describe('U6: Login & Registrierung', () => {
   test.beforeEach(async ({ page }) => {
     await goToLogin(page);
   });
@@ -54,7 +54,7 @@ test.describe('Login & Registrierung', () => {
   });
 });
 
-test.describe('Registrierung', () => {
+test.describe('U6: Registrierung', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/register');
     await page.evaluate(() => localStorage.clear());
@@ -92,7 +92,7 @@ test.describe('Registrierung', () => {
   });
 });
 
-test.describe('Session-Persistenz', () => {
+test.describe('U6: Session-Persistenz', () => {
   test('eingeloggter Nutzer bleibt nach Reload eingeloggt', async ({ page }) => {
     // Auth-User in localStorage simulieren
     await page.goto('/login');
