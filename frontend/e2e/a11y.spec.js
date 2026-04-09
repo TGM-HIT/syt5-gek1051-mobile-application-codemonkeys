@@ -67,7 +67,7 @@ async function addItemToList(page, listName, itemName) {
   await expect(page.locator('.item').filter({ hasText: itemName }).first()).toBeVisible();
 }
 
-test.describe('A11y: Auth Views', () => {
+test.describe('U15: A11y – Auth Views', () => {
   test('Login controls are reachable by role and accessible name', async ({ page }) => {
     await setupGuestPage(page, '/login');
 
@@ -94,7 +94,7 @@ test.describe('A11y: Auth Views', () => {
   });
 });
 
-test.describe('A11y: Shopping List Views', () => {
+test.describe('U15: A11y – Shopping List Views', () => {
   test('Header and list controls expose semantic roles/names', async ({ page }) => {
     await setupAuthenticatedPage(page);
     const listName = `A11y-Liste-${Date.now()}`;

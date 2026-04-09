@@ -44,7 +44,7 @@ async function setupSession(page, name = 'ShareUser') {
   await page.waitForSelector('.add-list-form', { timeout: 10000 });
 }
 
-test.describe('Liste teilen', () => {
+test.describe('U5: Liste teilen', () => {
   test('öffnet den Share-Dialog', async ({ page }) => {
     await setupSession(page);
     await page.fill('.add-list-form .add-input', 'Geteilte Liste');
