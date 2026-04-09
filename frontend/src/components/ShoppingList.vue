@@ -3,7 +3,12 @@ import { ref, computed, watch, nextTick, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useShoppingList } from '@/composables/useShoppingList';
 import { useAuth } from '@/composables/useAuth';
-import { useItemDetails, LABEL_COLORS, getLabelColor } from '@/composables/useItemDetails';
+import {
+  useItemDetails,
+  LABEL_COLORS,
+  getLabelColor,
+  getLabelObject,
+} from '@/composables/useItemDetails';
 import { useLabelFilter } from '@/composables/useLabelFilter';
 import LabelFilterBar from '@/components/LabelFilterBar.vue';
 import ThemeToggle from '@/components/ThemeToggle.vue';
@@ -440,6 +445,11 @@ function getDetailToggleLabel(item) {
     : `Details für ${item.name} öffnen`;
 }
 
+function getLabelDisplay(labelName) {
+  if (!labelName) return 'Kein Label';
+  return getLabelObject(labelName)?.label ?? labelName;
+}
+
 watch(
   () => confirmModal.value.show,
   (isOpen) => {
@@ -832,9 +842,12 @@ watch(
                         v-if="item.label"
                         class="item-label-dot"
                         :style="{ background: getLabelColor(item.label) }"
-                        :title="item.label"
+                        :title="`Label: ${getLabelDisplay(item.label)}`"
                         aria-hidden="true"
                       ></span>
+                      <span v-if="item.label" class="item-label-text">
+                        {{ getLabelDisplay(item.label) }}
+                      </span>
                       <span class="item-name">{{ item.name }}</span>
                       <span
                         v-if="item.note"
@@ -953,11 +966,14 @@ watch(
                         :class="{ active: detailLabel === c.name }"
                         :style="{ background: c.hex }"
                         @click.stop="detailLabel = c.name"
-                        :title="c.name"
+                        :title="`Label: ${c.label}`"
                         :aria-pressed="detailLabel === c.name"
                         :aria-label="`Label ${c.label} auswählen`"
                       ></button>
                     </div>
+                    <p class="detail-label-selected">
+                      Aktuell: <strong>{{ getLabelDisplay(detailLabel) }}</strong>
+                    </p>
                   </div>
                   <div class="detail-actions">
                     <button

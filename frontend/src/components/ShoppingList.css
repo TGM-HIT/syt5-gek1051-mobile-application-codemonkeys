@@ -1417,6 +1417,19 @@ h1 {
   transform: scale(1.25);
 }
 
+.item-label-text {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.45rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  letter-spacing: 0.01em;
+  background: var(--color-bg-soft);
+}
+
 /* ── U10: Note Icon & Preview ── */
 .item-note-icon {
   font-size: 0.75rem;
@@ -1531,6 +1544,12 @@ h1 {
   align-items: center;
   gap: 0.45rem;
   flex-wrap: wrap;
+}
+
+.detail-label-selected {
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
 }
 
 .color-option {
