@@ -6,9 +6,16 @@ const { theme, toggleTheme } = useTheme();
 
 <template>
   <button
+    type="button"
+    role="switch"
     class="theme-toggle-btn"
     :title="theme === 'dark' ? 'Zum Light Mode wechseln' : 'Zum Dark Mode wechseln'"
-    :aria-label="theme === 'dark' ? 'Light Mode aktivieren' : 'Dark Mode aktivieren'"
+    :aria-label="
+      theme === 'dark'
+        ? 'Dark Mode ist aktiv, zu Light Mode wechseln'
+        : 'Light Mode ist aktiv, zu Dark Mode wechseln'
+    "
+    :aria-checked="theme === 'dark'"
     @click="toggleTheme"
   >
     <span class="theme-icon" aria-hidden="true">{{ theme === 'dark' ? '☀️' : '🌙' }}</span>
