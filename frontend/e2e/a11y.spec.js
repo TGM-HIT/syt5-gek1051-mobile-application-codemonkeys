@@ -1,7 +1,11 @@
 import { test, expect } from '@playwright/test';
 
 async function resetAppState(page, authUserName = null) {
+  // Wait for the login form to render so the async checkSession() in
+  // the router guard has fully completed and can no longer overwrite
+  // localStorage.
   await page.goto('/login', { waitUntil: 'domcontentloaded' });
+  await page.waitForSelector('#username', { timeout: 10000 });
 
   await page.evaluate(async (name) => {
     localStorage.clear();
@@ -43,7 +47,7 @@ async function setupGuestPage(page, path = '/login') {
 async function setupAuthenticatedPage(page, username = 'A11yUser') {
   await resetAppState(page, username);
   await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await page.waitForTimeout(300);
+  await page.waitForSelector('.add-list-form', { timeout: 10000 });
 }
 
 async function createList(page, listName) {

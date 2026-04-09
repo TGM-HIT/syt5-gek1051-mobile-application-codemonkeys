@@ -1,7 +1,11 @@
 import { test, expect } from '@playwright/test';
 
 async function setupSession(page, name = 'ShareUser') {
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  // Navigate to /login and wait for the form to render so the async
+  // checkSession() in the router guard has fully completed and can no
+  // longer overwrite localStorage.
+  await page.goto('/login', { waitUntil: 'domcontentloaded' });
+  await page.waitForSelector('#username', { timeout: 10000 });
 
   await page.evaluate((username) => {
     localStorage.clear();
@@ -34,8 +38,10 @@ async function setupSession(page, name = 'ShareUser') {
     });
   });
 
-  await page.reload({ waitUntil: 'domcontentloaded' });
-  await page.waitForTimeout(500);
+  // Fresh navigation — app reads auth_user from localStorage on init,
+  // finds a valid user, skips checkSession(), and renders ShoppingList.
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await page.waitForSelector('.add-list-form', { timeout: 10000 });
 }
 
 test.describe('Liste teilen', () => {
