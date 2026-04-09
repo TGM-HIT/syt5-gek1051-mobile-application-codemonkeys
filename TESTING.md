@@ -118,6 +118,57 @@ The E2E tests cover:
 - ✅ U10: Combined note + label persistence (5 tests)
 - ✅ Error handling
 
+## U15 Accessibility (A11y) - Sub-Issue 1: Audit & Scope
+
+This section defines the audit scope and acceptance checklist for U15 before implementation work starts.
+
+### Audit scope
+
+The following user-facing surfaces are part of the U15 baseline audit:
+
+- `frontend/src/views/LoginView.vue`
+- `frontend/src/views/RegisterView.vue`
+- `frontend/src/components/ShoppingList.vue`
+- `frontend/src/components/LabelFilterBar.vue`
+- `frontend/src/components/ThemeToggle.vue`
+- `frontend/src/components/SessionSetup.vue`
+- `frontend/src/components/ShoppingList.css`
+- `frontend/src/assets/base.css`
+
+### Core user flows to validate
+
+1. Login and registration (including error messages and password toggle)
+2. Create list and add item
+3. Toggle, delete and restore item
+4. Open/close confirm modal and share modal
+5. Search and label filter usage
+6. Logout and navigation redirects
+
+### Audit matrix (manual)
+
+1. Keyboard-only navigation in Chromium (no mouse)
+2. Screen reader smoke test with NVDA + Firefox on Windows
+3. Contrast and focus visibility check in Light and Dark mode
+
+### A11y checklist (must be testable)
+
+- Every interactive control has an accessible name (`label`, visible text, or `aria-label`)
+- Every form input has a correctly associated label
+- All actions are reachable via Tab/Shift+Tab and triggerable with keyboard
+- Focus order is logical and visible on all interactive controls
+- Dialogs expose dialog semantics and do not lose keyboard focus
+- Dynamic errors/status updates are announced via `role="alert"` or `aria-live`
+- Information is not color-only (status remains understandable without color perception)
+- Text and UI controls meet WCAG AA contrast targets
+
+### Done criteria for Sub-Issue 1
+
+Sub-Issue 1 is complete when:
+
+1. The full checklist above is executed for all scoped surfaces.
+2. Findings are documented as concrete implementation tasks (Sub-Issues 2+).
+3. Blocking findings are prioritized before final U15 acceptance.
+
 ## Test Enhancements Added
 
 ### Auth Unit Tests (useAuth.test.js)
