@@ -14,7 +14,14 @@ import LabelFilterBar from '@/components/LabelFilterBar.vue';
 import ThemeToggle from '@/components/ThemeToggle.vue';
 
 const router = useRouter();
-const { currentUser, logout: authLogout } = useAuth();
+const {
+  currentUser,
+  authLoading: authLoadingState,
+  authError,
+  clearError: clearAuthError,
+  changePassword,
+  logout: authLogout,
+} = useAuth();
 
 async function handleLogout() {
   await authLogout();
@@ -204,9 +211,24 @@ const joinMessageRole = computed(() => (joinMessage.value.type === 'error' ? 'al
 const joinMessageLive = computed(() =>
   joinMessage.value.type === 'error' ? 'assertive' : 'polite',
 );
+const profileModal = ref({ show: false });
+const profileModalRef = ref(null);
+const profileCurrentPassword = ref('');
+const profileNewPassword = ref('');
+const profileConfirmPassword = ref('');
+const profileShowPasswords = ref(false);
+const profileLocalError = ref('');
+const profileSuccessMessage = ref('');
 const confirmModalRef = ref(null);
 const shareModalRef = ref(null);
 const modalFocusReturnTarget = ref(null);
+const isProfileSubmitDisabled = computed(
+  () =>
+    authLoadingState.value ||
+    !profileCurrentPassword.value ||
+    !profileNewPassword.value ||
+    !profileConfirmPassword.value,
+);
 
 const FOCUSABLE_SELECTOR = [
   'a[href]',
@@ -277,6 +299,53 @@ function trapModalFocus(event, container) {
     event.preventDefault();
     firstFocusable.focus();
   }
+}
+
+function resetProfileForm() {
+  profileCurrentPassword.value = '';
+  profileNewPassword.value = '';
+  profileConfirmPassword.value = '';
+  profileShowPasswords.value = false;
+  profileLocalError.value = '';
+  profileSuccessMessage.value = '';
+  clearAuthError();
+}
+
+function openProfileDialog() {
+  saveModalFocusTarget();
+  resetProfileForm();
+  profileModal.value = { show: true };
+}
+
+function closeProfileDialog() {
+  profileModal.value = { show: false };
+  resetProfileForm();
+  restoreModalFocusTarget();
+}
+
+async function submitPasswordChange() {
+  profileLocalError.value = '';
+  profileSuccessMessage.value = '';
+  clearAuthError();
+
+  if (profileNewPassword.value !== profileConfirmPassword.value) {
+    profileLocalError.value = 'Neue Passwörter stimmen nicht überein.';
+    return;
+  }
+
+  const result = await changePassword(profileCurrentPassword.value, profileNewPassword.value);
+  if (result.success) {
+    profileSuccessMessage.value = 'Passwort erfolgreich geändert.';
+    profileCurrentPassword.value = '';
+    profileNewPassword.value = '';
+    profileConfirmPassword.value = '';
+    profileShowPasswords.value = false;
+  }
+}
+
+async function handleProfileLogout() {
+  closeProfileDialog();
+  await handleLogout();
 }
 
 async function openShareDialog(list) {
@@ -366,6 +435,15 @@ function handleShareModalKeydown(event) {
     return;
   }
   trapModalFocus(event, shareModalRef.value);
+}
+
+function handleProfileModalKeydown(event) {
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    closeProfileDialog();
+    return;
+  }
+  trapModalFocus(event, profileModalRef.value);
 }
 
 function confirmPermanentDelete(listId) {
@@ -478,6 +556,15 @@ watch(
     }
   },
 );
+
+watch(
+  () => profileModal.value.show,
+  (isOpen) => {
+    if (isOpen) {
+      nextTick(() => focusFirstModalControl(profileModalRef.value));
+    }
+  },
+);
 </script>
 
 <template>
@@ -490,6 +577,15 @@ watch(
             👤 {{ currentUser.name }}
           </div>
           <ThemeToggle />
+          <button
+            type="button"
+            class="settings-btn"
+            @click="openProfileDialog"
+            title="Profil & Einstellungen"
+            aria-label="Profil und Einstellungen öffnen"
+          >
+            Profil
+          </button>
           <button
             type="button"
             class="logout-btn"
@@ -1165,6 +1261,107 @@ watch(
     </main>
 
     <!-- Conflict Notifications entfernt: Konflikte werden inline beim Artikel angezeigt -->
+
+    <!-- Profile Settings Modal -->
+    <div v-if="profileModal.show" class="modal-overlay" @click.self="closeProfileDialog">
+      <div
+        ref="profileModalRef"
+        class="modal profile-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="profile-modal-title"
+        aria-describedby="profile-modal-description"
+        tabindex="-1"
+        @keydown="handleProfileModalKeydown"
+      >
+        <div id="profile-modal-title" class="modal-title">Profil & Einstellungen</div>
+        <p id="profile-modal-description" class="modal-message">
+          Eingeloggt als <strong>{{ currentUser?.name }}</strong>
+        </p>
+
+        <form class="profile-form" @submit.prevent="submitPasswordChange">
+          <button
+            type="button"
+            class="profile-toggle-btn"
+            @click="profileShowPasswords = !profileShowPasswords"
+            :aria-label="profileShowPasswords ? 'Passwörter verbergen' : 'Passwörter anzeigen'"
+            :aria-pressed="profileShowPasswords"
+            aria-controls="profile-current-password profile-new-password profile-confirm-password"
+          >
+            {{ profileShowPasswords ? '🙈 Passwörter verbergen' : '👁️ Passwörter anzeigen' }}
+          </button>
+
+          <div class="profile-form-group">
+            <label for="profile-current-password">Aktuelles Passwort</label>
+            <input
+              id="profile-current-password"
+              v-model="profileCurrentPassword"
+              :type="profileShowPasswords ? 'text' : 'password'"
+              autocomplete="current-password"
+              :disabled="authLoadingState"
+              required
+            />
+          </div>
+
+          <div class="profile-form-group">
+            <label for="profile-new-password">Neues Passwort</label>
+            <input
+              id="profile-new-password"
+              v-model="profileNewPassword"
+              :type="profileShowPasswords ? 'text' : 'password'"
+              autocomplete="new-password"
+              :disabled="authLoadingState"
+              required
+            />
+          </div>
+
+          <div class="profile-form-group">
+            <label for="profile-confirm-password">Neues Passwort bestätigen</label>
+            <input
+              id="profile-confirm-password"
+              v-model="profileConfirmPassword"
+              :type="profileShowPasswords ? 'text' : 'password'"
+              autocomplete="new-password"
+              :disabled="authLoadingState"
+              required
+            />
+          </div>
+
+          <p
+            v-if="profileLocalError"
+            id="profile-password-error"
+            class="profile-error"
+            role="alert"
+            aria-live="assertive"
+          >
+            {{ profileLocalError }}
+          </p>
+          <p
+            v-else-if="authError"
+            id="profile-password-error"
+            class="profile-error"
+            role="alert"
+            aria-live="assertive"
+          >
+            {{ authError }}
+          </p>
+
+          <p v-if="profileSuccessMessage" class="profile-success" role="status" aria-live="polite">
+            {{ profileSuccessMessage }}
+          </p>
+
+          <div class="modal-btns profile-modal-actions">
+            <button type="button" class="modal-btn-cancel" @click="closeProfileDialog">Schließen</button>
+            <button type="submit" class="modal-btn-confirm" :disabled="isProfileSubmitDisabled">
+              <span v-if="authLoadingState">Speichern…</span>
+              <span v-else>Passwort ändern</span>
+            </button>
+          </div>
+        </form>
+
+        <button type="button" class="profile-logout-btn" @click="handleProfileLogout">Abmelden</button>
+      </div>
+    </div>
 
     <!-- Custom Confirm Modal -->
     <div v-if="confirmModal.show" class="modal-overlay" @click.self="closeConfirm">

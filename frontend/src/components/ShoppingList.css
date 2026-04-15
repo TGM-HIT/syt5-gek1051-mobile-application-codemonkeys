@@ -40,6 +40,7 @@
 
 /* Keyboard focus styles */
 :where(
+  .settings-btn,
   .logout-btn,
   .pwa-install-btn,
   .notif-enable-btn,
@@ -68,7 +69,9 @@
   .cbtn-keep-remote,
   .modal-btn-cancel,
   .modal-btn-confirm,
-  .share-copy-btn
+  .share-copy-btn,
+  .profile-toggle-btn,
+  .profile-logout-btn
 ):focus-visible {
   outline: 3px solid var(--color-primary);
   outline-offset: 2px;
@@ -110,6 +113,23 @@
 
 .logout-btn:hover {
   background: rgba(239, 68, 68, 0.25);
+}
+
+.settings-btn {
+  padding: 0.4rem 0.875rem;
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-header-text);
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.settings-btn:hover {
+  background: rgba(59, 130, 246, 0.28);
 }
 
 .status-indicator {
@@ -989,6 +1009,11 @@ h1 {
   background: var(--color-primary-hover);
 }
 
+.modal-btn-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .modal-btn-danger {
   background: var(--color-error);
 }
@@ -1095,6 +1120,98 @@ h1 {
 /* Share modal */
 .share-modal {
   text-align: center;
+}
+
+.profile-modal {
+  max-width: 460px;
+}
+
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.profile-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.profile-form-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.profile-form-group input {
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  padding: 0.55rem 0.7rem;
+  font-size: 0.9rem;
+}
+
+.profile-form-group input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.profile-toggle-btn {
+  align-self: flex-start;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  color: var(--color-text);
+  padding: 0.35rem 0.6rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.profile-toggle-btn:hover {
+  background: var(--color-surface-hover);
+}
+
+.profile-error {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.45rem 0.65rem;
+}
+
+.profile-success {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  border: 1px solid var(--color-success);
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.45rem 0.65rem;
+}
+
+.profile-modal-actions {
+  margin-top: 0.15rem;
+}
+
+.profile-logout-btn {
+  align-self: flex-start;
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  border-radius: var(--radius-md);
+  background: rgba(239, 68, 68, 0.12);
+  color: var(--color-error);
+  padding: 0.45rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.profile-logout-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
 }
 
 .share-code-display {

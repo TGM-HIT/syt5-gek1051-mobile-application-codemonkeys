@@ -146,6 +146,75 @@ describe('useAuth – logout', () => {
   });
 });
 
+describe('useAuth – changePassword', () => {
+  it('ändert das Passwort bei gültigen Eingaben', async () => {
+    global.fetch
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ ok: true }) })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          _id: 'org.couchdb.user:testuser',
+          _rev: '1-abc',
+          name: 'testuser',
+          roles: [],
+          type: 'user',
+          derived_key: 'old-hash',
+        }),
+      })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ ok: true }) });
+
+    const { changePassword, currentUser, authError } = useAuth();
+    currentUser.value = { name: 'testuser', roles: [] };
+
+    const result = await changePassword('altespasswort', 'neuespasswort');
+
+    expect(result.success).toBe(true);
+    expect(authError.value).toBeNull();
+    expect(global.fetch).toHaveBeenCalledTimes(3);
+
+    const updateCall = global.fetch.mock.calls[2];
+    expect(updateCall[0]).toContain('/_users/org.couchdb.user%3Atestuser');
+
+    const payload = JSON.parse(updateCall[1].body);
+    expect(payload.password).toBe('neuespasswort');
+    expect(payload._rev).toBe('1-abc');
+    expect(payload.derived_key).toBeUndefined();
+  });
+
+  it('gibt Fehler zurück wenn Nutzer nicht eingeloggt ist', async () => {
+    const { changePassword, authError } = useAuth();
+    const result = await changePassword('altespasswort', 'neuespasswort');
+
+    expect(result.success).toBe(false);
+    expect(authError.value).toContain('eingeloggt');
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it('gibt Fehler zurück bei falschem aktuellem Passwort', async () => {
+    global.fetch.mockResolvedValueOnce({ ok: false, json: async () => ({}) });
+
+    const { changePassword, currentUser, authError } = useAuth();
+    currentUser.value = { name: 'testuser', roles: [] };
+
+    const result = await changePassword('falsch', 'neuespasswort');
+
+    expect(result.success).toBe(false);
+    expect(authError.value).toContain('Aktuelles Passwort');
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('gibt Fehler zurück bei zu kurzem neuem Passwort', async () => {
+    const { changePassword, currentUser, authError } = useAuth();
+    currentUser.value = { name: 'testuser', roles: [] };
+
+    const result = await changePassword('altespasswort', '123');
+
+    expect(result.success).toBe(false);
+    expect(authError.value).toContain('mindestens 6 Zeichen');
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+});
+
 describe('useAuth – checkSession', () => {
   it('gibt true zurück und setzt User wenn Session gültig', async () => {
     global.fetch.mockResolvedValueOnce({

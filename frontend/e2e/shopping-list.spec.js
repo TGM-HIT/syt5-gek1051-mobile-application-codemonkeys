@@ -430,3 +430,36 @@ test.describe('U6: Abmelden', () => {
     await expect(page).toHaveURL('/login');
   });
 });
+
+test.describe('U9: Profil & Einstellungen', () => {
+  test('Profil-Dialog öffnet sich mit Passwort-Feldern', async ({ page }) => {
+    await setupSession(page, 'ProfilUser');
+    await page.locator('.settings-btn').click();
+
+    await expect(page.locator('.profile-modal')).toBeVisible();
+    await expect(page.locator('#profile-current-password')).toBeVisible();
+    await expect(page.locator('#profile-new-password')).toBeVisible();
+    await expect(page.locator('#profile-confirm-password')).toBeVisible();
+    await expect(page.locator('.profile-modal')).toContainText('ProfilUser');
+  });
+
+  test('zeigt Validierungsfehler bei nicht übereinstimmenden Passwörtern', async ({ page }) => {
+    await setupSession(page);
+    await page.locator('.settings-btn').click();
+
+    await page.fill('#profile-current-password', 'altespasswort');
+    await page.fill('#profile-new-password', 'neuespasswort123');
+    await page.fill('#profile-confirm-password', 'anderespasswort123');
+    await page.locator('.profile-form button[type="submit"]').click();
+
+    await expect(page.locator('.profile-error')).toContainText('stimmen nicht überein');
+  });
+
+  test('Abmelden aus Profil-Dialog leitet auf Login-Seite weiter', async ({ page }) => {
+    await setupSession(page);
+    await page.locator('.settings-btn').click();
+    await page.locator('.profile-logout-btn').click();
+
+    await expect(page).toHaveURL('/login');
+  });
+});
