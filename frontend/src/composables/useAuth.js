@@ -124,6 +124,100 @@ export function useAuth() {
   }
 
   /**
+   * Ändert das Passwort des aktuell eingeloggten Nutzers.
+   * Prüft zuerst das aktuelle Passwort und aktualisiert dann das _users Dokument.
+   */
+  async function changePassword(currentPassword, newPassword) {
+    if (!currentUser.value?.name) {
+      authError.value = 'Du musst eingeloggt sein, um dein Passwort zu ändern.';
+      return { success: false };
+    }
+    if (!currentPassword || !newPassword) {
+      authError.value = 'Aktuelles und neues Passwort sind erforderlich.';
+      return { success: false };
+    }
+    if (newPassword.length < 6) {
+      authError.value = 'Passwort muss mindestens 6 Zeichen lang sein.';
+      return { success: false };
+    }
+    if (currentPassword === newPassword) {
+      authError.value = 'Das neue Passwort muss sich vom alten unterscheiden.';
+      return { success: false };
+    }
+
+    authLoading.value = true;
+    authError.value = null;
+
+    const username = currentUser.value.name.trim().toLowerCase();
+    const userDocId = `org.couchdb.user:${username}`;
+    const userDocUrl = `${COUCHDB_BASE}/_users/${encodeURIComponent(userDocId)}`;
+
+    try {
+      const verifyResponse = await fetch(`${COUCHDB_BASE}/_session`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ name: username, password: currentPassword }),
+      });
+
+      if (!verifyResponse.ok) {
+        authError.value = 'Aktuelles Passwort ist falsch.';
+        return { success: false };
+      }
+
+      const getUserResponse = await fetch(userDocUrl, {
+        headers: {
+          Authorization: `Basic ${btoa(`${COUCHDB_USER}:${COUCHDB_PASSWORD}`)}`,
+        },
+      });
+
+      if (!getUserResponse.ok) {
+        const body = await getUserResponse.json();
+        authError.value = body.reason || 'Benutzerprofil konnte nicht geladen werden.';
+        return { success: false };
+      }
+
+      const userDoc = await getUserResponse.json();
+      const safeUserDoc = { ...userDoc };
+      delete safeUserDoc.derived_key;
+      delete safeUserDoc.iterations;
+      delete safeUserDoc.password_scheme;
+      delete safeUserDoc.salt;
+      delete safeUserDoc.password_sha;
+
+      const updateResponse = await fetch(userDocUrl, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Basic ${btoa(`${COUCHDB_USER}:${COUCHDB_PASSWORD}`)}`,
+        },
+        body: JSON.stringify({
+          ...safeUserDoc,
+          _id: userDoc._id,
+          _rev: userDoc._rev,
+          name: username,
+          roles: Array.isArray(userDoc.roles) ? userDoc.roles : [],
+          type: userDoc.type || 'user',
+          password: newPassword,
+        }),
+      });
+
+      if (!updateResponse.ok) {
+        const body = await updateResponse.json();
+        authError.value = body.reason || 'Passwort konnte nicht geändert werden.';
+        return { success: false };
+      }
+
+      return { success: true };
+    } catch {
+      authError.value = 'Verbindung zum Server fehlgeschlagen.';
+      return { success: false };
+    } finally {
+      authLoading.value = false;
+    }
+  }
+
+  /**
    * Prüft ob die aktuelle Session noch gültig ist (z.B. nach Page-Refresh).
    * Gibt true zurück wenn der Nutzer noch eingeloggt ist.
    */
@@ -161,6 +255,7 @@ export function useAuth() {
     authLoading,
     register,
     login,
+    changePassword,
     logout,
     checkSession,
     clearError,
