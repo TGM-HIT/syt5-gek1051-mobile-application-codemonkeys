@@ -116,7 +116,34 @@ The E2E tests cover:
 - ✅ U10: Label assignment and color dot display (9 tests)
 - ✅ U10: LabelFilterBar visibility and filtering (4 tests)
 - ✅ U10: Combined note + label persistence (5 tests)
+- ✅ U9: Profil-Dialog mit Passwortfeldern und lokaler Validierung
+- ✅ U9: Logout über Profil-Einstellungen
 - ✅ Error handling
+
+## U9 User Profil & Einstellungen - Akzeptanzkriterien
+
+Diese Kriterien definieren die Abnahme für U9 (**Passwort ändern** und **Abmelden**).
+
+### Scope
+
+- `frontend/src/components/ShoppingList.vue` (Profil- und Einstellungsdialog)
+- `frontend/src/composables/useAuth.js` (Passwortänderung + Session-Logout)
+
+### Akzeptanzkriterien (testbar)
+
+1. Ein eingeloggter Benutzer kann den Dialog **Profil & Einstellungen** öffnen.
+2. Der Dialog zeigt den aktuellen Benutzernamen sowie Felder für aktuelles Passwort, neues Passwort und Bestätigung.
+3. Die Aktion **Passwort ändern** ist erst möglich, wenn alle Pflichtfelder ausgefüllt sind.
+4. Stimmen neues Passwort und Bestätigung nicht überein, wird keine Passwortänderung ausgeführt und eine klare Fehlermeldung angezeigt.
+5. Ist das aktuelle Passwort falsch, wird die Änderung abgelehnt und eine klare Fehlermeldung angezeigt.
+6. Bei gültigen Eingaben wird das Passwort in CouchDB erfolgreich aktualisiert und eine Erfolgsmeldung angezeigt.
+7. Der Benutzer kann sich über **Abmelden** (Header oder Profil-Dialog) ausloggen und wird auf `/login` weitergeleitet.
+8. Der Profil-Dialog ist tastaturbedienbar (Escape schließt, Tab bleibt im Dialog).
+
+### Done-Kriterien für U9
+
+1. Unit-Tests decken den `changePassword`-Flow (Erfolg + Fehlpfade) im Auth-Composable ab.
+2. E2E-Tests decken Profil-Dialog, lokale Passwort-Validierung und Logout aus den Einstellungen ab.
 
 ## U15 Accessibility (A11y) - Sub-Issue 1: Audit & Scope
 
