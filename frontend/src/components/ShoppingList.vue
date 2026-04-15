@@ -1351,7 +1351,9 @@ watch(
           </p>
 
           <div class="modal-btns profile-modal-actions">
-            <button type="button" class="modal-btn-cancel" @click="closeProfileDialog">Schließen</button>
+            <button type="button" class="modal-btn-cancel" @click="closeProfileDialog">
+              Schließen
+            </button>
             <button type="submit" class="modal-btn-confirm" :disabled="isProfileSubmitDisabled">
               <span v-if="authLoadingState">Speichern…</span>
               <span v-else>Passwort ändern</span>
@@ -1359,7 +1361,9 @@ watch(
           </div>
         </form>
 
-        <button type="button" class="profile-logout-btn" @click="handleProfileLogout">Abmelden</button>
+        <button type="button" class="profile-logout-btn" @click="handleProfileLogout">
+          Abmelden
+        </button>
       </div>
     </div>
 
