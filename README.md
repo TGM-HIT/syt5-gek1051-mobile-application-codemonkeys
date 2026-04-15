@@ -2,7 +2,7 @@
 
 ![CI](https://github.com/TGM-HIT/syt5-gek1051-mobile-application-codemonkeys/actions/workflows/ci.yml/badge.svg)
 ![Coverage](https://img.shields.io/badge/coverage-85%25-brightgreen)
-![Tests](https://img.shields.io/badge/tests-850%2B-blue)
+![Tests](https://img.shields.io/badge/tests-893%2B-blue)
 ![E2E](https://img.shields.io/badge/E2E-Pending-blue)
 
 ## Projektbeschreibung
