@@ -4,6 +4,7 @@ const COUCHDB_URL = import.meta.env.VITE_COUCHDB_URL || 'http://localhost:5984/e
 const COUCHDB_BASE = COUCHDB_URL.replace(/\/[^/]+$/, '');
 const COUCHDB_USER = import.meta.env.VITE_COUCHDB_USER || 'admin';
 const COUCHDB_PASSWORD = import.meta.env.VITE_COUCHDB_PASSWORD || 'password';
+const ADMIN_AUTH_HEADER = `Basic ${btoa(`${COUCHDB_USER}:${COUCHDB_PASSWORD}`)}`;
 
 const SESSION_KEY = 'auth_user';
 
@@ -36,7 +37,7 @@ export function useAuth() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Basic ${btoa(`${COUCHDB_USER}:${COUCHDB_PASSWORD}`)}`,
+          Authorization: ADMIN_AUTH_HEADER,
         },
         body: JSON.stringify({
           _id: `org.couchdb.user:${trimmedUsername}`,
@@ -166,9 +167,7 @@ export function useAuth() {
       }
 
       const getUserResponse = await fetch(userDocUrl, {
-        headers: {
-          Authorization: `Basic ${btoa(`${COUCHDB_USER}:${COUCHDB_PASSWORD}`)}`,
-        },
+        headers: { Authorization: ADMIN_AUTH_HEADER },
       });
 
       if (!getUserResponse.ok) {
@@ -189,7 +188,7 @@ export function useAuth() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Basic ${btoa(`${COUCHDB_USER}:${COUCHDB_PASSWORD}`)}`,
+          Authorization: ADMIN_AUTH_HEADER,
         },
         body: JSON.stringify({
           ...safeUserDoc,

@@ -174,6 +174,9 @@ describe('useAuth – changePassword', () => {
 
     const updateCall = global.fetch.mock.calls[2];
     expect(updateCall[0]).toContain('/_users/org.couchdb.user%3Atestuser');
+    const expectedAdminAuth = `Basic ${btoa('admin:password')}`;
+    expect(global.fetch.mock.calls[1][1].headers.Authorization).toBe(expectedAdminAuth);
+    expect(updateCall[1].headers.Authorization).toBe(expectedAdminAuth);
 
     const payload = JSON.parse(updateCall[1].body);
     expect(payload.password).toBe('neuespasswort');
