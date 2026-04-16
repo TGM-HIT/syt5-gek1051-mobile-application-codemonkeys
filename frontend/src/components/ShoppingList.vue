@@ -61,6 +61,8 @@ const {
   dismissNotification,
   generateShareCode,
   joinListByCode,
+  exportBackup,
+  importBackup,
 } = useShoppingList();
 
 // ── Benachrichtigungsberechtigung ──
@@ -377,6 +379,26 @@ async function copyShareCode() {
   if (shareModal.value.code) {
     await navigator.clipboard.writeText(shareModal.value.code);
   }
+}
+
+// ── Backup Import ──
+const importError = ref('');
+const importSuccess = ref('');
+
+async function handleImportFile(event) {
+  importError.value = '';
+  importSuccess.value = '';
+  const file = event.target.files?.[0];
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const payload = JSON.parse(text);
+    await importBackup(payload);
+    importSuccess.value = `„${payload.list.name}" wurde wiederhergestellt.`;
+  } catch {
+    importError.value = 'Backup konnte nicht geladen werden. Ist die Datei gültig?';
+  }
+  event.target.value = '';
 }
 
 async function submitJoinCode() {
@@ -902,6 +924,15 @@ watch(
                 </button>
                 <button
                   type="button"
+                  class="backup-list-btn"
+                  title="Backup erstellen"
+                  @click.stop="exportBackup(list._id)"
+                  :aria-label="`Backup von Liste ${list.name} erstellen`"
+                >
+                  💾
+                </button>
+                <button
+                  type="button"
                   class="delete-list-btn"
                   title="Liste löschen"
                   @click="confirmDeleteList(list)"
@@ -1362,9 +1393,17 @@ watch(
           </div>
         </form>
 
-        <button type="button" class="profile-logout-btn" @click="handleProfileLogout">
-          Abmelden
-        </button>
+        <div class="profile-actions-row">
+          <label class="profile-backup-btn" title="Backup hochladen und Liste wiederherstellen">
+            📂 Backup laden
+            <input type="file" accept=".json" style="display:none" @change="handleImportFile" />
+          </label>
+          <button type="button" class="profile-logout-btn" @click="handleProfileLogout">
+            Abmelden
+          </button>
+        </div>
+        <p v-if="importSuccess" class="profile-success" role="status" aria-live="polite">{{ importSuccess }}</p>
+        <p v-if="importError" class="profile-error" role="alert">{{ importError }}</p>
       </div>
     </div>
 

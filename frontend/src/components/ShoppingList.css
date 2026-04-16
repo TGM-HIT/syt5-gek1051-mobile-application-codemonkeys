@@ -103,6 +103,7 @@
   .tab-btn,
   .clear-changes-btn,
   .share-list-btn,
+  .backup-list-btn,
   .delete-list-btn,
   .edit-list-btn,
   .edit-item-btn,
@@ -124,6 +125,7 @@
   .modal-btn-confirm,
   .share-copy-btn,
   .profile-toggle-btn,
+  .profile-backup-btn,
   .profile-logout-btn
 ):focus-visible {
   outline: 3px solid var(--color-primary);
@@ -1205,7 +1207,8 @@ h1 {
 }
 
 /* Share button on list header */
-.share-list-btn {
+.share-list-btn,
+.backup-list-btn {
   background: none;
   border: none;
   cursor: pointer;
@@ -1218,7 +1221,8 @@ h1 {
     background 0.15s;
 }
 
-.share-list-btn:hover {
+.share-list-btn:hover,
+.backup-list-btn:hover {
   opacity: 1;
   background: rgba(255, 255, 255, 0.2);
 }
@@ -1304,8 +1308,31 @@ h1 {
   margin-top: 0.15rem;
 }
 
+.profile-actions-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.profile-backup-btn {
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  border-radius: var(--radius-md);
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--color-primary);
+  padding: 0.45rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.profile-backup-btn:hover {
+  background: rgba(99, 102, 241, 0.2);
+}
+
 .profile-logout-btn {
-  align-self: flex-start;
   border: 1px solid rgba(239, 68, 68, 0.45);
   border-radius: var(--radius-md);
   background: rgba(239, 68, 68, 0.12);
@@ -1314,6 +1341,7 @@ h1 {
   font-size: 0.85rem;
   font-weight: 700;
   cursor: pointer;
+  transition: background 0.2s;
 }
 
 .profile-logout-btn:hover {
