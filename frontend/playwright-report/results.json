@@ -1,7 +1,7 @@
 {
   "config": {
-    "configFile": "C:\\Users\\heral\\IdeaProjects\\syt5-gek1051-mobile-application-codemonkeys\\frontend\\playwright.config.js",
-    "rootDir": "C:/Users/heral/IdeaProjects/syt5-gek1051-mobile-application-codemonkeys/frontend/e2e",
+    "configFile": "C:\\Users\\lukas\\OneDrive - tgm - Die Schule der Technik\\5 Klasse\\SYT\\Einkaufsliste\\second\\frontend\\playwright.config.js",
+    "rootDir": "C:/Users/lukas/OneDrive - tgm - Die Schule der Technik/5 Klasse/SYT/Einkaufsliste/second/frontend/e2e",
     "forbidOnly": false,
     "fullyParallel": true,
     "globalSetup": null,
@@ -11,28 +11,33 @@
     "grepInvert": null,
     "maxFailures": 0,
     "metadata": {
-      "actualWorkers": 4
+      "actualWorkers": 8
     },
     "preserveOutput": "always",
     "projects": [
       {
-        "outputDir": "C:/Users/heral/IdeaProjects/syt5-gek1051-mobile-application-codemonkeys/frontend/test-results",
+        "outputDir": "C:/Users/lukas/OneDrive - tgm - Die Schule der Technik/5 Klasse/SYT/Einkaufsliste/second/frontend/test-results",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 4
+          "actualWorkers": 8
         },
         "id": "chromium",
         "name": "chromium",
-        "testDir": "C:/Users/heral/IdeaProjects/syt5-gek1051-mobile-application-codemonkeys/frontend/e2e",
+        "testDir": "C:/Users/lukas/OneDrive - tgm - Die Schule der Technik/5 Klasse/SYT/Einkaufsliste/second/frontend/e2e",
         "testIgnore": [],
-        "testMatch": ["**/*.@(spec|test).?(c|m)[jt]s?(x)"],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
         "timeout": 30000
       }
     ],
     "quiet": false,
     "reporter": [
-      ["html", null],
+      [
+        "html",
+        null
+      ],
       [
         "json",
         {
@@ -50,7 +55,7 @@
     "updateSnapshots": "missing",
     "updateSourceMethod": "patch",
     "version": "1.58.2",
-    "workers": 4,
+    "workers": 8,
     "webServer": {
       "command": "npm run dev",
       "url": "http://localhost:5173",
@@ -60,20 +65,20 @@
   },
   "suites": [
     {
-      "title": "session-setup.spec.js",
-      "file": "session-setup.spec.js",
+      "title": "a11y.spec.js",
+      "file": "a11y.spec.js",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "Session Setup",
-          "file": "session-setup.spec.js",
-          "line": 3,
+          "title": "U15: A11y – Auth Views",
+          "file": "a11y.spec.js",
+          "line": 70,
           "column": 6,
           "specs": [
             {
-              "title": "zeigt das Session-Modal beim ersten Besuch",
+              "title": "Login controls are reachable by role and accessible name",
               "ok": true,
               "tags": [],
               "tests": [
@@ -88,12 +93,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2507,
+                      "duration": 3062,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-13T11:43:48.416Z",
+                      "startTime": "2026-04-10T10:52:04.679Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -101,13 +106,13 @@
                   "status": "expected"
                 }
               ],
-              "id": "1185c1a9c85eb91e6eb4-8b6cb2173ba4a489e7ca",
-              "file": "session-setup.spec.js",
-              "line": 10,
+              "id": "2629bfe6b43df460208f-ee477b0229617bcacd66",
+              "file": "a11y.spec.js",
+              "line": 71,
               "column": 3
             },
             {
-              "title": "Button ist deaktiviert solange kein Name eingegeben ist",
+              "title": "Register validation feedback is exposed as alert",
               "ok": true,
               "tags": [],
               "tests": [
@@ -122,12 +127,12 @@
                       "workerIndex": 1,
                       "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 2475,
+                      "duration": 3231,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-13T11:43:48.462Z",
+                      "startTime": "2026-04-10T10:52:04.708Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -135,13 +140,21 @@
                   "status": "expected"
                 }
               ],
-              "id": "1185c1a9c85eb91e6eb4-06301d0fec63c4907351",
-              "file": "session-setup.spec.js",
-              "line": 16,
+              "id": "2629bfe6b43df460208f-85b217ca73ecca5bc0d5",
+              "file": "a11y.spec.js",
+              "line": 85,
               "column": 3
-            },
+            }
+          ]
+        },
+        {
+          "title": "U15: A11y – Shopping List Views",
+          "file": "a11y.spec.js",
+          "line": 97,
+          "column": 6,
+          "specs": [
             {
-              "title": "öffnet die App nach Namenseingabe",
+              "title": "Header and list controls expose semantic roles/names",
               "ok": true,
               "tags": [],
               "tests": [
@@ -156,12 +169,12 @@
                       "workerIndex": 2,
                       "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 2971,
+                      "duration": 2821,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-13T11:43:48.396Z",
+                      "startTime": "2026-04-10T10:52:04.652Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -169,13 +182,13 @@
                   "status": "expected"
                 }
               ],
-              "id": "1185c1a9c85eb91e6eb4-6174a69eb092caa8029a",
-              "file": "session-setup.spec.js",
-              "line": 22,
+              "id": "2629bfe6b43df460208f-2814cc1fa7cee06b678b",
+              "file": "a11y.spec.js",
+              "line": 98,
               "column": 3
             },
             {
-              "title": "akzeptiert Enter zum Bestätigen",
+              "title": "Confirm dialog traps focus and restores focus on close",
               "ok": true,
               "tags": [],
               "tests": [
@@ -190,12 +203,12 @@
                       "workerIndex": 3,
                       "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 2752,
+                      "duration": 3051,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-13T11:43:48.445Z",
+                      "startTime": "2026-04-10T10:52:04.636Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -203,13 +216,234 @@
                   "status": "expected"
                 }
               ],
-              "id": "1185c1a9c85eb91e6eb4-72dc9ccec294d846b204",
-              "file": "session-setup.spec.js",
-              "line": 30,
+              "id": "2629bfe6b43df460208f-f03b5f9c0671c4d18d8b",
+              "file": "a11y.spec.js",
+              "line": 112,
               "column": 3
             },
             {
-              "title": "trimmt Whitespace vom Namen",
+              "title": "Share dialog closes with Escape",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 3515,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:04.709Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2629bfe6b43df460208f-3e66b0cf6af4342f2b46",
+              "file": "a11y.spec.js",
+              "line": 139,
+              "column": 3
+            },
+            {
+              "title": "Item keyboard flow keeps semantic names and non-color label cue",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 4034,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:04.738Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2629bfe6b43df460208f-4fd551652ce54c6b2e8d",
+              "file": "a11y.spec.js",
+              "line": 156,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "item-details.spec.js",
+      "file": "item-details.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "U10: Detail-Panel öffnen und schließen",
+          "file": "item-details.spec.js",
+          "line": 110,
+          "column": 6,
+          "specs": [
+            {
+              "title": "⋯-Button ist für jeden Artikel sichtbar",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 6,
+                      "status": "passed",
+                      "duration": 3866,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:04.695Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "964904a7b7e8706419dd-0b9a311c099a67565fe5",
+              "file": "item-details.spec.js",
+              "line": 115,
+              "column": 3
+            },
+            {
+              "title": "Detail-Panel ist standardmäßig geschlossen",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 7,
+                      "status": "passed",
+                      "duration": 3815,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:04.695Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "964904a7b7e8706419dd-3229e3c37be93f9c0f81",
+              "file": "item-details.spec.js",
+              "line": 120,
+              "column": 3
+            },
+            {
+              "title": "Klick auf ⋯ öffnet das Detail-Panel",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 3642,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:07.912Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "964904a7b7e8706419dd-3f664d618b2e309f4725",
+              "file": "item-details.spec.js",
+              "line": 125,
+              "column": 3
+            },
+            {
+              "title": "Detail-Panel zeigt Notiz-Textarea",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 3685,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:08.135Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "964904a7b7e8706419dd-ae53dfa66019a779ca61",
+              "file": "item-details.spec.js",
+              "line": 131,
+              "column": 3
+            },
+            {
+              "title": "Detail-Panel zeigt Farb-Picker mit 7 Optionen",
               "ok": true,
               "tags": [],
               "tests": [
@@ -224,12 +458,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 3743,
+                      "duration": 4976,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-13T11:43:51.602Z",
+                      "startTime": "2026-04-10T10:52:08.259Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -237,47 +471,13 @@
                   "status": "expected"
                 }
               ],
-              "id": "1185c1a9c85eb91e6eb4-b8798c2d0e9ddbc9c096",
-              "file": "session-setup.spec.js",
-              "line": 36,
+              "id": "964904a7b7e8706419dd-4c3e18e5f9d27089536b",
+              "file": "item-details.spec.js",
+              "line": 137,
               "column": 3
             },
             {
-              "title": "Session bleibt nach Reload erhalten",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
-                      "status": "passed",
-                      "duration": 3590,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-03-13T11:43:51.825Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "1185c1a9c85eb91e6eb4-6f6db3d6387975d86a2e",
-              "file": "session-setup.spec.js",
-              "line": 43,
-              "column": 3
-            },
-            {
-              "title": "hält maxlength von 30 Zeichen ein",
+              "title": "Detail-Panel zeigt Speichern- und Abbrechen-Button",
               "ok": true,
               "tags": [],
               "tests": [
@@ -292,12 +492,12 @@
                       "workerIndex": 1,
                       "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 3729,
+                      "duration": 3676,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-13T11:43:51.920Z",
+                      "startTime": "2026-04-10T10:52:08.323Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -305,9 +505,1536 @@
                   "status": "expected"
                 }
               ],
-              "id": "1185c1a9c85eb91e6eb4-0e2a71b47365e99cecbb",
+              "id": "964904a7b7e8706419dd-7d9490a0c75e6022f796",
+              "file": "item-details.spec.js",
+              "line": 145,
+              "column": 3
+            },
+            {
+              "title": "Abbrechen schließt das Panel ohne Änderungen",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 4540,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:08.722Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "964904a7b7e8706419dd-b558931029f095b7648d",
+              "file": "item-details.spec.js",
+              "line": 152,
+              "column": 3
+            },
+            {
+              "title": "Zweimaliger Klick auf ⋯ schließt das Panel",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 7,
+                      "status": "passed",
+                      "duration": 3513,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:08.828Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "964904a7b7e8706419dd-6ffc342a64a40ff6f998",
+              "file": "item-details.spec.js",
+              "line": 160,
+              "column": 3
+            },
+            {
+              "title": "⋯-Button hat active-Klasse wenn Panel offen ist",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 6,
+                      "status": "passed",
+                      "duration": 3258,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:08.895Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "964904a7b7e8706419dd-32d911dec7dfef463ad9",
+              "file": "item-details.spec.js",
+              "line": 168,
+              "column": 3
+            },
+            {
+              "title": "⋯-Button hat keine active-Klasse wenn Panel geschlossen",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 3780,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:09.228Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "964904a7b7e8706419dd-5f2bdfd84b6a934b36ea",
+              "file": "item-details.spec.js",
+              "line": 175,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "U10: Notizen hinzufügen und anzeigen",
+          "file": "item-details.spec.js",
+          "line": 184,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Notiz kann eingegeben werden",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 3220,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:11.651Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "964904a7b7e8706419dd-a3840df3693a8dc80114",
+              "file": "item-details.spec.js",
+              "line": 189,
+              "column": 3
+            },
+            {
+              "title": "Notiz wird nach Speichern in der Vorschau angezeigt",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 4140,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:11.876Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "964904a7b7e8706419dd-fab72f43a781c4b8972d",
+              "file": "item-details.spec.js",
+              "line": 196,
+              "column": 3
+            },
+            {
+              "title": "📝-Icon erscheint nach dem Speichern einer Notiz",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 3960,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:12.042Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "964904a7b7e8706419dd-fc8f2398d8aed2d53830",
+              "file": "item-details.spec.js",
+              "line": 207,
+              "column": 3
+            },
+            {
+              "title": "kein 📝-Icon wenn keine Notiz vorhanden",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 6,
+                      "status": "passed",
+                      "duration": 3725,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:12.210Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "964904a7b7e8706419dd-aaa8abb7f2075b67b1c2",
+              "file": "item-details.spec.js",
+              "line": 217,
+              "column": 3
+            },
+            {
+              "title": "Notiz wird beim erneuten Öffnen des Panels angezeigt",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 7,
+                      "status": "passed",
+                      "duration": 4892,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:12.401Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "964904a7b7e8706419dd-fe9de1695fb25c4d7b28",
+              "file": "item-details.spec.js",
+              "line": 222,
+              "column": 3
+            },
+            {
+              "title": "Notiz kann gelöscht werden (leeres Textfeld speichern)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 8351,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:13.045Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "964904a7b7e8706419dd-0221130976242d347b95",
+              "file": "item-details.spec.js",
+              "line": 234,
+              "column": 3
+            },
+            {
+              "title": "Notiz-Textarea ist mehrzeilig (rows=2)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4811,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:13.304Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "964904a7b7e8706419dd-d364cb043d943e69f405",
+              "file": "item-details.spec.js",
+              "line": 251,
+              "column": 3
+            },
+            {
+              "title": "Notiz-Textarea hat Placeholder-Text",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 4228,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:13.305Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "964904a7b7e8706419dd-a15ce9ee09da6ac988d8",
+              "file": "item-details.spec.js",
+              "line": 258,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "U10: Labels und Farben vergeben",
+          "file": "item-details.spec.js",
+          "line": 268,
+          "column": 6,
+          "specs": [
+            {
+              "title": "kein Farb-Dot sichtbar wenn kein Label vergeben",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 2743,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:14.941Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "964904a7b7e8706419dd-c2b1a98781f244fb7163",
+              "file": "item-details.spec.js",
+              "line": 273,
+              "column": 3
+            },
+            {
+              "title": "Farb-Picker enthält \"Kein Label\" Button",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 6,
+                      "status": "passed",
+                      "duration": 3778,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:15.980Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "964904a7b7e8706419dd-4cd93ac22544ac6b826e",
+              "file": "item-details.spec.js",
+              "line": 278,
+              "column": 3
+            },
+            {
+              "title": "Farb-Picker enthält 6 Farb-Buttons",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 2997,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:16.050Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "964904a7b7e8706419dd-38814f07399225e2d077",
+              "file": "item-details.spec.js",
+              "line": 284,
+              "column": 3
+            },
+            {
+              "title": "Farbe kann ausgewählt werden",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 5182,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:16.096Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "964904a7b7e8706419dd-4b3aa5526b83ad66e65a",
+              "file": "item-details.spec.js",
+              "line": 292,
+              "column": 3
+            },
+            {
+              "title": "Label-Dot erscheint nach Speichern eines Labels",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 7,
+                      "status": "passed",
+                      "duration": 3895,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:17.352Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "964904a7b7e8706419dd-0d24b6050595e762ee9d",
+              "file": "item-details.spec.js",
+              "line": 300,
+              "column": 3
+            },
+            {
+              "title": "Item-Zeile hat farbigen linken Rand nach Label-Zuweisung",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 5278,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:17.581Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "964904a7b7e8706419dd-1bd134c4949740bd158f",
+              "file": "item-details.spec.js",
+              "line": 310,
+              "column": 3
+            },
+            {
+              "title": "Label wird beim erneuten Öffnen vorausgewählt angezeigt",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 4526,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:17.727Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "964904a7b7e8706419dd-da88f39ca6912de34c5e",
+              "file": "item-details.spec.js",
+              "line": 321,
+              "column": 3
+            },
+            {
+              "title": "\"Kein Label\" Button ist standardmäßig aktiv",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4358,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:18.159Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "964904a7b7e8706419dd-df9ad329935df8a735a3",
+              "file": "item-details.spec.js",
+              "line": 332,
+              "column": 3
+            },
+            {
+              "title": "Label kann entfernt werden mit \"Kein Label\" Button",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 4323,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:19.088Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "964904a7b7e8706419dd-a67b6e5839f4ab23ff4d",
+              "file": "item-details.spec.js",
+              "line": 338,
+              "column": 3
+            },
+            {
+              "title": "Nur eine Farbe kann gleichzeitig aktiv sein",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 6,
+                      "status": "passed",
+                      "duration": 2750,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:19.809Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "964904a7b7e8706419dd-32076db820113f6a72e8",
+              "file": "item-details.spec.js",
+              "line": 354,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "U10: Label-Filter-Leiste",
+          "file": "item-details.spec.js",
+          "line": 367,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Label-Filterleiste ist nicht sichtbar wenn keine Labels vergeben",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 7,
+                      "status": "passed",
+                      "duration": 2387,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:21.288Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "964904a7b7e8706419dd-aee9fbb2e008a2f59a5f",
+              "file": "item-details.spec.js",
+              "line": 372,
+              "column": 3
+            },
+            {
+              "title": "Label-Filterleiste erscheint wenn ein Label vergeben wird",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 3954,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:21.330Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "964904a7b7e8706419dd-67ec1ea4f3278285df15",
+              "file": "item-details.spec.js",
+              "line": 377,
+              "column": 3
+            },
+            {
+              "title": "\"Alle\"-Button ist in der Filterleiste sichtbar",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 4224,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:21.439Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "964904a7b7e8706419dd-fc42f91950847dda3538",
+              "file": "item-details.spec.js",
+              "line": 387,
+              "column": 3
+            },
+            {
+              "title": "Filterleiste zeigt nur Labels mit mindestens einem Artikel",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 5616,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:22.293Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "964904a7b7e8706419dd-e72a07e0d50f416fa9e2",
+              "file": "item-details.spec.js",
+              "line": 397,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "U10: Notiz und Label kombiniert",
+          "file": "item-details.spec.js",
+          "line": 413,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Notiz und Label können gleichzeitig gespeichert werden",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5452,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:22.552Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "964904a7b7e8706419dd-7d496db6f98a5750c130",
+              "file": "item-details.spec.js",
+              "line": 418,
+              "column": 3
+            },
+            {
+              "title": "Detail-Panel zeigt korrekte Werte nach zweitem Öffnen",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 6,
+                      "status": "passed",
+                      "duration": 5225,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:22.607Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "964904a7b7e8706419dd-041beffe86333f638afc",
+              "file": "item-details.spec.js",
+              "line": 431,
+              "column": 3
+            },
+            {
+              "title": "Artikel mit Label und Notiz behält Checkbox-Funktion",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 5734,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:22.923Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "964904a7b7e8706419dd-789cacdd915ab984e521",
+              "file": "item-details.spec.js",
+              "line": 444,
+              "column": 3
+            },
+            {
+              "title": "Artikel mit Label kann weiterhin gelöscht werden",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 4967,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:23.455Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "964904a7b7e8706419dd-381d981522d1207b8ccd",
+              "file": "item-details.spec.js",
+              "line": 457,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "session-setup.spec.js",
+      "file": "session-setup.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "U6: Login & Registrierung",
+          "file": "session-setup.spec.js",
+          "line": 10,
+          "column": 6,
+          "specs": [
+            {
+              "title": "leitet unauthentifizierte Nutzer auf /login weiter",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 7,
+                      "status": "passed",
+                      "duration": 3035,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:23.788Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1185c1a9c85eb91e6eb4-fa9238eb96d217b541f7",
               "file": "session-setup.spec.js",
-              "line": 50,
+              "line": 15,
+              "column": 3
+            },
+            {
+              "title": "zeigt die Login-Seite mit allen Feldern",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 1848,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:25.504Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1185c1a9c85eb91e6eb4-7e40c991e40d8e01b50f",
+              "file": "session-setup.spec.js",
+              "line": 20,
+              "column": 3
+            },
+            {
+              "title": "Login-Button ist deaktiviert solange Felder leer sind",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 1863,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:25.997Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1185c1a9c85eb91e6eb4-f4e96f166e9c053beb20",
+              "file": "session-setup.spec.js",
+              "line": 27,
+              "column": 3
+            },
+            {
+              "title": "zeigt Fehlermeldung bei falschen Credentials",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 7,
+                      "status": "passed",
+                      "duration": 3749,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:26.881Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1185c1a9c85eb91e6eb4-584b76817879164e276b",
+              "file": "session-setup.spec.js",
+              "line": 35,
+              "column": 3
+            },
+            {
+              "title": "Passwort-Toggle zeigt/versteckt das Passwort",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 3089,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:27.420Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1185c1a9c85eb91e6eb4-20fc37b4102e73bb916d",
+              "file": "session-setup.spec.js",
+              "line": 42,
+              "column": 3
+            },
+            {
+              "title": "Link zur Registrierungsseite funktioniert",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 6,
+                      "status": "passed",
+                      "duration": 2286,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:28.006Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1185c1a9c85eb91e6eb4-c36ebd19055aaa4161b4",
+              "file": "session-setup.spec.js",
+              "line": 51,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "U6: Registrierung",
+          "file": "session-setup.spec.js",
+          "line": 57,
+          "column": 6,
+          "specs": [
+            {
+              "title": "zeigt die Registrierungsseite mit allen Feldern",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 2707,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:27.930Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1185c1a9c85eb91e6eb4-4fa34d690716cb2e163c",
+              "file": "session-setup.spec.js",
+              "line": 64,
+              "column": 3
+            },
+            {
+              "title": "Registrierungs-Button ist deaktiviert solange Felder leer sind",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 2511,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:28.028Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1185c1a9c85eb91e6eb4-71c314265800efa30784",
+              "file": "session-setup.spec.js",
+              "line": 71,
+              "column": 3
+            },
+            {
+              "title": "zeigt Fehler wenn Passwörter nicht übereinstimmen",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2710,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:28.133Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1185c1a9c85eb91e6eb4-77bed320d303f8b77219",
+              "file": "session-setup.spec.js",
+              "line": 80,
+              "column": 3
+            },
+            {
+              "title": "Link zur Login-Seite funktioniert",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 2326,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:28.532Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1185c1a9c85eb91e6eb4-c973bceaa4c1bdfc391e",
+              "file": "session-setup.spec.js",
+              "line": 89,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "U6: Session-Persistenz",
+          "file": "session-setup.spec.js",
+          "line": 95,
+          "column": 6,
+          "specs": [
+            {
+              "title": "eingeloggter Nutzer bleibt nach Reload eingeloggt",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 2094,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:28.751Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1185c1a9c85eb91e6eb4-bbc7d1fb65366dec4e8f",
+              "file": "session-setup.spec.js",
+              "line": 96,
+              "column": 3
+            },
+            {
+              "title": "nicht eingeloggter Nutzer wird zu /login geleitet",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 6,
+                      "status": "passed",
+                      "duration": 2410,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:30.375Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1185c1a9c85eb91e6eb4-7b1e0a6d3f6010d93ae2",
+              "file": "session-setup.spec.js",
+              "line": 107,
+              "column": 3
+            },
+            {
+              "title": "eingeloggter Nutzer wird von /login zu / weitergeleitet",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 2287,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:30.596Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1185c1a9c85eb91e6eb4-48e92e7df5dcc7d38ef2",
+              "file": "session-setup.spec.js",
+              "line": 114,
               "column": 3
             }
           ]
@@ -322,9 +2049,9 @@
       "specs": [],
       "suites": [
         {
-          "title": "Liste teilen",
+          "title": "U5: Liste teilen",
           "file": "sharing.spec.js",
-          "line": 36,
+          "line": 47,
           "column": 6,
           "specs": [
             {
@@ -340,15 +2067,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 4428,
+                      "duration": 3394,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-13T11:43:52.027Z",
+                      "startTime": "2026-04-10T10:52:30.646Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -356,9 +2083,9 @@
                   "status": "expected"
                 }
               ],
-              "id": "7a4fd9f74c1d57f4f232-d4eb3dee69ce86656795",
+              "id": "7a4fd9f74c1d57f4f232-5ee4ad338ab220275a77",
               "file": "sharing.spec.js",
-              "line": 37,
+              "line": 48,
               "column": 3
             },
             {
@@ -374,15 +2101,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
                       "status": "passed",
-                      "duration": 2831,
+                      "duration": 3469,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-13T11:43:55.487Z",
+                      "startTime": "2026-04-10T10:52:30.762Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -390,9 +2117,9 @@
                   "status": "expected"
                 }
               ],
-              "id": "7a4fd9f74c1d57f4f232-5cde28c737de345ce4f1",
+              "id": "7a4fd9f74c1d57f4f232-f202d3ff1488d2f8c4f5",
               "file": "sharing.spec.js",
-              "line": 46,
+              "line": 57,
               "column": 3
             },
             {
@@ -408,15 +2135,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
+                      "workerIndex": 7,
+                      "parallelIndex": 7,
                       "status": "passed",
-                      "duration": 2510,
+                      "duration": 3275,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-13T11:43:55.537Z",
+                      "startTime": "2026-04-10T10:52:30.793Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -424,9 +2151,9 @@
                   "status": "expected"
                 }
               ],
-              "id": "7a4fd9f74c1d57f4f232-db78cae60bcd76b5c366",
+              "id": "7a4fd9f74c1d57f4f232-2ce5fa784c3c20df34f3",
               "file": "sharing.spec.js",
-              "line": 57,
+              "line": 68,
               "column": 3
             },
             {
@@ -442,15 +2169,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 4230,
+                      "duration": 2558,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-13T11:43:55.705Z",
+                      "startTime": "2026-04-10T10:52:30.924Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -458,9 +2185,9 @@
                   "status": "expected"
                 }
               ],
-              "id": "7a4fd9f74c1d57f4f232-e4d3224a660974ea2470",
+              "id": "7a4fd9f74c1d57f4f232-95c819e30378a19d4a0a",
               "file": "sharing.spec.js",
-              "line": 67,
+              "line": 78,
               "column": 3
             },
             {
@@ -470,50 +2197,32 @@
               "tests": [
                 {
                   "timeout": 30000,
-                  "annotations": [
-                    {
-                      "type": "skip",
-                      "location": {
-                        "file": "C:\\Users\\heral\\IdeaProjects\\syt5-gek1051-mobile-application-codemonkeys\\frontend\\e2e\\sharing.spec.js",
-                        "line": 73,
-                        "column": 8
-                      }
-                    }
-                  ],
-                  "expectedStatus": "skipped",
+                  "annotations": [],
+                  "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": -1,
-                      "parallelIndex": -1,
-                      "status": "skipped",
-                      "duration": 0,
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3035,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-13T11:43:56.483Z",
-                      "annotations": [
-                        {
-                          "type": "skip",
-                          "location": {
-                            "file": "C:\\Users\\heral\\IdeaProjects\\syt5-gek1051-mobile-application-codemonkeys\\frontend\\e2e\\sharing.spec.js",
-                            "line": 73,
-                            "column": 8
-                          }
-                        }
-                      ],
+                      "startTime": "2026-04-10T10:52:30.932Z",
+                      "annotations": [],
                       "attachments": []
                     }
                   ],
-                  "status": "skipped"
+                  "status": "expected"
                 }
               ],
-              "id": "7a4fd9f74c1d57f4f232-3bb999cdf173616888a5",
+              "id": "7a4fd9f74c1d57f4f232-bf1025995262f3660ea7",
               "file": "sharing.spec.js",
-              "line": 73,
-              "column": 8
+              "line": 84,
+              "column": 3
             },
             {
               "title": "zeigt Fehler bei nicht gefundenem Code",
@@ -528,15 +2237,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 2174,
+                      "duration": 3616,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-13T11:43:56.519Z",
+                      "startTime": "2026-04-10T10:52:30.933Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -544,9 +2253,9 @@
                   "status": "expected"
                 }
               ],
-              "id": "7a4fd9f74c1d57f4f232-62757352944d8e8270af",
+              "id": "7a4fd9f74c1d57f4f232-4666333764943a8c3295",
               "file": "sharing.spec.js",
-              "line": 80,
+              "line": 91,
               "column": 3
             },
             {
@@ -562,15 +2271,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
+                      "workerIndex": 6,
+                      "parallelIndex": 6,
                       "status": "passed",
-                      "duration": 4334,
+                      "duration": 4180,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-13T11:43:58.076Z",
+                      "startTime": "2026-04-10T10:52:32.924Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -578,9 +2287,9 @@
                   "status": "expected"
                 }
               ],
-              "id": "7a4fd9f74c1d57f4f232-98ba2ce4e788a77f3ee7",
+              "id": "7a4fd9f74c1d57f4f232-68f0e5d680a8b39c0623",
               "file": "sharing.spec.js",
-              "line": 88,
+              "line": 99,
               "column": 3
             }
           ]
@@ -595,9 +2304,9 @@
       "specs": [],
       "suites": [
         {
-          "title": "Listen verwalten",
+          "title": "U1: Listen verwalten",
           "file": "shopping-list.spec.js",
-          "line": 36,
+          "line": 47,
           "column": 6,
           "specs": [
             {
@@ -613,15 +2322,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 1690,
+                      "duration": 2040,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-13T11:43:58.414Z",
+                      "startTime": "2026-04-10T10:52:33.089Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -629,9 +2338,9 @@
                   "status": "expected"
                 }
               ],
-              "id": "19ab3def4d37019db4df-d945cad1099e519435be",
+              "id": "19ab3def4d37019db4df-ccd04b0c92a5c23df96b",
               "file": "shopping-list.spec.js",
-              "line": 37,
+              "line": 48,
               "column": 3
             },
             {
@@ -647,15 +2356,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 2753,
+                      "duration": 3703,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-13T11:43:58.756Z",
+                      "startTime": "2026-04-10T10:52:33.844Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -663,9 +2372,9 @@
                   "status": "expected"
                 }
               ],
-              "id": "19ab3def4d37019db4df-caca9a9e2e70f73c9ae4",
+              "id": "19ab3def4d37019db4df-6d0edc263578827f6e1d",
               "file": "shopping-list.spec.js",
-              "line": 42,
+              "line": 53,
               "column": 3
             },
             {
@@ -681,15 +2390,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2685,
+                      "duration": 3267,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-13T11:44:00.019Z",
+                      "startTime": "2026-04-10T10:52:34.161Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -697,9 +2406,9 @@
                   "status": "expected"
                 }
               ],
-              "id": "19ab3def4d37019db4df-c41ab0b443c840b2ee7e",
+              "id": "19ab3def4d37019db4df-842914b1b6cfc221c8cd",
               "file": "shopping-list.spec.js",
-              "line": 49,
+              "line": 60,
               "column": 3
             },
             {
@@ -715,15 +2424,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 2483,
+                      "duration": 2355,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-13T11:44:00.169Z",
+                      "startTime": "2026-04-10T10:52:34.186Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -731,9 +2440,9 @@
                   "status": "expected"
                 }
               ],
-              "id": "19ab3def4d37019db4df-7ad7276da47ea6efa691",
+              "id": "19ab3def4d37019db4df-d0eb3792145e1181f972",
               "file": "shopping-list.spec.js",
-              "line": 56,
+              "line": 67,
               "column": 3
             },
             {
@@ -749,15 +2458,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 7,
+                      "parallelIndex": 7,
                       "status": "passed",
-                      "duration": 2219,
+                      "duration": 3117,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-13T11:44:01.550Z",
+                      "startTime": "2026-04-10T10:52:34.262Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -765,17 +2474,17 @@
                   "status": "expected"
                 }
               ],
-              "id": "19ab3def4d37019db4df-a4b800c45fca99216800",
+              "id": "19ab3def4d37019db4df-aad0f628e1b89a7b9a5f",
               "file": "shopping-list.spec.js",
-              "line": 62,
+              "line": 73,
               "column": 3
             }
           ]
         },
         {
-          "title": "Artikel verwalten",
+          "title": "U2: Artikel verwalten",
           "file": "shopping-list.spec.js",
-          "line": 70,
+          "line": 81,
           "column": 6,
           "specs": [
             {
@@ -791,15 +2500,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
                       "status": "passed",
-                      "duration": 3327,
+                      "duration": 3736,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-13T11:44:02.521Z",
+                      "startTime": "2026-04-10T10:52:34.422Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -807,9 +2516,9 @@
                   "status": "expected"
                 }
               ],
-              "id": "19ab3def4d37019db4df-66150d3edf109685fbb1",
+              "id": "19ab3def4d37019db4df-df6f02133b345c1f932a",
               "file": "shopping-list.spec.js",
-              "line": 78,
+              "line": 94,
               "column": 3
             },
             {
@@ -825,15 +2534,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 3152,
+                      "duration": 3445,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-13T11:44:02.693Z",
+                      "startTime": "2026-04-10T10:52:34.642Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -841,9 +2550,9 @@
                   "status": "expected"
                 }
               ],
-              "id": "19ab3def4d37019db4df-d7a623a906036fd353b0",
+              "id": "19ab3def4d37019db4df-e8fc19d023bb5513ab56",
               "file": "shopping-list.spec.js",
-              "line": 85,
+              "line": 101,
               "column": 3
             },
             {
@@ -859,15 +2568,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 2920,
+                      "duration": 2944,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-13T11:44:02.739Z",
+                      "startTime": "2026-04-10T10:52:35.202Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -875,9 +2584,9 @@
                   "status": "expected"
                 }
               ],
-              "id": "19ab3def4d37019db4df-5e863408590d1d134007",
+              "id": "19ab3def4d37019db4df-948eba947dcd640df064",
               "file": "shopping-list.spec.js",
-              "line": 92,
+              "line": 108,
               "column": 3
             },
             {
@@ -893,15 +2602,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 3000,
+                      "duration": 2642,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-13T11:44:03.799Z",
+                      "startTime": "2026-04-10T10:52:36.615Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -909,9 +2618,9 @@
                   "status": "expected"
                 }
               ],
-              "id": "19ab3def4d37019db4df-974ff11652a297d912f3",
+              "id": "19ab3def4d37019db4df-9e72e21ac4fa0e6ab947",
               "file": "shopping-list.spec.js",
-              "line": 101,
+              "line": 117,
               "column": 3
             },
             {
@@ -927,15 +2636,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
+                      "workerIndex": 6,
+                      "parallelIndex": 6,
                       "status": "passed",
-                      "duration": 3263,
+                      "duration": 4311,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-13T11:44:05.693Z",
+                      "startTime": "2026-04-10T10:52:37.317Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -943,9 +2652,9 @@
                   "status": "expected"
                 }
               ],
-              "id": "19ab3def4d37019db4df-1411187c3c4512962481",
+              "id": "19ab3def4d37019db4df-346bd640a0602d2da480",
               "file": "shopping-list.spec.js",
-              "line": 109,
+              "line": 125,
               "column": 3
             },
             {
@@ -961,15 +2670,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
+                      "workerIndex": 7,
+                      "parallelIndex": 7,
                       "status": "passed",
-                      "duration": 3540,
+                      "duration": 4010,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-13T11:44:05.893Z",
+                      "startTime": "2026-04-10T10:52:37.488Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -977,9 +2686,9 @@
                   "status": "expected"
                 }
               ],
-              "id": "19ab3def4d37019db4df-724611d8d1ee5c5571b6",
+              "id": "19ab3def4d37019db4df-ed591a392ea219838dac",
               "file": "shopping-list.spec.js",
-              "line": 118,
+              "line": 134,
               "column": 3
             },
             {
@@ -995,15 +2704,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 3982,
+                      "duration": 4788,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-13T11:44:05.969Z",
+                      "startTime": "2026-04-10T10:52:37.511Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1011,17 +2720,17 @@
                   "status": "expected"
                 }
               ],
-              "id": "19ab3def4d37019db4df-e0509a213c2e35e636f7",
+              "id": "19ab3def4d37019db4df-5c33661704d543ed5467",
               "file": "shopping-list.spec.js",
-              "line": 129,
+              "line": 149,
               "column": 3
             }
           ]
         },
         {
-          "title": "Suche",
+          "title": "U13: Suche",
           "file": "shopping-list.spec.js",
-          "line": 138,
+          "line": 204,
           "column": 6,
           "specs": [
             {
@@ -1031,50 +2740,32 @@
               "tests": [
                 {
                   "timeout": 30000,
-                  "annotations": [
-                    {
-                      "type": "skip",
-                      "location": {
-                        "file": "C:\\Users\\heral\\IdeaProjects\\syt5-gek1051-mobile-application-codemonkeys\\frontend\\e2e\\shopping-list.spec.js",
-                        "line": 150,
-                        "column": 8
-                      }
-                    }
-                  ],
-                  "expectedStatus": "skipped",
+                  "annotations": [],
+                  "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": -1,
-                      "parallelIndex": -1,
-                      "status": "skipped",
-                      "duration": 0,
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 4377,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-13T11:44:06.834Z",
-                      "annotations": [
-                        {
-                          "type": "skip",
-                          "location": {
-                            "file": "C:\\Users\\heral\\IdeaProjects\\syt5-gek1051-mobile-application-codemonkeys\\frontend\\e2e\\shopping-list.spec.js",
-                            "line": 150,
-                            "column": 8
-                          }
-                        }
-                      ],
+                      "startTime": "2026-04-10T10:52:37.682Z",
+                      "annotations": [],
                       "attachments": []
                     }
                   ],
-                  "status": "skipped"
+                  "status": "expected"
                 }
               ],
-              "id": "19ab3def4d37019db4df-696751be2021fee9df2b",
+              "id": "19ab3def4d37019db4df-0e3768befbff1c2e6473",
               "file": "shopping-list.spec.js",
-              "line": 150,
-              "column": 8
+              "line": 216,
+              "column": 3
             },
             {
               "title": "zeigt Clear-Button bei aktiver Suche",
@@ -1083,50 +2774,32 @@
               "tests": [
                 {
                   "timeout": 30000,
-                  "annotations": [
-                    {
-                      "type": "skip",
-                      "location": {
-                        "file": "C:\\Users\\heral\\IdeaProjects\\syt5-gek1051-mobile-application-codemonkeys\\frontend\\e2e\\shopping-list.spec.js",
-                        "line": 157,
-                        "column": 8
-                      }
-                    }
-                  ],
-                  "expectedStatus": "skipped",
+                  "annotations": [],
+                  "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": -1,
-                      "parallelIndex": -1,
-                      "status": "skipped",
-                      "duration": 0,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 4145,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-13T11:44:06.879Z",
-                      "annotations": [
-                        {
-                          "type": "skip",
-                          "location": {
-                            "file": "C:\\Users\\heral\\IdeaProjects\\syt5-gek1051-mobile-application-codemonkeys\\frontend\\e2e\\shopping-list.spec.js",
-                            "line": 157,
-                            "column": 8
-                          }
-                        }
-                      ],
+                      "startTime": "2026-04-10T10:52:38.129Z",
+                      "annotations": [],
                       "attachments": []
                     }
                   ],
-                  "status": "skipped"
+                  "status": "expected"
                 }
               ],
-              "id": "19ab3def4d37019db4df-038412865cee6e8d7f32",
+              "id": "19ab3def4d37019db4df-6d906b6a4e97e2878f10",
               "file": "shopping-list.spec.js",
-              "line": 157,
-              "column": 8
+              "line": 226,
+              "column": 3
             },
             {
               "title": "löscht Suche mit Clear-Button",
@@ -1135,57 +2808,39 @@
               "tests": [
                 {
                   "timeout": 30000,
-                  "annotations": [
-                    {
-                      "type": "skip",
-                      "location": {
-                        "file": "C:\\Users\\heral\\IdeaProjects\\syt5-gek1051-mobile-application-codemonkeys\\frontend\\e2e\\shopping-list.spec.js",
-                        "line": 163,
-                        "column": 8
-                      }
-                    }
-                  ],
-                  "expectedStatus": "skipped",
+                  "annotations": [],
+                  "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": -1,
-                      "parallelIndex": -1,
-                      "status": "skipped",
-                      "duration": 0,
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 4085,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-13T11:44:06.892Z",
-                      "annotations": [
-                        {
-                          "type": "skip",
-                          "location": {
-                            "file": "C:\\Users\\heral\\IdeaProjects\\syt5-gek1051-mobile-application-codemonkeys\\frontend\\e2e\\shopping-list.spec.js",
-                            "line": 163,
-                            "column": 8
-                          }
-                        }
-                      ],
+                      "startTime": "2026-04-10T10:52:38.196Z",
+                      "annotations": [],
                       "attachments": []
                     }
                   ],
-                  "status": "skipped"
+                  "status": "expected"
                 }
               ],
-              "id": "19ab3def4d37019db4df-22cb7640c41c8ff8b54a",
+              "id": "19ab3def4d37019db4df-e8643c5e108ca1c2be9c",
               "file": "shopping-list.spec.js",
-              "line": 163,
-              "column": 8
+              "line": 231,
+              "column": 3
             }
           ]
         },
         {
-          "title": "Fortschritt",
+          "title": "U2: Fortschritt",
           "file": "shopping-list.spec.js",
-          "line": 172,
+          "line": 239,
           "column": 6,
           "specs": [
             {
@@ -1201,15 +2856,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
                       "status": "passed",
-                      "duration": 2757,
+                      "duration": 3782,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-13T11:44:06.918Z",
+                      "startTime": "2026-04-10T10:52:38.203Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1217,9 +2872,9 @@
                   "status": "expected"
                 }
               ],
-              "id": "19ab3def4d37019db4df-683506759c7892d6ab01",
+              "id": "19ab3def4d37019db4df-dec8adad43cd50afac2e",
               "file": "shopping-list.spec.js",
-              "line": 173,
+              "line": 240,
               "column": 3
             },
             {
@@ -1235,15 +2890,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 3237,
+                      "duration": 2803,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-13T11:44:08.996Z",
+                      "startTime": "2026-04-10T10:52:39.332Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1251,17 +2906,17 @@
                   "status": "expected"
                 }
               ],
-              "id": "19ab3def4d37019db4df-e7fac45979ca7ccd587c",
+              "id": "19ab3def4d37019db4df-6d5f806a4271660bc459",
               "file": "shopping-list.spec.js",
-              "line": 180,
+              "line": 247,
               "column": 3
             }
           ]
         },
         {
-          "title": "Session Badge",
+          "title": "U6: Session Badge",
           "file": "shopping-list.spec.js",
-          "line": 192,
+          "line": 259,
           "column": 6,
           "specs": [
             {
@@ -1277,15 +2932,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
+                      "workerIndex": 7,
+                      "parallelIndex": 7,
                       "status": "passed",
-                      "duration": 2345,
+                      "duration": 3158,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-13T11:44:09.463Z",
+                      "startTime": "2026-04-10T10:52:41.725Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1293,13 +2948,191 @@
                   "status": "expected"
                 }
               ],
-              "id": "19ab3def4d37019db4df-0e81d729b76281551eb8",
+              "id": "19ab3def4d37019db4df-8dd27a096f89f17332c3",
               "file": "shopping-list.spec.js",
-              "line": 193,
+              "line": 260,
               "column": 3
             },
             {
-              "title": "beendet Session bei Klick auf Badge",
+              "title": "Badge ist rein informativ und öffnet kein Overlay",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 6,
+                      "status": "passed",
+                      "duration": 2285,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:41.786Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "19ab3def4d37019db4df-628424632e8d3cb5e163",
+              "file": "shopping-list.spec.js",
+              "line": 265,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "U11: Dark/Light Mode",
+          "file": "shopping-list.spec.js",
+          "line": 273,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Theme-Toggle-Button ist sichtbar",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 2961,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:42.067Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "19ab3def4d37019db4df-fa2044aae0aebee71488",
+              "file": "shopping-list.spec.js",
+              "line": 274,
+              "column": 3
+            },
+            {
+              "title": "Theme-Toggle hat role=\"switch\"",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 2323,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:42.170Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "19ab3def4d37019db4df-75f04ae2e966edfcce82",
+              "file": "shopping-list.spec.js",
+              "line": 279,
+              "column": 3
+            },
+            {
+              "title": "Klick auf Theme-Toggle wechselt zu Dark Mode",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 3136,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:42.178Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "19ab3def4d37019db4df-c14d8a81df158e176746",
+              "file": "shopping-list.spec.js",
+              "line": 284,
+              "column": 3
+            },
+            {
+              "title": "Zweiter Klick wechselt zurück zu Light Mode",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 2622,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:42.334Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "19ab3def4d37019db4df-c4a110e292b18724c923",
+              "file": "shopping-list.spec.js",
+              "line": 293,
+              "column": 3
+            },
+            {
+              "title": "Theme-Wahl bleibt nach Reload erhalten",
               "ok": true,
               "tags": [],
               "tests": [
@@ -1314,12 +3147,12 @@
                       "workerIndex": 2,
                       "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 2369,
+                      "duration": 3170,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-13T11:44:09.715Z",
+                      "startTime": "2026-04-10T10:52:42.351Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1327,9 +3160,517 @@
                   "status": "expected"
                 }
               ],
-              "id": "19ab3def4d37019db4df-bdc3953b594e038cb08e",
+              "id": "19ab3def4d37019db4df-094ce2c53cfe9691fd7d",
               "file": "shopping-list.spec.js",
-              "line": 198,
+              "line": 302,
+              "column": 3
+            },
+            {
+              "title": "Theme wird in localStorage gespeichert",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2969,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:42.380Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "19ab3def4d37019db4df-deba1f71a15eabfc33b4",
+              "file": "shopping-list.spec.js",
+              "line": 311,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "U1: Listen auf-/zuklappen",
+          "file": "shopping-list.spec.js",
+          "line": 319,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Liste kann zugeklappt werden",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 6,
+                      "status": "passed",
+                      "duration": 5114,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:44.225Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "19ab3def4d37019db4df-ff5015563de83c0ef5fd",
+              "file": "shopping-list.spec.js",
+              "line": 320,
+              "column": 3
+            },
+            {
+              "title": "Zugeklappte Liste kann wieder aufgeklappt werden",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 3799,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:44.575Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "19ab3def4d37019db4df-1603869a02d1f51dfd94",
+              "file": "shopping-list.spec.js",
+              "line": 332,
+              "column": 3
+            },
+            {
+              "title": "Alle-einklappen-Button ist nicht sichtbar ohne Listen",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 2981,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:45.026Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "19ab3def4d37019db4df-e32783036f8a00ffd98b",
+              "file": "shopping-list.spec.js",
+              "line": 343,
+              "column": 3
+            },
+            {
+              "title": "Alle-einklappen-Button klappt alle Listen zu",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 7,
+                      "status": "passed",
+                      "duration": 3135,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:45.087Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "19ab3def4d37019db4df-280120783d2f230923f0",
+              "file": "shopping-list.spec.js",
+              "line": 348,
+              "column": 3
+            },
+            {
+              "title": "Alle-ausklappen-Button klappt alle Listen wieder auf",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 3534,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:45.145Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "19ab3def4d37019db4df-3f1c09a64e2a3537ea7e",
+              "file": "shopping-list.spec.js",
+              "line": 369,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "U1: Inline-Editing",
+          "file": "shopping-list.spec.js",
+          "line": 393,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Listenname kann bearbeitet werden",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 3131,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:45.382Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "19ab3def4d37019db4df-d7ba9c5084b18c896e75",
+              "file": "shopping-list.spec.js",
+              "line": 394,
+              "column": 3
+            },
+            {
+              "title": "Listenname-Bearbeitung kann abgebrochen werden",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3269,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:45.406Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "19ab3def4d37019db4df-f7cbbbe0fdb106ea2526",
+              "file": "shopping-list.spec.js",
+              "line": 405,
+              "column": 3
+            },
+            {
+              "title": "Artikelname kann bearbeitet werden",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 3288,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:45.558Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "19ab3def4d37019db4df-f6b2bb073a3c177808e0",
+              "file": "shopping-list.spec.js",
+              "line": 416,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "U7: Liste löschen",
+          "file": "shopping-list.spec.js",
+          "line": 433,
+          "column": 6,
+          "specs": [
+            {
+              "title": "zeigt Bestätigungsdialog beim Löschen einer leeren Liste",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 2856,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:48.128Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "19ab3def4d37019db4df-346640d1ede1edab1484",
+              "file": "shopping-list.spec.js",
+              "line": 434,
+              "column": 3
+            },
+            {
+              "title": "Bestätigungsdialog kann abgebrochen werden",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 7,
+                      "status": "passed",
+                      "duration": 2194,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:48.324Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "19ab3def4d37019db4df-73e2cf8560ec77aba104",
+              "file": "shopping-list.spec.js",
+              "line": 444,
+              "column": 3
+            },
+            {
+              "title": "leere Liste kann gelöscht werden",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 2782,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:48.492Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "19ab3def4d37019db4df-aa814c1a528ced875bb6",
+              "file": "shopping-list.spec.js",
+              "line": 455,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "U6: Abmelden",
+          "file": "shopping-list.spec.js",
+          "line": 470,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Abmelde-Button ist sichtbar",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 1809,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:48.569Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "19ab3def4d37019db4df-940d41bd0c05a9dc7b55",
+              "file": "shopping-list.spec.js",
+              "line": 471,
+              "column": 3
+            },
+            {
+              "title": "Abmelden leitet auf Login-Seite weiter",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1944,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-10T10:52:48.719Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "19ab3def4d37019db4df-b72b6859f00c47c2424b",
+              "file": "shopping-list.spec.js",
+              "line": 476,
               "column": 3
             }
           ]
@@ -1339,10 +3680,10 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-03-13T11:43:38.310Z",
-    "duration": 34933.587,
-    "expected": 29,
-    "skipped": 4,
+    "startTime": "2026-04-10T10:52:01.038Z",
+    "duration": 50486.082,
+    "expected": 100,
+    "skipped": 0,
     "unexpected": 0,
     "flaky": 0
   }

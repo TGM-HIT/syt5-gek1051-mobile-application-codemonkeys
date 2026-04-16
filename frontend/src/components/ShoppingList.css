@@ -29,13 +29,64 @@
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
+  flex-wrap: nowrap;
+}
+
+.header h1 {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.h1-short {
+  display: none;
 }
 
 .header-actions {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Mobile Header ── */
+@media (max-width: 600px) {
+  .container {
+    padding: 0 1rem;
+  }
+
+  .header {
+    padding: 0.5rem 0;
+  }
+
+  h1 {
+    font-size: 1.1rem;
+  }
+
+  .header-actions {
+    gap: 0.4rem;
+  }
+
+  .session-badge {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.78rem;
+  }
+
+  .settings-btn,
+  .logout-btn {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.78rem;
+  }
+
+  /* Auf Mobile: nur Icon anzeigen */
+  .settings-btn .btn-label,
+  .logout-btn .btn-label,
+  .session-badge .badge-name {
+    display: none;
+  }
+
+  .h1-full { display: none; }
+  .h1-short { display: inline; }
 }
 
 /* Keyboard focus styles */
@@ -44,6 +95,7 @@
   .logout-btn,
   .pwa-install-btn,
   .notif-enable-btn,
+  .notif-toggle-btn,
   .error-banner-close,
   .search-clear-btn,
   .add-btn,
@@ -60,6 +112,7 @@
   .permanent-delete-btn,
   .notification-dismiss,
   .filter-changed-btn,
+  .collapse-all-btn,
   .edit-save-btn,
   .edit-cancel-btn,
   .detail-save-btn,
@@ -246,7 +299,57 @@ h1 {
 }
 
 .main {
-  padding: 2rem 0 3rem;
+  padding: 0 0 3rem;
+}
+
+.main > .container {
+  padding-top: 1.75rem;
+}
+
+/* ── Body Header ── */
+.body-header {
+  background: var(--color-bg);
+  border-bottom: 2px solid var(--color-border);
+  padding: 0.75rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 90;
+  transition: background var(--transition-theme);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.body-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.625rem;
+  flex-wrap: nowrap;
+}
+
+.body-header-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: nowrap;
+}
+
+@media (max-width: 600px) {
+  .body-header-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .body-header-buttons {
+    justify-content: center;
+    gap: 0.4rem;
+  }
+
+  .body-header-row .status-indicator {
+    justify-content: center;
+    border-radius: 10px;
+    padding: 0.45rem 0;
+  }
 }
 
 /* ── Error Banner ── */
@@ -676,14 +779,17 @@ h1 {
   }
 
   .header .container {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.35rem;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    flex-wrap: nowrap;
   }
 
   .header-actions {
     gap: 0.4rem;
-    justify-content: flex-start;
+    flex-wrap: nowrap;
+    flex-shrink: 0;
   }
 
   .toolbar-row {
@@ -1439,6 +1545,49 @@ h1 {
   white-space: nowrap;
 }
 
+.notif-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.875rem;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.notif-toggle-btn.notif-on {
+  background: var(--color-warning-bg);
+  border: 1.5px solid var(--color-warning);
+  color: var(--color-warning);
+}
+
+.notif-toggle-btn.notif-on:hover {
+  background: rgba(245, 158, 11, 0.2);
+}
+
+.notif-toggle-btn.notif-off {
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.notif-toggle-btn.notif-off:hover {
+  background: var(--color-surface-hover);
+}
+
+.pwa-install-btn:disabled,
+.pwa-installed {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.pwa-install-btn:disabled:hover {
+  background: rgba(16, 185, 129, 0.15);
+}
+
 /* Benachrichtigungen */
 .notifications {
   display: flex;
@@ -1532,7 +1681,26 @@ h1 {
 .filter-bar {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 1rem;
+}
+
+.collapse-all-btn {
+  padding: 0.45rem 0.875rem;
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.collapse-all-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 .filter-changed-btn {
