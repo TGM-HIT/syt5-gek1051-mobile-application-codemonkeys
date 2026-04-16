@@ -238,7 +238,7 @@ Das Ergebnis ist ein **gemischtes Dokument**, das das jeweils neueste Feld aus b
 
 ---
 
-## 7. Beispiel: Drei Personen, ein Artikel (detailliert)
+## 7. Beispiel: Vier Personen, ein Artikel (2 online / 2 offline)
 
 ### Ausgangslage
 - Artikel: `name: "Milch"`, `checked: false`, `markedDeleted: false`
@@ -246,31 +246,33 @@ Das Ergebnis ist ein **gemischtes Dokument**, das das jeweils neueste Feld aus b
 
 ### Aktionen
 - **Benutzer A (offline):** Hakt Artikel ab → `checked: true`, Timestamp: 2000
-- **Benutzer B (online):** Löscht Artikel → `markedDeleted: true`, Timestamp: 3000
-- **Benutzer C (online):** Ändert Namen → `name: "Milch 3,5%"`, Timestamp: 4000
+- **Benutzer D (offline):** Ergänzt eine Notiz → `note: "laktosefrei"`, Timestamp: 2500
+- **Benutzer C (online):** Ändert Namen → `name: "Milch 3,5%"`, Timestamp: 3000
+- **Benutzer B (online):** Markiert als gelöscht → `markedDeleted: true`, Timestamp: 4000
 
 ### Synchronisation
 
-1. **Benutzer B und C** synchronisieren sofort. CouchDB enthält jetzt:
-   - `markedDeleted: true` (Timestamp 3000)
-   - `name: "Milch 3,5%"` (Timestamp 4000)
+1. **Benutzer B und C** synchronisieren sofort. CouchDB enthält jetzt u.a.:
+   - `markedDeleted: true` (Timestamp 4000)
+   - `name: "Milch 3,5%"` (Timestamp 3000)
    - `checked: false` (Timestamp 1000)
    - `_rev: "3-xyz"`
 
-2. **Benutzer A** kommt online und versucht `checked: true` hochzuladen:
-   - CouchDB antwortet mit **HTTP 409** (seine `_rev` ist veraltet)
-   - `resolveConflict()` vergleicht lokale und Remote-Version
-   - Remote hat `markedDeleted: true`, lokal ist `markedDeleted: false`
-   - → **Konflikttyp 1:** `_pendingDelete: "Benutzer B"` wird gesetzt
+2. **Benutzer A und D** kommen später online und versuchen ihre lokale Version hochzuladen:
+   - CouchDB antwortet jeweils mit **HTTP 409** (veraltete `_rev`)
+   - `resolveConflict()` sieht: Remote hat `markedDeleted: true`, lokal `markedDeleted: false`
+   - → **Konflikttyp 1:** Für beide wird `_pendingDelete` gesetzt (mit `lastModifiedBy`, z.B. "Benutzer B")
 
-3. **Benutzer A** sieht das Konflikt-Banner: *"Benutzer B hat diesen Artikel gelöscht. Ja/Nein?"*
+3. **Benutzer A und D** sehen lokal das Konflikt-Banner:  
+   *"Benutzer B hat diesen Artikel gelöscht. Ja/Nein?"*
 
-4. **Entscheidung von Benutzer A:**
-   - **"Ja":** Artikel wird gelöscht. Remote-Version gewinnt.
-   - **"Nein":** `rejectDelete()` wird aufgerufen.
-     - `markedDeleted: false` wird mit aktuellem Timestamp gesetzt
-     - Merge-Logik nimmt `name: "Milch 3,5%"` (Remote neuer) und `checked: true` (Lokal neuer)
-     - Merged-Dokument wird hochgeladen → überschreibt CouchDB-Version
+4. **Entscheidungen (pro offline Benutzer einzeln):**
+   - **"Ja":** `acceptDelete()` setzt lokal `markedDeleted: true` und synchronisiert diese Version.
+   - **"Nein":** `rejectDelete()` setzt lokal `markedDeleted: false` und synchronisiert diese Version.
+
+5. **Wichtig für dieses 4-User-Szenario:**  
+   In diesem `_pendingDelete`-Pfad gibt es **keinen automatischen Feld-Merge** zwischen A und D.  
+   Wer zuletzt synchronisiert, bestimmt den finalen Zustand des Dokuments auf CouchDB (inklusive seiner lokalen Feldwerte).
 
 ---
 
