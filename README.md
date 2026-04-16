@@ -1,5 +1,7 @@
 # syt5-gek1051-mobile-application-codemonkeys
 
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+
 ![CI](https://github.com/TGM-HIT/syt5-gek1051-mobile-application-codemonkeys/actions/workflows/ci.yml/badge.svg)
 ![Coverage](https://img.shields.io/badge/coverage-86%25-brightgreen)
 ![Tests](https://img.shields.io/badge/tests-928%2B-blue)
