@@ -171,11 +171,15 @@ function toggleCollapse(listId) {
   collapsedLists.value[listId] = !collapsedLists.value[listId];
 }
 
-const allCollapsed = computed(() => lists.value.length > 0 && lists.value.every((l) => collapsedLists.value[l._id]));
+const allCollapsed = computed(
+  () => lists.value.length > 0 && lists.value.every((l) => collapsedLists.value[l._id]),
+);
 
 function toggleAllCollapse() {
   const collapse = !allCollapsed.value;
-  lists.value.forEach((l) => { collapsedLists.value[l._id] = collapse; });
+  lists.value.forEach((l) => {
+    collapsedLists.value[l._id] = collapse;
+  });
 }
 
 // ── Suche ──
@@ -657,7 +661,11 @@ watch(
               class="notif-toggle-btn"
               :class="{ 'notif-on': notificationsEnabled, 'notif-off': !notificationsEnabled }"
               @click="notificationsEnabled = !notificationsEnabled"
-              :title="notificationsEnabled ? 'Benachrichtigungen deaktivieren' : 'Benachrichtigungen aktivieren'"
+              :title="
+                notificationsEnabled
+                  ? 'Benachrichtigungen deaktivieren'
+                  : 'Benachrichtigungen aktivieren'
+              "
               :aria-pressed="notificationsEnabled"
             >
               {{ notificationsEnabled ? '🔔 Benachrichtigungen an' : '🔕 Benachrichtigungen aus' }}
@@ -1396,13 +1404,15 @@ watch(
         <div class="profile-actions-row">
           <label class="profile-backup-btn" title="Backup hochladen und Liste wiederherstellen">
             📂 Backup laden
-            <input type="file" accept=".json" style="display:none" @change="handleImportFile" />
+            <input type="file" accept=".json" style="display: none" @change="handleImportFile" />
           </label>
           <button type="button" class="profile-logout-btn" @click="handleProfileLogout">
             Abmelden
           </button>
         </div>
-        <p v-if="importSuccess" class="profile-success" role="status" aria-live="polite">{{ importSuccess }}</p>
+        <p v-if="importSuccess" class="profile-success" role="status" aria-live="polite">
+          {{ importSuccess }}
+        </p>
         <p v-if="importError" class="profile-error" role="alert">{{ importError }}</p>
       </div>
     </div>

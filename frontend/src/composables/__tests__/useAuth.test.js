@@ -187,7 +187,11 @@ describe('useAuth – changePassword', () => {
   it('fällt bei 403 auf User-Auth für _users zurück', async () => {
     global.fetch
       .mockResolvedValueOnce({ ok: true, json: async () => ({ ok: true }) })
-      .mockResolvedValueOnce({ ok: false, status: 403, json: async () => ({ reason: 'forbidden' }) })
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 403,
+        json: async () => ({ reason: 'forbidden' }),
+      })
       .mockResolvedValueOnce({
         ok: true,
         status: 200,

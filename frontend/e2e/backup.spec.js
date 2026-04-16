@@ -7,6 +7,7 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { Buffer } from 'node:buffer';
 
 // ── Hilfsfunktionen ───────────────────────────────────────────────────────────
 
@@ -25,8 +26,17 @@ async function setupSession(page, name = 'BackupUser') {
       const timeout = setTimeout(resolve, 2000);
       try {
         const req = indexedDB.deleteDatabase('einkaufsliste_db');
-        req.onsuccess = req.onerror = req.onblocked = () => { clearTimeout(timeout); resolve(); };
-      } catch { clearTimeout(timeout); resolve(); }
+        const done = () => {
+          clearTimeout(timeout);
+          resolve();
+        };
+        req.onsuccess = done;
+        req.onerror = done;
+        req.onblocked = done;
+      } catch {
+        clearTimeout(timeout);
+        resolve();
+      }
     });
   });
 
@@ -170,7 +180,9 @@ test.describe('U12.3: Backup-Import im Profil-Dialog', () => {
     await expect(page.locator('.profile-backup-btn')).toContainText('Backup laden');
   });
 
-  test('importiert ein gültiges Backup und zeigt die wiederhergestellte Liste', async ({ page }) => {
+  test('importiert ein gültiges Backup und zeigt die wiederhergestellte Liste', async ({
+    page,
+  }) => {
     await setupSession(page);
 
     const backupPayload = JSON.stringify({
@@ -199,7 +211,7 @@ test.describe('U12.3: Backup-Import im Profil-Dialog', () => {
 
     await page.locator('.modal-btn-cancel').click();
     await expect(
-      page.locator('.list h2').filter({ hasText: 'WiederhergestelltBackup (Backup)' })
+      page.locator('.list h2').filter({ hasText: 'WiederhergestelltBackup (Backup)' }),
     ).toBeVisible({ timeout: 5000 });
   });
 
@@ -212,9 +224,7 @@ test.describe('U12.3: Backup-Import im Profil-Dialog', () => {
       list: {
         name: 'MitArtikelnBackup',
         owner: 'BackupUser',
-        items: [
-          { name: 'Kaffee', checked: false, note: null, label: null, markedDeleted: false },
-        ],
+        items: [{ name: 'Kaffee', checked: false, note: null, label: null, markedDeleted: false }],
       },
     });
 
@@ -227,7 +237,9 @@ test.describe('U12.3: Backup-Import im Profil-Dialog', () => {
 
     await page.locator('.modal-btn-cancel').click();
 
-    const list = page.locator('.list').filter({ has: page.locator('h2', { hasText: 'MitArtikelnBackup (Backup)' }) });
+    const list = page
+      .locator('.list')
+      .filter({ has: page.locator('h2', { hasText: 'MitArtikelnBackup (Backup)' }) });
     await expect(list.locator('.item-name', { hasText: 'Kaffee' })).toBeVisible({ timeout: 5000 });
   });
 

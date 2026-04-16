@@ -33,8 +33,17 @@ async function setupSession(page, name = 'NotifUser') {
       const timeout = setTimeout(resolve, 2000);
       try {
         const req = indexedDB.deleteDatabase('einkaufsliste_db');
-        req.onsuccess = req.onerror = req.onblocked = () => { clearTimeout(timeout); resolve(); };
-      } catch { clearTimeout(timeout); resolve(); }
+        const done = () => {
+          clearTimeout(timeout);
+          resolve();
+        };
+        req.onsuccess = done;
+        req.onerror = done;
+        req.onblocked = done;
+      } catch {
+        clearTimeout(timeout);
+        resolve();
+      }
     });
   });
 
@@ -74,9 +83,9 @@ test.describe('Body-Header: Online/Offline-Status', () => {
 
   test('Status-Indikator hat die Klasse "online" oder "offline"', async ({ page }) => {
     await setupSession(page);
-    const hasClass = await page.locator('.body-header .status-indicator').evaluate(
-      (el) => el.classList.contains('online') || el.classList.contains('offline'),
-    );
+    const hasClass = await page
+      .locator('.body-header .status-indicator')
+      .evaluate((el) => el.classList.contains('online') || el.classList.contains('offline'));
     expect(hasClass).toBe(true);
   });
 
@@ -141,7 +150,10 @@ test.describe('Body-Header: Notification-Toggle (permission granted)', () => {
 
   test('Toggle-Button hat aria-pressed="true" wenn aktiv', async ({ page }) => {
     await setupSessionWithNotificationPermission(page, 'granted');
-    await expect(page.locator('.body-header .notif-toggle-btn')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('.body-header .notif-toggle-btn')).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
   });
 
   test('Toggle-Button hat aria-pressed="false" nach Deaktivierung', async ({ page }) => {
