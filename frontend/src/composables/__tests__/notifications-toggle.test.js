@@ -8,7 +8,7 @@
  * Service-Worker-Fallback) befinden sich in pwa-notifications.test.js.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { ref } from 'vue';
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
@@ -22,7 +22,11 @@ vi.mock('../database.js', () => ({
   startSync: vi.fn(() => ({ cancel: vi.fn() })),
   stopSync: vi.fn(),
   getAllDocs: vi.fn(async () => []),
-  updateDoc: vi.fn(async (id, fn) => { const d = { _id: id }; fn(d); return { ok: true, id, rev: '2' }; }),
+  updateDoc: vi.fn(async (id, fn) => {
+    const d = { _id: id };
+    fn(d);
+    return { ok: true, id, rev: '2' };
+  }),
   createDoc: vi.fn(async () => ({ ok: true, id: 'new_id' })),
   hardDeleteDoc: vi.fn(async () => ({ ok: true })),
   restoreLocalVersion: vi.fn(async () => true),
@@ -43,11 +47,23 @@ async function getDb() {
   return await import('../database.js');
 }
 
-const LIST_1 = { _id: 'list1', type: 'list', name: 'Einkauf', owner: 'TestUser', deleted: false };
+const LIST_1 = {
+  _id: 'list1',
+  type: 'list',
+  name: 'Einkauf',
+  owner: 'TestUser',
+  deleted: false,
+};
 const CHANGED_ITEM = {
-  _id: 'i1', type: 'item', list_id: 'list1', name: 'Milch',
-  _remoteChanged: true, _changeType: 'added', _changeTimestamp: 999,
-  deleted: false, markedDeleted: false,
+  _id: 'i1',
+  type: 'item',
+  list_id: 'list1',
+  name: 'Milch',
+  _remoteChanged: true,
+  _changeType: 'added',
+  _changeTimestamp: 999,
+  deleted: false,
+  markedDeleted: false,
 };
 
 /** Richtet den Composable ein und triggert einen Sync-Callback mit geänderten Items */
@@ -131,10 +147,7 @@ describe('notificationsEnabled – Wieder aktiviert', () => {
 
     // Neues Item mit anderem Timestamp damit Deduplication nicht greift
     const db = await getDb();
-    db.getAllDocs.mockResolvedValue([
-      LIST_1,
-      { ...CHANGED_ITEM, _changeTimestamp: 1234 },
-    ]);
+    db.getAllDocs.mockResolvedValue([LIST_1, { ...CHANGED_ITEM, _changeTimestamp: 1234 }]);
     const dataChangeCb = db.startSync.mock.calls.at(-1)[2];
     await dataChangeCb();
 

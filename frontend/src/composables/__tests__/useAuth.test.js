@@ -174,11 +174,49 @@ describe('useAuth – changePassword', () => {
 
     const updateCall = global.fetch.mock.calls[2];
     expect(updateCall[0]).toContain('/_users/org.couchdb.user%3Atestuser');
+    const expectedAdminAuth = `Basic ${btoa('admin:password')}`;
+    expect(global.fetch.mock.calls[1][1].headers.Authorization).toBe(expectedAdminAuth);
+    expect(updateCall[1].headers.Authorization).toBe(expectedAdminAuth);
 
     const payload = JSON.parse(updateCall[1].body);
     expect(payload.password).toBe('neuespasswort');
     expect(payload._rev).toBe('1-abc');
     expect(payload.derived_key).toBeUndefined();
+  });
+
+  it('fällt bei 403 auf User-Auth für _users zurück', async () => {
+    global.fetch
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ ok: true }) })
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 403,
+        json: async () => ({ reason: 'forbidden' }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          _id: 'org.couchdb.user:testuser',
+          _rev: '1-fallback',
+          name: 'testuser',
+          roles: [],
+          type: 'user',
+        }),
+      })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ ok: true }) });
+
+    const { changePassword, currentUser, authError } = useAuth();
+    currentUser.value = { name: 'testuser', roles: [] };
+
+    const result = await changePassword('altespasswort', 'neuespasswort');
+
+    expect(result.success).toBe(true);
+    expect(authError.value).toBeNull();
+    expect(global.fetch).toHaveBeenCalledTimes(4);
+
+    const expectedUserAuth = `Basic ${btoa('testuser:altespasswort')}`;
+    expect(global.fetch.mock.calls[2][1].headers.Authorization).toBe(expectedUserAuth);
+    expect(global.fetch.mock.calls[3][1].headers.Authorization).toBe(expectedUserAuth);
   });
 
   it('gibt Fehler zurück wenn Nutzer nicht eingeloggt ist', async () => {

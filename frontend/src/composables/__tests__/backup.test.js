@@ -18,7 +18,11 @@ vi.mock('../database.js', () => ({
   startSync: vi.fn(() => ({ cancel: vi.fn() })),
   stopSync: vi.fn(),
   getAllDocs: vi.fn(async () => []),
-  updateDoc: vi.fn(async (id, fn) => { const d = { _id: id }; fn(d); return { ok: true, id, rev: '2' }; }),
+  updateDoc: vi.fn(async (id, fn) => {
+    const d = { _id: id };
+    fn(d);
+    return { ok: true, id, rev: '2' };
+  }),
   createDoc: vi.fn(async () => ({ ok: true, id: 'new_list_id' })),
   hardDeleteDoc: vi.fn(async () => ({ ok: true })),
   restoreLocalVersion: vi.fn(async () => true),
@@ -46,11 +50,55 @@ async function setupComposable(lists = [], items = []) {
   return useShoppingList();
 }
 
-const LIST_1 = { _id: 'list1', type: 'list', name: 'Einkauf', owner: 'TestUser', deleted: false, createdAt: '2026-01-01T00:00:00.000Z' };
-const LIST_2 = { _id: 'list2', type: 'list', name: 'Baumarkt', owner: 'TestUser', deleted: false, createdAt: '2026-01-02T00:00:00.000Z' };
-const ITEM_L1_A = { _id: 'i1', type: 'item', list_id: 'list1', name: 'Milch', checked: false, markedDeleted: false, note: 'Bio', label: 'green', deleted: false };
-const ITEM_L1_B = { _id: 'i2', type: 'item', list_id: 'list1', name: 'Brot', checked: true, markedDeleted: false, note: null, label: null, deleted: false };
-const ITEM_L2_A = { _id: 'i3', type: 'item', list_id: 'list2', name: 'Schraube', checked: false, markedDeleted: false, note: null, label: null, deleted: false };
+const LIST_1 = {
+  _id: 'list1',
+  type: 'list',
+  name: 'Einkauf',
+  owner: 'TestUser',
+  deleted: false,
+  createdAt: '2026-01-01T00:00:00.000Z',
+};
+const LIST_2 = {
+  _id: 'list2',
+  type: 'list',
+  name: 'Baumarkt',
+  owner: 'TestUser',
+  deleted: false,
+  createdAt: '2026-01-02T00:00:00.000Z',
+};
+const ITEM_L1_A = {
+  _id: 'i1',
+  type: 'item',
+  list_id: 'list1',
+  name: 'Milch',
+  checked: false,
+  markedDeleted: false,
+  note: 'Bio',
+  label: 'green',
+  deleted: false,
+};
+const ITEM_L1_B = {
+  _id: 'i2',
+  type: 'item',
+  list_id: 'list1',
+  name: 'Brot',
+  checked: true,
+  markedDeleted: false,
+  note: null,
+  label: null,
+  deleted: false,
+};
+const ITEM_L2_A = {
+  _id: 'i3',
+  type: 'item',
+  list_id: 'list2',
+  name: 'Schraube',
+  checked: false,
+  markedDeleted: false,
+  note: null,
+  label: null,
+  deleted: false,
+};
 
 // ── exportBackup – Grundverhalten ─────────────────────────────────────────────
 
@@ -73,8 +121,22 @@ describe('exportBackup – Grundverhalten', () => {
     vi.spyOn(document, 'createElement').mockImplementation((tag) => {
       if (tag === 'a') {
         const a = realCreate('a');
-        Object.defineProperty(a, 'href', { set(v) { anchorHref = v; }, get() { return anchorHref; } });
-        Object.defineProperty(a, 'download', { set(v) { anchorDownload = v; }, get() { return anchorDownload; } });
+        Object.defineProperty(a, 'href', {
+          set(v) {
+            anchorHref = v;
+          },
+          get() {
+            return anchorHref;
+          },
+        });
+        Object.defineProperty(a, 'download', {
+          set(v) {
+            anchorDownload = v;
+          },
+          get() {
+            return anchorDownload;
+          },
+        });
         a.click = anchorClick;
         return a;
       }
@@ -129,7 +191,10 @@ describe('exportBackup – JSON-Inhalt', () => {
 
   beforeEach(() => {
     capturedBlob = null;
-    vi.spyOn(URL, 'createObjectURL').mockImplementation((blob) => { capturedBlob = blob; return 'blob:mock'; });
+    vi.spyOn(URL, 'createObjectURL').mockImplementation((blob) => {
+      capturedBlob = blob;
+      return 'blob:mock';
+    });
     vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
 
     const realCreate = document.createElement.bind(document);
@@ -164,7 +229,11 @@ describe('exportBackup – JSON-Inhalt', () => {
   });
 
   it('enthält nur Items der exportierten Liste', async () => {
-    const payload = await getExportedPayload([LIST_1, LIST_2], [ITEM_L1_A, ITEM_L1_B, ITEM_L2_A], 'list1');
+    const payload = await getExportedPayload(
+      [LIST_1, LIST_2],
+      [ITEM_L1_A, ITEM_L1_B, ITEM_L2_A],
+      'list1',
+    );
     expect(payload.list.items).toHaveLength(2);
     const names = payload.list.items.map((i) => i.name);
     expect(names).toContain('Milch');
@@ -174,8 +243,13 @@ describe('exportBackup – JSON-Inhalt', () => {
 
   it('exportiert Item-Felder: name, checked, note, label, markedDeleted', async () => {
     const payload = await getExportedPayload([LIST_1], [ITEM_L1_A], 'list1');
-    const item = payload.list.items[0];
-    expect(item).toMatchObject({ name: 'Milch', checked: false, note: 'Bio', label: 'green', markedDeleted: false });
+    expect(payload.list.items[0]).toMatchObject({
+      name: 'Milch',
+      checked: false,
+      note: 'Bio',
+      label: 'green',
+      markedDeleted: false,
+    });
   });
 
   it('exportiert keine internen DB-Felder (_id, _rev, type, list_id)', async () => {
@@ -203,7 +277,9 @@ describe('importBackup – Fehlerbehandlung', () => {
 
   it('wirft einen Fehler wenn list fehlt', async () => {
     const { importBackup } = await setupComposable();
-    await expect(importBackup({ exportedAt: '2026-01-01' })).rejects.toThrow('Ungültiges Backup-Format');
+    await expect(importBackup({ exportedAt: '2026-01-01' })).rejects.toThrow(
+      'Ungültiges Backup-Format',
+    );
   });
 
   it('wirft einen Fehler wenn list.name fehlt', async () => {

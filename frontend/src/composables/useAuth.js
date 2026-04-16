@@ -4,6 +4,7 @@ const COUCHDB_URL = import.meta.env.VITE_COUCHDB_URL || 'http://localhost:5984/e
 const COUCHDB_BASE = COUCHDB_URL.replace(/\/[^/]+$/, '');
 const COUCHDB_USER = import.meta.env.VITE_COUCHDB_USER || 'admin';
 const COUCHDB_PASSWORD = import.meta.env.VITE_COUCHDB_PASSWORD || 'password';
+const ADMIN_AUTH_HEADER = `Basic ${btoa(`${COUCHDB_USER}:${COUCHDB_PASSWORD}`)}`;
 
 const SESSION_KEY = 'auth_user';
 
@@ -34,9 +35,10 @@ export function useAuth() {
       const trimmedUsername = username.trim().toLowerCase();
       const response = await fetch(`${COUCHDB_BASE}/_users/org.couchdb.user:${trimmedUsername}`, {
         method: 'PUT',
+        credentials: 'omit',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Basic ${btoa(`${COUCHDB_USER}:${COUCHDB_PASSWORD}`)}`,
+          Authorization: ADMIN_AUTH_HEADER,
         },
         body: JSON.stringify({
           _id: `org.couchdb.user:${trimmedUsername}`,
@@ -151,6 +153,7 @@ export function useAuth() {
     const username = currentUser.value.name.trim().toLowerCase();
     const userDocId = `org.couchdb.user:${username}`;
     const userDocUrl = `${COUCHDB_BASE}/_users/${encodeURIComponent(userDocId)}`;
+    const userAuthHeader = `Basic ${btoa(`${username}:${currentPassword}`)}`;
 
     try {
       const verifyResponse = await fetch(`${COUCHDB_BASE}/_session`, {
@@ -165,11 +168,19 @@ export function useAuth() {
         return { success: false };
       }
 
-      const getUserResponse = await fetch(userDocUrl, {
-        headers: {
-          Authorization: `Basic ${btoa(`${COUCHDB_USER}:${COUCHDB_PASSWORD}`)}`,
-        },
+      let userDocAuthHeader = ADMIN_AUTH_HEADER;
+      let getUserResponse = await fetch(userDocUrl, {
+        credentials: 'omit',
+        headers: { Authorization: userDocAuthHeader },
       });
+
+      if ((getUserResponse.status === 401 || getUserResponse.status === 403) && userAuthHeader) {
+        userDocAuthHeader = userAuthHeader;
+        getUserResponse = await fetch(userDocUrl, {
+          credentials: 'omit',
+          headers: { Authorization: userDocAuthHeader },
+        });
+      }
 
       if (!getUserResponse.ok) {
         const body = await getUserResponse.json();
@@ -185,22 +196,39 @@ export function useAuth() {
       delete safeUserDoc.salt;
       delete safeUserDoc.password_sha;
 
-      const updateResponse = await fetch(userDocUrl, {
+      const updateBody = JSON.stringify({
+        ...safeUserDoc,
+        _id: userDoc._id,
+        _rev: userDoc._rev,
+        name: username,
+        roles: Array.isArray(userDoc.roles) ? userDoc.roles : [],
+        type: userDoc.type || 'user',
+        password: newPassword,
+      });
+      let updateResponse = await fetch(userDocUrl, {
         method: 'PUT',
+        credentials: 'omit',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Basic ${btoa(`${COUCHDB_USER}:${COUCHDB_PASSWORD}`)}`,
+          Authorization: userDocAuthHeader,
         },
-        body: JSON.stringify({
-          ...safeUserDoc,
-          _id: userDoc._id,
-          _rev: userDoc._rev,
-          name: username,
-          roles: Array.isArray(userDoc.roles) ? userDoc.roles : [],
-          type: userDoc.type || 'user',
-          password: newPassword,
-        }),
+        body: updateBody,
       });
+
+      if (
+        (updateResponse.status === 401 || updateResponse.status === 403) &&
+        userDocAuthHeader !== userAuthHeader
+      ) {
+        updateResponse = await fetch(userDocUrl, {
+          method: 'PUT',
+          credentials: 'omit',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: userAuthHeader,
+          },
+          body: updateBody,
+        });
+      }
 
       if (!updateResponse.ok) {
         const body = await updateResponse.json();
