@@ -35,6 +35,7 @@ export function useShoppingList() {
   const syncActive = ref(false);
   const conflicts = ref({}); // nicht mehr aktiv genutzt, für Kompatibilität behalten
   const notifications = ref([]); // Benachrichtigungen für Remote-Änderungen
+  const notificationsEnabled = ref(true); // Kann vom User deaktiviert werden
   const shownNotificationIds = new Set(); // Verhindert doppelte OS-Benachrichtigungen
 
   /**
@@ -484,6 +485,7 @@ export function useShoppingList() {
    */
   async function showOsNotification(listName, categories) {
     if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    if (!notificationsEnabled.value) return;
 
     const lines = [];
     if (categories.modified.length > 0) {
@@ -705,6 +707,76 @@ export function useShoppingList() {
     return Math.round((checked / listItems.length) * 100);
   }
 
+  /**
+   * Exportiert eine einzelne Liste mit ihren Artikeln als JSON-Datei.
+   * @param {string} listId - Die ID der zu exportierenden Liste
+   */
+  function exportBackup(listId) {
+    const list = lists.value.find((l) => l._id === listId);
+    if (!list) return;
+
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      exportedBy: currentUser.value?.name || 'Unbekannt',
+      list: {
+        name: list.name,
+        owner: list.owner,
+        createdAt: list.createdAt,
+        items: items.value
+          .filter((i) => i.list_id === listId)
+          .map((i) => ({
+            name: i.name,
+            checked: i.checked,
+            note: i.note || null,
+            label: i.label || null,
+            markedDeleted: i.markedDeleted || false,
+          })),
+      },
+    };
+
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    const safeName = list.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `backup-${safeName}-${timestamp}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  /**
+   * Importiert eine Liste aus einer Backup-JSON-Datei.
+   * Erstellt eine neue Liste mit allen Artikeln.
+   * @param {Object} payload - Das geparste JSON-Objekt aus der Datei
+   */
+  async function importBackup(payload) {
+    if (!payload?.list?.name) throw new Error('Ungültiges Backup-Format');
+
+    const listDoc = await createDoc({
+      type: 'list',
+      name: `${payload.list.name} (Backup)`,
+      owner: sessionName.value || 'Unbekannt',
+      deleted: false,
+    });
+
+    const listId = listDoc.id;
+    for (const item of payload.list.items || []) {
+      await createDoc({
+        type: 'item',
+        list_id: listId,
+        name: item.name,
+        checked: item.checked || false,
+        markedDeleted: item.markedDeleted || false,
+        note: item.note || '',
+        label: item.label || null,
+        lastModifiedBy: sessionName.value || 'Unbekannt',
+      });
+    }
+
+    await loadData();
+  }
+
   // Daten beim Mount laden
   onMounted(() => {
     loadData();
@@ -757,7 +829,10 @@ export function useShoppingList() {
     clearListChanges,
     dismissNotification,
     requestNotificationPermission,
+    notificationsEnabled,
     generateShareCode,
     joinListByCode,
+    exportBackup,
+    importBackup,
   };
 }

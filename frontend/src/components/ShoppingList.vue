@@ -37,6 +37,7 @@ const {
   isOnline,
   syncActive,
   notifications,
+  notificationsEnabled,
   requestNotificationPermission,
   toggleItem,
   addItem,
@@ -60,6 +61,8 @@ const {
   dismissNotification,
   generateShareCode,
   joinListByCode,
+  exportBackup,
+  importBackup,
 } = useShoppingList();
 
 // ── Benachrichtigungsberechtigung ──
@@ -166,6 +169,13 @@ function isCollapsed(listId) {
 
 function toggleCollapse(listId) {
   collapsedLists.value[listId] = !collapsedLists.value[listId];
+}
+
+const allCollapsed = computed(() => lists.value.length > 0 && lists.value.every((l) => collapsedLists.value[l._id]));
+
+function toggleAllCollapse() {
+  const collapse = !allCollapsed.value;
+  lists.value.forEach((l) => { collapsedLists.value[l._id] = collapse; });
 }
 
 // ── Suche ──
@@ -371,6 +381,26 @@ async function copyShareCode() {
   }
 }
 
+// ── Backup Import ──
+const importError = ref('');
+const importSuccess = ref('');
+
+async function handleImportFile(event) {
+  importError.value = '';
+  importSuccess.value = '';
+  const file = event.target.files?.[0];
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const payload = JSON.parse(text);
+    await importBackup(payload);
+    importSuccess.value = `„${payload.list.name}" wurde wiederhergestellt.`;
+  } catch {
+    importError.value = 'Backup konnte nicht geladen werden. Ist die Datei gültig?';
+  }
+  event.target.value = '';
+}
+
 async function submitJoinCode() {
   joinMessage.value = { text: '', type: '' };
   if (!joinCode.value.trim()) {
@@ -571,10 +601,11 @@ watch(
   <div class="app">
     <header class="header">
       <div class="container">
-        <h1>Einkaufslisten</h1>
+        <h1><span class="h1-full">Einkaufslisten</span><span class="h1-short">Liste</span></h1>
         <div class="header-actions">
           <div class="session-badge" v-if="currentUser" title="Eingeloggt als">
-            👤 {{ currentUser.name }}
+            <span aria-hidden="true">👤</span>
+            <span class="badge-name">{{ currentUser.name }}</span>
           </div>
           <ThemeToggle />
           <button
@@ -584,7 +615,7 @@ watch(
             title="Profil & Einstellungen"
             aria-label="Profil und Einstellungen öffnen"
           >
-            Profil
+            <span aria-hidden="true">⚙️</span><span class="btn-label"> Profil</span>
           </button>
           <button
             type="button"
@@ -593,35 +624,56 @@ watch(
             title="Abmelden"
             aria-label="Abmelden"
           >
-            Abmelden
+            <span aria-hidden="true">↩</span><span class="btn-label"> Abmelden</span>
           </button>
-          <button
-            v-if="installable"
-            type="button"
-            class="pwa-install-btn"
-            @click="installPwa"
-            title="App installieren"
-            aria-label="App installieren"
-          >
-            📲 App installieren
-          </button>
-          <button
-            v-if="notifPermission === 'default'"
-            type="button"
-            class="notif-enable-btn"
-            @click="enableNotifications"
-            title="Benachrichtigungen aktivieren"
-            aria-label="Benachrichtigungen im Browser erlauben"
-          >
-            🔔 Benachrichtigungen erlauben
-          </button>
-          <span
-            v-else-if="notifPermission === 'denied'"
-            class="notif-denied-hint"
-            title="In den Browser-Einstellungen aktivieren"
-          >
-            🔕 Benachrichtigungen blockiert
-          </span>
+        </div>
+      </div>
+    </header>
+
+    <main class="main">
+      <div class="body-header">
+        <div class="container body-header-row">
+          <div class="body-header-buttons">
+            <button
+              v-if="notifPermission === 'default'"
+              type="button"
+              class="notif-enable-btn"
+              @click="enableNotifications"
+              title="Benachrichtigungen aktivieren"
+              aria-label="Benachrichtigungen im Browser erlauben"
+            >
+              🔔 Aktivieren
+            </button>
+            <span
+              v-else-if="notifPermission === 'denied'"
+              class="notif-denied-hint"
+              title="In den Browser-Einstellungen aktivieren"
+            >
+              🔕 Blockiert
+            </span>
+            <button
+              v-else-if="notifPermission === 'granted'"
+              type="button"
+              class="notif-toggle-btn"
+              :class="{ 'notif-on': notificationsEnabled, 'notif-off': !notificationsEnabled }"
+              @click="notificationsEnabled = !notificationsEnabled"
+              :title="notificationsEnabled ? 'Benachrichtigungen deaktivieren' : 'Benachrichtigungen aktivieren'"
+              :aria-pressed="notificationsEnabled"
+            >
+              {{ notificationsEnabled ? '🔔 Benachrichtigungen an' : '🔕 Benachrichtigungen aus' }}
+            </button>
+            <button
+              type="button"
+              class="pwa-install-btn"
+              :class="{ 'pwa-installed': !installable }"
+              :disabled="!installable"
+              @click="installPwa"
+              title="App installieren"
+              aria-label="App installieren"
+            >
+              📲 {{ installable ? 'App installieren' : 'App installiert' }}
+            </button>
+          </div>
           <div
             class="status-indicator"
             :class="{ online: isOnline, offline: !isOnline }"
@@ -635,43 +687,6 @@ watch(
           </div>
         </div>
       </div>
-    </header>
-
-    <!-- Toolbar unterhalb des Headers -->
-    <div class="toolbar">
-      <div class="container toolbar-row">
-        <div class="status-indicator" :class="{ online: isOnline, offline: !isOnline }">
-          <span class="status-dot"></span>
-          <span class="status-text">{{ isOnline ? 'Online' : 'Offline' }}</span>
-          <span v-if="syncActive && isOnline" class="sync-text">• Sync</span>
-        </div>
-        <button
-          v-if="installable"
-          class="toolbar-btn pwa-install-btn"
-          @click="installPwa"
-          title="App installieren"
-        >
-          📲 Installieren
-        </button>
-        <button
-          v-if="notifPermission === 'default'"
-          class="toolbar-btn notif-enable-btn"
-          @click="enableNotifications"
-          title="Benachrichtigungen aktivieren"
-        >
-          🔔 Benachrichtigungen
-        </button>
-        <span
-          v-else-if="notifPermission === 'denied'"
-          class="notif-denied-hint"
-          title="In den Browser-Einstellungen aktivieren"
-        >
-          🔕 Blockiert
-        </span>
-      </div>
-    </div>
-
-    <main class="main">
       <div class="container">
         <!-- Loading -->
         <div v-if="loading" class="message">Daten werden geladen...</div>
@@ -822,6 +837,14 @@ watch(
               {{ totalChangedCount }}
             </span>
           </button>
+          <button
+            type="button"
+            class="collapse-all-btn"
+            @click="toggleAllCollapse"
+            :aria-label="allCollapsed ? 'Alle Listen aufklappen' : 'Alle Listen einklappen'"
+          >
+            {{ allCollapsed ? '▶ Alle aufklappen' : '▼ Alle einklappen' }}
+          </button>
         </div>
 
         <!-- Listen -->
@@ -898,6 +921,15 @@ watch(
                   :aria-label="`Liste ${list.name} teilen`"
                 >
                   🔗
+                </button>
+                <button
+                  type="button"
+                  class="backup-list-btn"
+                  title="Backup erstellen"
+                  @click.stop="exportBackup(list._id)"
+                  :aria-label="`Backup von Liste ${list.name} erstellen`"
+                >
+                  💾
                 </button>
                 <button
                   type="button"
@@ -1361,9 +1393,17 @@ watch(
           </div>
         </form>
 
-        <button type="button" class="profile-logout-btn" @click="handleProfileLogout">
-          Abmelden
-        </button>
+        <div class="profile-actions-row">
+          <label class="profile-backup-btn" title="Backup hochladen und Liste wiederherstellen">
+            📂 Backup laden
+            <input type="file" accept=".json" style="display:none" @change="handleImportFile" />
+          </label>
+          <button type="button" class="profile-logout-btn" @click="handleProfileLogout">
+            Abmelden
+          </button>
+        </div>
+        <p v-if="importSuccess" class="profile-success" role="status" aria-live="polite">{{ importSuccess }}</p>
+        <p v-if="importError" class="profile-error" role="alert">{{ importError }}</p>
       </div>
     </div>
 
