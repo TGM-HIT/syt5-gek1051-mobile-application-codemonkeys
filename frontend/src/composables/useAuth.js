@@ -35,6 +35,7 @@ export function useAuth() {
       const trimmedUsername = username.trim().toLowerCase();
       const response = await fetch(`${COUCHDB_BASE}/_users/org.couchdb.user:${trimmedUsername}`, {
         method: 'PUT',
+        credentials: 'omit',
         headers: {
           'Content-Type': 'application/json',
           Authorization: ADMIN_AUTH_HEADER,
@@ -169,12 +170,14 @@ export function useAuth() {
 
       let userDocAuthHeader = ADMIN_AUTH_HEADER;
       let getUserResponse = await fetch(userDocUrl, {
+        credentials: 'omit',
         headers: { Authorization: userDocAuthHeader },
       });
 
       if ((getUserResponse.status === 401 || getUserResponse.status === 403) && userAuthHeader) {
         userDocAuthHeader = userAuthHeader;
         getUserResponse = await fetch(userDocUrl, {
+          credentials: 'omit',
           headers: { Authorization: userDocAuthHeader },
         });
       }
@@ -204,6 +207,7 @@ export function useAuth() {
       });
       let updateResponse = await fetch(userDocUrl, {
         method: 'PUT',
+        credentials: 'omit',
         headers: {
           'Content-Type': 'application/json',
           Authorization: userDocAuthHeader,
@@ -217,6 +221,7 @@ export function useAuth() {
       ) {
         updateResponse = await fetch(userDocUrl, {
           method: 'PUT',
+          credentials: 'omit',
           headers: {
             'Content-Type': 'application/json',
             Authorization: userAuthHeader,
