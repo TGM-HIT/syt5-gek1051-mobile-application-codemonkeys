@@ -1,6 +1,10 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ref } from 'vue';
 
+/**
+ * Unit-Tests für die Suchlogik:
+ * Match-Verhalten, Groß-/Kleinschreibung und Zurücksetzen der Suche.
+ */
 // Die Suchlogik aus ShoppingList.vue als isolierte Funktionen nachgebaut,
 // um sie unabhängig von der Component-Umgebung testen zu können.
 function useSearch() {

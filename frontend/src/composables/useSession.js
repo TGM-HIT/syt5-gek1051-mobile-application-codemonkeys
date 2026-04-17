@@ -1,5 +1,9 @@
 import { ref } from 'vue';
 
+/**
+ * Session-Composable für den lokal gespeicherten Sitzungsnamen.
+ * Stellt einen geteilten reaktiven Zustand für alle Aufrufer bereit.
+ */
 const SESSION_KEY = 'einkaufsliste_session_name';
 
 // Shared reactive state across all composable calls

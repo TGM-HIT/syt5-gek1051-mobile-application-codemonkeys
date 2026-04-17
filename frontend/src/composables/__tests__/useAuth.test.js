@@ -1,6 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useAuth } from '../useAuth';
 
+/**
+ * Unit-Tests für das Auth-Composable:
+ * Registrierung, Login, Logout, Passwortwechsel und Session-Validierung.
+ */
 // localStorage mock
 const localStorageMock = (() => {
   let store = {};

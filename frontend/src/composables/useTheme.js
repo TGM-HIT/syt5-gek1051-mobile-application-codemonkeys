@@ -1,5 +1,9 @@
 import { ref, watchEffect } from 'vue';
 
+/**
+ * Theme-Composable für Dark-/Light-Mode.
+ * Persistiert das Theme im localStorage und synchronisiert es mit dem DOM.
+ */
 const STORAGE_KEY = 'app-theme';
 
 function getInitialTheme() {

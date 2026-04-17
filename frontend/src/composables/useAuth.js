@@ -1,5 +1,9 @@
 import { ref } from 'vue';
 
+/**
+ * Auth-Composable für Registrierung, Login, Logout und Session-Prüfung gegen CouchDB.
+ * Kapselt den globalen Auth-State inkl. Lade- und Fehlerzustand.
+ */
 const COUCHDB_URL = import.meta.env.VITE_COUCHDB_URL || 'http://localhost:5984/einkaufsliste';
 const COUCHDB_BASE = COUCHDB_URL.replace(/\/[^/]+$/, '');
 const COUCHDB_USER = import.meta.env.VITE_COUCHDB_USER || 'admin';
