@@ -13,20 +13,33 @@ import {
 import { useAuth } from './useAuth';
 
 /**
- * Composable für die Einkaufslisten-Logik mit PouchDB Offline-First
+ * Zentrale Geschäftslogik für Listen, Items, Sync-Status und Benachrichtigungen.
+ *
+ * Aufgaben dieses Composables:
+ * - Laden/Filtern der sichtbaren Listen und Items.
+ * - CRUD-Operationen auf Listen/Items über die lokale Datenbank.
+ * - Anbindung an den Background-Sync (online/offline, Pull/Push-Ereignisse).
+ * - Remote-Änderungshinweise (In-App + OS-Notifications).
+ * - Sharing (Code generieren / Liste beitreten) und Backup Import/Export.
+ *
+ * Alle Schreiboperationen laufen über `database.js`, damit `_dirty`, `_rev`
+ * und Konfliktlogik konsistent bleiben.
  */
 export function useShoppingList() {
   const { currentUser } = useAuth();
   const sessionName = { value: currentUser.value?.name || '' };
 
-  // sessionName reaktiv halten
+  /**
+   * `sessionName` spiegelt den aktuellen Usernamen, bleibt aber kompatibel mit
+   * vorhandenem Code, der ein `{ value }`-Objekt erwartet.
+   */
   Object.defineProperty(sessionName, 'value', {
     get: () => currentUser.value?.name || '',
     enumerable: true,
     configurable: true,
   });
 
-  // State
+  // Reaktiver UI-/Domain-State
   const lists = ref([]);
   const items = ref([]);
   const loading = ref(true);
@@ -39,9 +52,10 @@ export function useShoppingList() {
   const shownNotificationIds = new Set(); // Verhindert doppelte OS-Benachrichtigungen
 
   /**
-   * Gibt eine verständliche, deutsche Fehlermeldung zurück
-   * @param {Error|unknown} err - Der technische Fehler
-   * @returns {string} Benutzerfreundliche Fehlermeldung
+   * Übersetzt technische Fehler in verständliche UI-Meldungen.
+   *
+   * @param {Error|unknown} err - Originalfehler aus Netzwerk/DB/Sync.
+   * @returns {string} Nutzerfreundlicher deutscher Fehlertext.
    */
   function getErrorMessage(err) {
     const msg = err?.message || '';
@@ -86,6 +100,12 @@ export function useShoppingList() {
   }
 
   // ── Joined Lists (localStorage) ──
+  /**
+   * Liest die IDs der per Share-Code beigetretenen Listen aus localStorage.
+   * Fehlerhafte JSON-Werte werden defensiv als leere Liste behandelt.
+   *
+   * @returns {string[]}
+   */
   function getJoinedListIds() {
     try {
       return JSON.parse(localStorage.getItem('joinedListIds') || '[]');
@@ -94,6 +114,11 @@ export function useShoppingList() {
     }
   }
 
+  /**
+   * Merkt eine Liste als "beigetreten", ohne Duplikate zu erzeugen.
+   *
+   * @param {string} listId
+   */
   function addJoinedListId(listId) {
     const ids = getJoinedListIds();
     if (!ids.includes(listId)) {
@@ -102,13 +127,22 @@ export function useShoppingList() {
     }
   }
 
+  /**
+   * Entfernt eine Liste aus den gespeicherten "beigetretenen" IDs.
+   *
+   * @param {string} listId
+   */
   function removeJoinedListId(listId) {
     const ids = getJoinedListIds().filter((id) => id !== listId);
     localStorage.setItem('joinedListIds', JSON.stringify(ids));
   }
 
   /**
-   * Lädt alle Listen und Items aus der lokalen Datenbank
+   * Lädt den sichtbaren Datenzustand für die aktuelle Session.
+   *
+   * Filterlogik:
+   * - Listen: eigene + per Share-Code beigetretene.
+   * - Items: nur Elemente sichtbarer Listen und ohne `deleted`-Tombstones.
    */
   async function loadData() {
     try {
@@ -140,6 +174,12 @@ export function useShoppingList() {
     }
   }
 
+  /**
+   * Löscht eine Liste endgültig über `hardDeleteDoc` und entfernt
+   * ihren Join-Marker aus localStorage.
+   *
+   * @param {{ _id: string }} list
+   */
   async function deleteList(list) {
     try {
       removeJoinedListId(list._id);
@@ -151,6 +191,12 @@ export function useShoppingList() {
     }
   }
 
+  /**
+   * Erstellt ein neues Item mit Standardwerten in einer Liste.
+   *
+   * @param {string} listId
+   * @param {string} name
+   */
   async function addItem(listId, name) {
     if (!name || !name.trim()) return;
     try {
@@ -172,10 +218,12 @@ export function useShoppingList() {
   }
 
   /**
-   * Aktualisiert Notiz und Label eines Artikels
-   * @param {Object} item - Das zu aktualisierende Item
-   * @param {string} note - Die neue Notiz
-   * @param {string|null} label - Das neue Label (Farbname oder null)
+   * Speichert Detailfelder eines Items (Notiz + Label).
+   * Aktualisiert danach die lokale Referenz für unmittelbares UI-Feedback.
+   *
+   * @param {Object} item
+   * @param {string} note
+   * @param {string|null} label
    */
   async function updateItemDetails(item, note, label) {
     try {
@@ -196,6 +244,11 @@ export function useShoppingList() {
     }
   }
 
+  /**
+   * Legt eine neue Liste für den aktuellen User an.
+   *
+   * @param {string} name
+   */
   async function addList(name) {
     if (!name || !name.trim()) return;
     await createDoc({
@@ -208,8 +261,10 @@ export function useShoppingList() {
   }
 
   /**
-   * Toggelt den Checked-Status eines Items (nur lokal)
-   * @param {Object} item - Das zu aktualisierende Item
+   * Wechselt den Erledigt-Status eines Items (optimistisches UI-Update).
+   * Bei Fehler wird der alte Zustand wiederhergestellt.
+   *
+   * @param {Object} item
    */
   async function toggleItem(item) {
     try {
@@ -235,7 +290,11 @@ export function useShoppingList() {
   }
 
   /**
-   * Initialisiert die Synchronisation (läuft im Hintergrund)
+   * Initialisiert die dauerhafte Hintergrund-Synchronisation.
+   *
+   * Callback-Verhalten:
+   * - Status-Callback pflegt `isOnline`/`syncActive`.
+   * - Data-Callback lädt Daten neu und erzeugt Änderungsbenachrichtigungen.
    */
   function initSync() {
     try {
@@ -264,17 +323,28 @@ export function useShoppingList() {
     }
   }
 
-  // Nicht mehr benötigt - _pendingDelete wird direkt auf items gesetzt
+  /**
+   * Legacy-API: Konflikte werden inzwischen über `_pendingDelete` direkt
+   * am Item signalisiert. Für API-Kompatibilität bleibt die Funktion bestehen.
+   *
+   * @returns {null}
+   */
   function getConflictForItem() {
     return null;
   }
+  /**
+   * Legacy-Stub für ältere Aufrufe.
+   * Konfliktentscheidungen laufen aktuell über `acceptDelete`/`rejectDelete`.
+   */
   async function resolveConflict() {}
 
   /**
-   * Generiert einen 6-stelligen Share-Code für eine Liste
-   * und speichert ihn auf dem Listen-Dokument.
-   * @param {string} listId - Die ID der Liste
-   * @returns {string} Der generierte Share-Code
+   * Erzeugt und speichert einen 6-stelligen Share-Code für eine Liste.
+   *
+   * Zeichensatz ist bewusst ohne leicht verwechselbare Zeichen (`I/O/0/1`).
+   *
+   * @param {string} listId
+   * @returns {Promise<string|null>} Share-Code oder `null` bei Fehler.
    */
   async function generateShareCode(listId) {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // ohne I/O/0/1 zur Vermeidung von Verwechslungen
@@ -302,10 +372,17 @@ export function useShoppingList() {
   }
 
   /**
-   * Tritt einer geteilten Liste bei anhand des Share-Codes.
-   * Sucht die Liste in CouchDB und importiert sie + Items lokal.
-   * @param {string} code - Der 6-stellige Share-Code
-   * @returns {Object} { success: boolean, message: string }
+   * Join-Flow für geteilte Listen.
+   *
+   * Ablauf:
+   * 1. Code normalisieren/validieren.
+   * 2. Lokale Duplikate prüfen.
+   * 3. Liste und zugehörige Items aus CouchDB laden.
+   * 4. Alles in lokale IndexedDB spiegeln.
+   * 5. Join-Status in localStorage persistieren.
+   *
+   * @param {string} code
+   * @returns {Promise<{ success: boolean, message: string }>}
    */
   async function joinListByCode(code) {
     if (!code || !code.trim()) {
@@ -353,13 +430,18 @@ export function useShoppingList() {
   }
 
   /**
-   * Online/Offline Event-Handler
+   * Browser-Eventhandler: Verbindung wiederhergestellt.
+   * Der finale Online-Status wird anschließend durch den Sync-Callback gesetzt.
    */
   function handleOnline() {
     console.log('Network is online');
     // Status wird durch Sync-Callback aktualisiert
   }
 
+  /**
+   * Browser-Eventhandler: Verbindung verloren.
+   * Setzt den sichtbaren Status sofort auf offline.
+   */
   function handleOffline() {
     console.log('Network is offline');
     isOnline.value = false;
@@ -367,31 +449,39 @@ export function useShoppingList() {
   }
 
   /**
-   * Gibt alle Items für eine bestimmte Liste zurück
-   * @param {string} listId - Die ID der Liste
-   * @returns {Array} Array von Items
+   * Liefert alle Items einer Liste (inklusive soft-gelöschter).
+   *
+   * @param {string} listId
+   * @returns {Array}
    */
   function getItemsForList(listId) {
     return items.value.filter((i) => i.list_id === listId);
   }
 
   /**
-   * Gibt aktive (nicht gelöscht markierte) Items für eine Liste zurück
+   * Liefert nur aktive (nicht als gelöscht markierte) Items.
+   *
+   * @param {string} listId
+   * @returns {Array}
    */
   function getActiveItemsForList(listId) {
     return items.value.filter((i) => i.list_id === listId && !i.markedDeleted);
   }
 
   /**
-   * Gibt als gelöscht markierte Items für eine Liste zurück
+   * Liefert nur soft-gelöschte Items (`markedDeleted === true`).
+   *
+   * @param {string} listId
+   * @returns {Array}
    */
   function getDeletedItemsForList(listId) {
     return items.value.filter((i) => i.list_id === listId && i.markedDeleted);
   }
 
   /**
-   * Stellt ein als gelöscht markiertes Item wieder her
-   * @param {Object} item - Das wiederherzustellende Item
+   * Hebt Soft-Delete auf und stellt ein Item wieder her.
+   *
+   * @param {Object} item
    */
   async function restoreItem(item) {
     try {
@@ -413,8 +503,9 @@ export function useShoppingList() {
   }
 
   /**
-   * Löscht alle als gelöscht markierten Items einer Liste endgültig
-   * @param {string} listId - Die ID der Liste
+   * Entfernt alle soft-gelöschten Items einer Liste endgültig.
+   *
+   * @param {string} listId
    */
   async function permanentlyDeleteAllMarked(listId) {
     const deletedItems = getDeletedItemsForList(listId);
@@ -425,8 +516,9 @@ export function useShoppingList() {
   }
 
   /**
-   * Markiert ein Item als gelöscht (Soft-Delete)
-   * @param {Object} item - Das zu markierende Item
+   * Führt Soft-Delete aus (`markedDeleted = true`), damit Undo möglich bleibt.
+   *
+   * @param {Object} item
    */
   async function markItemDeleted(item) {
     try {
@@ -448,26 +540,29 @@ export function useShoppingList() {
   }
 
   /**
-   * Prüft ob eine Liste geänderte Items hat
-   * @param {string} listId - Die ID der Liste
-   * @returns {boolean} True wenn es geänderte Items gibt
+   * Prüft, ob es in der Liste Elemente mit Remote-Änderungsmarker gibt.
+   *
+   * @param {string} listId
+   * @returns {boolean}
    */
   function hasChangedItems(listId) {
     return getItemsForList(listId).some((item) => item._remoteChanged);
   }
 
   /**
-   * Gibt alle remote-geänderten aktiven Items einer Liste zurück
-   * @param {string} listId - Die ID der Liste
-   * @returns {Array} Array von geänderten Items
+   * Liefert aktive Items, die durch Remote-Sync als geändert markiert wurden.
+   *
+   * @param {string} listId
+   * @returns {Array}
    */
   function getChangedItemsForList(listId) {
     return items.value.filter((i) => i.list_id === listId && i._remoteChanged && !i.markedDeleted);
   }
 
   /**
-   * Fragt die Berechtigung für Browser/OS-Benachrichtigungen an.
-   * Muss beim ersten Mal durch eine Nutzeraktion ausgelöst werden.
+   * Fragt Notification-Permission ab bzw. fordert sie beim Browser an.
+   *
+   * @returns {Promise<'granted'|'denied'|'default'|'unsupported'>}
    */
   async function requestNotificationPermission() {
     if (!('Notification' in window)) return 'unsupported';
@@ -478,10 +573,15 @@ export function useShoppingList() {
   }
 
   /**
-   * Zeigt eine OS-/Browser-Systembenachrichtigung.
-   * Nutzt den Service Worker (PWA), wenn verfügbar – damit die Nachricht
-   * auch über der installierten App erscheint. Fallback auf window.Notification.
-   * Zeigt maximal 3 Items pro Kategorie.
+   * Baut und zeigt eine Systembenachrichtigung für Listenänderungen.
+   *
+   * Eigenschaften:
+   * - maximal 3 Item-Namen pro Kategorie + Overflow-Zähler
+   * - bevorzugt Service-Worker-Notification (PWA-freundlich)
+   * - Fallback auf `window.Notification`
+   *
+   * @param {string} listName
+   * @param {{ modified: string[], added: string[], deleted: string[] }} categories
    */
   async function showOsNotification(listName, categories) {
     if (!('Notification' in window) || Notification.permission !== 'granted') return;
@@ -527,9 +627,11 @@ export function useShoppingList() {
   }
 
   /**
-   * Erzeugt Benachrichtigungen für alle remote-geänderten Items,
-   * gruppiert nach Liste mit 3 Kategorien: modified / added / deleted.
-   * Feuert für neue Gruppen auch eine echte OS-Benachrichtigung.
+   * Erzeugt In-App-Benachrichtigungsgruppen aus `_remoteChanged`-Items.
+   *
+   * Gruppierung pro Liste:
+   * - modified / added / deleted
+   * - `maxTimestamp` dient als Dedupe-Signatur für OS-Benachrichtigungen.
    */
   function generateNotifications() {
     // Gruppieren nach Liste (nicht nach Person – mehrere Personen pro Liste möglich)
@@ -580,16 +682,21 @@ export function useShoppingList() {
   }
 
   /**
-   * Entfernt eine einzelne Benachrichtigung aus der Liste
-   * @param {string} id - Die Benachrichtigungs-ID
+   * Entfernt eine einzelne In-App-Benachrichtigung aus dem UI-State.
+   *
+   * @param {string} id
    */
   function dismissNotification(id) {
     notifications.value = notifications.value.filter((n) => n.id !== id);
   }
 
   /**
-   * Entfernt alle Änderungs-Hinweise für eine Liste
-   * @param {string} listId - Die ID der Liste
+   * Bestätigt alle Änderungen einer Liste als "gesehen".
+   *
+   * Entfernt Remote-Marker auf betroffenen Items und baut anschließend
+   * die Notification-Ansicht neu auf.
+   *
+   * @param {string} listId
    */
   async function clearListChanges(listId) {
     const listItems = getItemsForList(listId);
@@ -604,7 +711,10 @@ export function useShoppingList() {
   }
 
   /**
-   * User akzeptiert die Löschung (Ja → markedDeleted anwenden)
+   * Übernimmt eine remote angeforderte Löschung.
+   * Entfernt `_pendingDelete` und setzt `markedDeleted = true`.
+   *
+   * @param {Object} item
    */
   async function acceptDelete(item) {
     try {
@@ -626,7 +736,10 @@ export function useShoppingList() {
   }
 
   /**
-   * User lehnt die Löschung ab (Nein → lokalen Zustand zurückpushen)
+   * Lehnt eine remote angeforderte Löschung ab.
+   * Entfernt `_pendingDelete` und stellt `markedDeleted = false` sicher.
+   *
+   * @param {Object} item
    */
   async function rejectDelete(item) {
     try {
@@ -648,9 +761,10 @@ export function useShoppingList() {
   }
 
   /**
-   * Ändert den Namen einer Liste
-   * @param {string} listId - Die ID der Liste
-   * @param {string} newName - Der neue Name
+   * Benennt eine Liste um.
+   *
+   * @param {string} listId
+   * @param {string} newName
    */
   async function renameList(listId, newName) {
     if (!newName || !newName.trim()) return;
@@ -671,9 +785,10 @@ export function useShoppingList() {
   }
 
   /**
-   * Ändert den Namen eines Artikels
-   * @param {Object} item - Das zu ändernde Item
-   * @param {string} newName - Der neue Name
+   * Benennt ein Item um und aktualisiert die lokale Referenz.
+   *
+   * @param {Object} item
+   * @param {string} newName
    */
   async function renameItem(item, newName) {
     if (!newName || !newName.trim()) return;
@@ -696,9 +811,12 @@ export function useShoppingList() {
   }
 
   /**
-   * Berechnet den Fortschritt einer Listein Prozent (nur aktive Items)
-   * @param {string} listId - Die ID der Liste
-   * @returns {number} Fortschritt in Prozent (0-100)
+   * Berechnet den Fortschritt einer Liste (nur aktive Items).
+   *
+   * Formel: `round(checked / activeItems * 100)`.
+   *
+   * @param {string} listId
+   * @returns {number} Prozentwert zwischen 0 und 100.
    */
   function getProgress(listId) {
     const listItems = getActiveItemsForList(listId);
@@ -708,8 +826,12 @@ export function useShoppingList() {
   }
 
   /**
-   * Exportiert eine einzelne Liste mit ihren Artikeln als JSON-Datei.
-   * @param {string} listId - Die ID der zu exportierenden Liste
+   * Exportiert eine Liste inkl. Items als downloadbare JSON-Datei.
+   *
+   * Export enthält nur fachliche Felder (keine internen `_id/_rev`-Metadaten),
+   * damit Backups portabel bleiben.
+   *
+   * @param {string} listId
    */
   function exportBackup(listId) {
     const list = lists.value.find((l) => l._id === listId);
@@ -746,9 +868,15 @@ export function useShoppingList() {
   }
 
   /**
-   * Importiert eine Liste aus einer Backup-JSON-Datei.
-   * Erstellt eine neue Liste mit allen Artikeln.
-   * @param {Object} payload - Das geparste JSON-Objekt aus der Datei
+   * Importiert ein zuvor exportiertes Backup in eine neue Liste.
+   *
+   * Verhalten:
+   * - Name wird als `"<Name> (Backup)"` angelegt.
+   * - Items werden sequenziell erstellt.
+   * - Nach Abschluss wird die UI neu geladen.
+   *
+   * @param {{ list?: { name?: string, items?: Array<any> } }} payload
+   * @returns {Promise<void>}
    */
   async function importBackup(payload) {
     if (!payload?.list?.name) throw new Error('Ungültiges Backup-Format');

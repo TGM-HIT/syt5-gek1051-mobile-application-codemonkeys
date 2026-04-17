@@ -1,3 +1,7 @@
+/**
+ * Router-Konfiguration der App.
+ * Enthält öffentliche Routen (Login/Register) und geschützte Bereiche.
+ */
 import { createRouter, createWebHistory } from 'vue-router';
 import { useAuth } from '@/composables/useAuth';
 

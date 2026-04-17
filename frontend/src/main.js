@@ -1,3 +1,7 @@
+/**
+ * Einstiegspunkt der Vue-App.
+ * Registriert Router und mountet die Anwendung am Root-Element.
+ */
 import './assets/main.css';
 
 import { createApp } from 'vue';

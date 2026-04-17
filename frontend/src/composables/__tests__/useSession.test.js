@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
+/**
+ * Unit-Tests für useSession:
+ * Initialisierung, Persistenz über localStorage und geteilten reaktiven Zustand.
+ */
 // localStorage mock
 const localStorageMock = (() => {
   let store = {};

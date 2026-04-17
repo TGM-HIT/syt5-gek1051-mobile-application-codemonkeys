@@ -1,5 +1,15 @@
-// Einfache IndexedDB-basierte Offline-Datenbank
-// Verwendet natives Browser IndexedDB statt PouchDB wegen Vite-Kompatibilitätsproblemen
+/**
+ * Offline-First Datenzugriffsschicht.
+ *
+ * Architektur:
+ * - Lokal: IndexedDB (`documents` Store) als primäre Quelle für die UI.
+ * - Remote: CouchDB als Synchronisationsziel.
+ *
+ * Kernidee:
+ * - Schreibvorgänge landen zuerst lokal und markieren Dokumente als `_dirty`.
+ * - Ein Hintergrund-Sync pusht `_dirty`-Dokumente und pullt Remote-Änderungen.
+ * - Konflikte werden je nach Typ automatisch gemerged oder als User-Entscheidung markiert.
+ */
 
 const DB_NAME = 'einkaufsliste_db';
 const DB_VERSION = 6; // Bump: _changes feed, hardDelete
@@ -10,7 +20,14 @@ const COUCHDB_PASSWORD = import.meta.env.VITE_COUCHDB_PASSWORD || 'password';
 
 let db = null;
 
-// IndexedDB initialisieren
+/**
+ * Öffnet die lokale IndexedDB-Verbindung (Singleton).
+ *
+ * Bei einem Versions-Upgrade wird der `documents`-Store inklusive Indizes
+ * für `type` und `deleted` angelegt.
+ *
+ * @returns {Promise<IDBDatabase>} Geöffnete DB-Instanz.
+ */
 function openDB() {
   return new Promise((resolve, reject) => {
     if (db) {
@@ -37,16 +54,40 @@ function openDB() {
   });
 }
 
+/**
+ * Initialisiert die lokale Datenbank und liefert das historische Rückgabeformat.
+ *
+ * Hinweis: `remoteDB` bleibt `null`, da die Remote-Anbindung in diesem Modul
+ * explizit über `fetch`-basierte Sync-Funktionen erfolgt.
+ *
+ * @returns {Promise<{ localDB: IDBDatabase, remoteDB: null }>}
+ */
 export async function initPouchDB() {
   await openDB();
   return { localDB: db, remoteDB: null };
 }
 
-// Sync-Handler
+/**
+ * Interner Zustand des laufenden Background-Syncs.
+ * `syncInterval` steuert den Polling-Zyklus, die Callbacks informieren die UI.
+ */
 let syncInterval = null;
 let syncStatusCallback = null;
 let dataChangeCallback = null;
 
+/**
+ * Startet den periodischen Synchronisationsprozess.
+ *
+ * Ablauf:
+ * 1. Optionaler Initial-Pull, falls die lokale DB leer ist.
+ * 2. Sofortiger Sync-Durchlauf.
+ * 3. Wiederholung alle 5 Sekunden.
+ *
+ * @param {(status: {online: boolean, syncing: boolean}) => void} onStatusChange
+ * @param {Function} _onConflict - Legacy-Parameter, aktuell ungenutzt.
+ * @param {(changedDocIds?: string[]) => void} onDataChange
+ * @returns {{ cancel: () => void }} Handle zum manuellen Stoppen.
+ */
 export function startSync(onStatusChange, _onConflict, onDataChange) {
   if (syncInterval) {
     clearInterval(syncInterval);
@@ -76,6 +117,10 @@ export function startSync(onStatusChange, _onConflict, onDataChange) {
   };
 }
 
+/**
+ * Führt einen ersten Pull durch, wenn lokal noch keine Dokumente vorhanden sind.
+ * Verhindert, dass Nutzer mit einer leeren Ansicht starten, obwohl Remote-Daten existieren.
+ */
 async function checkAndInitialSync() {
   try {
     const docs = await getAllDocs();
@@ -88,6 +133,13 @@ async function checkAndInitialSync() {
   }
 }
 
+/**
+ * Ein vollständiger Background-Sync-Zyklus.
+ *
+ * Reihenfolge ist bewusst "push dann pull":
+ * - Push sichert lokale ungesyncte Änderungen.
+ * - Pull holt danach den aktuellen Remote-Stand.
+ */
 async function syncInBackground() {
   try {
     // 1. Push: Alle dirty docs hochladen
@@ -114,6 +166,10 @@ async function syncInBackground() {
   }
 }
 
+/**
+ * Stoppt den periodischen Sync vollständig.
+ * Wird beim Unmount der Composables oder beim Re-Init verwendet.
+ */
 export function stopSync() {
   if (syncInterval) {
     clearInterval(syncInterval);
@@ -121,6 +177,17 @@ export function stopSync() {
   }
 }
 
+/**
+ * Holt Änderungen über CouchDB `_changes` und spiegelt sie lokal.
+ *
+ * Behandlung je Dokument:
+ * - Remote gelöscht: lokal ebenfalls entfernen.
+ * - Lokal nicht vorhanden: als neu übernehmen (`_changeType: 'added'`).
+ * - Lokal `_dirty`: nicht überschreiben (lokale Änderungen behalten).
+ * - Revision unterschiedlich: Remote-Version übernehmen bzw. `_pendingDelete` setzen.
+ *
+ * @returns {Promise<{updated: boolean, changedDocIds: string[]}>}
+ */
 async function syncFromRemote() {
   const response = await fetch(`${COUCHDB_URL}/_changes?include_docs=true&since=0`, {
     headers: { Authorization: `Basic ${btoa(`${COUCHDB_USER}:${COUCHDB_PASSWORD}`)}` },
@@ -203,6 +270,14 @@ async function syncFromRemote() {
   return { updated: updatedCount > 0, changedDocIds };
 }
 
+/**
+ * Sucht alle lokal geänderten (`_dirty`) Dokumente und lädt sie zu CouchDB hoch.
+ *
+ * Fehler beim Push einzelner Dokumente stoppen den gesamten Zyklus nicht,
+ * damit andere Änderungen weiterhin synchronisiert werden können.
+ *
+ * @param {IDBDatabase} db
+ */
 async function pushDirtyDocs(db) {
   try {
     const tx = db.transaction(STORE_NAME, 'readonly');
@@ -230,6 +305,11 @@ async function pushDirtyDocs(db) {
   }
 }
 
+/**
+ * Liest alle Dokumente aus dem lokalen Store.
+ *
+ * @returns {Promise<Array<Record<string, any>>>}
+ */
 export async function getAllDocs() {
   try {
     const db = await openDB();
@@ -247,6 +327,12 @@ export async function getAllDocs() {
   }
 }
 
+/**
+ * Liest ein einzelnes Dokument per `_id` aus der lokalen DB.
+ *
+ * @param {string} id
+ * @returns {Promise<Record<string, any> | undefined>}
+ */
 export async function getDoc(id) {
   try {
     const db = await openDB();
@@ -264,6 +350,17 @@ export async function getDoc(id) {
   }
 }
 
+/**
+ * Speichert/aktualisiert ein Dokument lokal und markiert es für den Remote-Push.
+ *
+ * Wichtig:
+ * - Übernimmt vorhandene `_rev`, damit der nächste Remote-Push korrekt versioniert ist.
+ * - Pflegt `fieldTimestamps` für feldbasiertes Merging bei Konflikten.
+ * - Setzt `_dirty` und `_lastModified` als Sync-Metadaten.
+ *
+ * @param {Record<string, any>} doc
+ * @returns {Promise<{ok: boolean, id: string, rev: string}>}
+ */
 export async function putDoc(doc) {
   try {
     const db = await openDB();
@@ -317,7 +414,14 @@ export async function putDoc(doc) {
   }
 }
 
-// Entfernt ALLE internen Felder (alles mit _ außer _id und _rev) vor dem CouchDB-Upload
+/**
+ * Entfernt lokale Metadatenfelder vor dem Upload zu CouchDB.
+ *
+ * Erhalten bleiben nur `_id` und `_rev`, da diese für CouchDB notwendig sind.
+ *
+ * @param {Record<string, any>} doc
+ * @returns {Record<string, any>}
+ */
 function prepareForUpload(doc) {
   const KEEP = new Set(['_id', '_rev']);
   const clean = {};
@@ -328,6 +432,18 @@ function prepareForUpload(doc) {
   return clean;
 }
 
+/**
+ * Synchronisiert ein einzelnes lokales Dokument nach CouchDB.
+ *
+ * Ablauf:
+ * 1. Aktuelle Remote-Revision laden.
+ * 2. Bereinigtes Dokument hochladen.
+ * 3. Bei Erfolg lokale `_rev` aktualisieren und `_dirty` entfernen.
+ * 4. Bei 409 Konfliktauflösung starten.
+ *
+ * @param {Record<string, any>} doc
+ * @returns {Promise<boolean>} `true`, wenn Upload/Resolution erfolgreich war.
+ */
 async function syncToRemote(doc) {
   try {
     // Erst die aktuelle _rev vom Server holen
@@ -382,7 +498,13 @@ async function syncToRemote(doc) {
   }
 }
 
-// Hilfsfunktion: IndexedDB put awaiten
+/**
+ * Promise-Wrapper für einen einzelnen IndexedDB-`put`.
+ *
+ * @param {IDBDatabase} db
+ * @param {Record<string, any>} doc
+ * @returns {Promise<void>}
+ */
 function idbPut(db, doc) {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, 'readwrite');
@@ -392,7 +514,18 @@ function idbPut(db, doc) {
   });
 }
 
-// Conflict Resolution: markedDeleted → _pendingDelete Banner, alles andere → auto-merge
+/**
+ * Konfliktbehandlung zwischen lokaler und Remote-Version.
+ *
+ * Strategien:
+ * 1. Remote markiert gelöscht, lokal nicht: setze `_pendingDelete` (User muss entscheiden).
+ * 2. Lokal markiert gelöscht, remote nicht: lokale Löschung gewinnt und wird gepusht.
+ * 3. Sonstige Inhalte: feldbasiertes Auto-Merge via `fieldTimestamps`.
+ *
+ * @param {Record<string, any>} localDoc
+ * @param {Record<string, any>} _remoteDoc - Legacy/Debug, aktuell nicht direkt genutzt.
+ * @returns {Promise<boolean>}
+ */
 async function resolveConflict(localDoc, _remoteDoc) {
   try {
     const getResponse = await fetch(`${COUCHDB_URL}/${localDoc._id}`, {
@@ -485,7 +618,14 @@ async function resolveConflict(localDoc, _remoteDoc) {
   }
 }
 
-// User hat im Conflict-Dialog eine Version gewählt → auf Server pushen
+/**
+ * Persistiert die vom Nutzer gewählte Konfliktlösung auf dem Server
+ * und übernimmt das Ergebnis lokal als neuen konsistenten Zustand.
+ *
+ * @param {string} docId
+ * @param {Record<string, any>} chosenDoc
+ * @returns {Promise<boolean>}
+ */
 export async function applyConflictResolution(docId, chosenDoc) {
   try {
     // Aktuelle Server-Rev holen
@@ -531,7 +671,13 @@ export async function applyConflictResolution(docId, chosenDoc) {
   }
 }
 
-// Ermögliche User die eigene Version wiederherzustellen
+/**
+ * Markiert eine lokale Version als "wiederhergestellt" und stößt normalen Sync an.
+ *
+ * @param {string} docId
+ * @param {Record<string, any>} localVersion
+ * @returns {Promise<boolean>}
+ */
 export async function restoreLocalVersion(docId, localVersion) {
   try {
     // Forciere die lokale Version
@@ -549,6 +695,13 @@ export async function restoreLocalVersion(docId, localVersion) {
   }
 }
 
+/**
+ * Entfernt das `_pendingDelete`-Flag von einem Dokument.
+ * Wird nach User-Entscheidung im Delete-Konflikt genutzt.
+ *
+ * @param {string} docId
+ * @returns {Promise<void>}
+ */
 export async function clearPendingDeleteFlag(docId) {
   try {
     const db = await openDB();
@@ -571,6 +724,13 @@ export async function clearPendingDeleteFlag(docId) {
   }
 }
 
+/**
+ * Lädt ein Dokument, lässt es durch `updateFn` transformieren und speichert es zurück.
+ *
+ * @param {string} id
+ * @param {(doc: Record<string, any>) => Record<string, any>} updateFn
+ * @returns {Promise<{ok: boolean, id: string, rev: string}>}
+ */
 export async function updateDoc(id, updateFn) {
   try {
     const doc = await getDoc(id);
@@ -585,6 +745,17 @@ export async function updateDoc(id, updateFn) {
   }
 }
 
+/**
+ * Entfernt Marker für Remote-Änderungshinweise von einem Dokument.
+ *
+ * Entfernt:
+ * - `_remoteChanged`
+ * - `_changeTimestamp`
+ * - `_changeType`
+ *
+ * @param {string} docId
+ * @returns {Promise<void>}
+ */
 export async function clearRemoteChangedFlag(docId) {
   try {
     const db = await openDB();
@@ -610,6 +781,12 @@ export async function clearRemoteChangedFlag(docId) {
   }
 }
 
+/**
+ * Erzeugt ein neues Dokument mit Standardmetadaten und speichert es lokal.
+ *
+ * @param {Record<string, any>} doc
+ * @returns {Promise<{ok: boolean, id: string, rev: string}>}
+ */
 export async function createDoc(doc) {
   const newDoc = {
     ...doc,
@@ -620,6 +797,15 @@ export async function createDoc(doc) {
   return await putDoc(newDoc);
 }
 
+/**
+ * Entfernt ein Dokument endgültig lokal und – falls erreichbar – auch remote.
+ *
+ * Hinweis:
+ * Für CouchDB-DELETE wird die aktuelle `_rev` benötigt; diese wird vorher geladen.
+ *
+ * @param {string} id
+ * @returns {Promise<{ok: boolean, id: string}>}
+ */
 export async function hardDeleteDoc(id) {
   try {
     const db = await openDB();
@@ -658,7 +844,12 @@ export async function hardDeleteDoc(id) {
   }
 }
 
-// Sucht eine Liste anhand ihres Share-Codes in CouchDB
+/**
+ * Sucht eine Liste anhand eines Share-Codes direkt in CouchDB.
+ *
+ * @param {string} code
+ * @returns {Promise<Record<string, any> | null>}
+ */
 export async function findListByShareCode(code) {
   try {
     const response = await fetch(`${COUCHDB_URL}/_find`, {
@@ -690,7 +881,12 @@ export async function findListByShareCode(code) {
   }
 }
 
-// Holt alle Items einer Liste von CouchDB (für Sharing)
+/**
+ * Lädt alle Items einer Liste aus CouchDB (Sharing-Join-Fall).
+ *
+ * @param {string} listId
+ * @returns {Promise<Array<Record<string, any>>>}
+ */
 export async function fetchItemsForListFromRemote(listId) {
   try {
     const response = await fetch(`${COUCHDB_URL}/_find`, {
@@ -719,6 +915,13 @@ export async function fetchItemsForListFromRemote(listId) {
   }
 }
 
+/**
+ * Löscht ein Dokument nur lokal aus IndexedDB.
+ * (Legacy-Helfer neben `hardDeleteDoc` für reine Local-Operationen.)
+ *
+ * @param {string} id
+ * @returns {Promise<{ok: boolean, id: string}>}
+ */
 export async function deleteDoc(id) {
   try {
     const db = await openDB();
