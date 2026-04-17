@@ -23,7 +23,7 @@ Die App ist also besonders nützlich für Situationen mit schlechtem Netz und f�
 
 Technisch basiert die Anwendung auf **Vue 3** (Benutzeroberfläche) sowie **PouchDB/CouchDB** (Datenspeicherung und Synchronisation).
 
-Live-Demo: [Unsere Coole Seite oder so](https://www.vwlsgmbh.me/)
+Live-Demo: [https://www.vwlsgmbh.me/](https://www.vwlsgmbh.me/)
 
 ## Inhaltsverzeichnis
 
@@ -34,11 +34,14 @@ Live-Demo: [Unsere Coole Seite oder so](https://www.vwlsgmbh.me/)
 - [Projekt-Setup](#projekt-setup)
 - [Verfügbare Skripte](#verfügbare-skripte)
 - [Projektstruktur](#projektstruktur)
+- [Visitenkarte](#visitenkarte)
 - [Team](#team)
 - [Branch-Strategie](#branch-strategie)
 - [Code-Qualität](#code-qualität)
 - [Testing](#testing)
 - [Stories und Tasks](#stories-und-tasks)
+- [Dokumentation (Help/Wiki)](#dokumentation-helpwiki)
+- [Lizenz](#lizenz)
 
 ## Features
 
@@ -154,6 +157,16 @@ syt5-gek1051-mobile-application-codemonkeys/
 └── README.md
 ```
 
+## Visitenkarte
+
+| Bereich | Link / Info |
+| :--- | :--- |
+| Repository | https://github.com/TGM-HIT/syt5-gek1051-mobile-application-codemonkeys |
+| Live-System (HTTPS + Domain) | https://www.vwlsgmbh.me/ |
+| Technologie | Vue 3, Vite, IndexedDB, CouchDB |
+| Deployment | Azure VM + Docker + Nginx |
+| CI/CD | GitHub Actions (`.github/workflows/ci.yml`) |
+
 ## Team
 
 | Rolle | Person |
@@ -219,3 +232,19 @@ Weitere Details: [TESTING.md](TESTING.md)
 Details zu allen User Stories und Developer Stories sind in [STORIES.md](STORIES.md) zu finden.
 
 Der Status des aktuellen Sprints ist im [GitHub Projects Board](https://github.com/TGM-HIT/syt5-gek1051-mobile-application-codemonkeys/issues) einsehbar.
+
+## Dokumentation (Help/Wiki)
+
+Für eine öffentliche Projektdoku sind die wichtigsten Inhalte versioniert im Repository verfügbar:
+
+- [TESTING.md](TESTING.md) - Setup, Testausführung, Coverage, Troubleshooting
+- [Tech_Doc/DEV_ENVIRONMENT.md](Tech_Doc/DEV_ENVIRONMENT.md) - Entwicklungsumgebung und Tools
+- [Tech_Doc/SYNC_DETAILED.md](Tech_Doc/SYNC_DETAILED.md) - Synchronisation, Replikation, Konfliktlösung
+- [Tech_Doc/API_DOCUMENTATION.md](Tech_Doc/API_DOCUMENTATION.md) - Schnittstellen und Komponenten-API
+- [Tech_Doc/Deployment.md](Tech_Doc/Deployment.md) - Deployment-Schritte (Azure/Docker/Nginx)
+- [Tech_Doc/GIT_WORKFLOW.md](Tech_Doc/GIT_WORKFLOW.md) - Team-Workflow und Branching
+- [Tech_Doc/technologien.md](Tech_Doc/technologien.md) - Architektur und Technologieentscheidungen
+
+## Lizenz
+
+Dieses Projekt steht unter der [MIT-Lizenz](LICENSE).
